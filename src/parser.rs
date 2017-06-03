@@ -696,9 +696,9 @@ impl<'a> Parser<'a> {
             returns.push(self.read_type()?);
         }
         Ok(FuncType {
-            form: form,
-            params: params,
-            returns: returns,
+            form,
+            params,
+            returns,
         })
     }
 
@@ -712,9 +712,9 @@ impl<'a> Parser<'a> {
             maximum = None;
         }
         Ok(ResizableLimits {
-            flags: flags,
-            initial: initial,
-            maximum: maximum,
+            flags,
+            initial,
+            maximum,
         })
     }
 
@@ -753,8 +753,8 @@ impl<'a> Parser<'a> {
             return Err("Bad version number");
         }
         self.state = ParserState::BeginWasm {
-            magic_number: magic_number,
-            version: version,
+            magic_number,
+            version,
         };
         Ok(())
     }
@@ -776,8 +776,8 @@ impl<'a> Parser<'a> {
                 CustomSectionKind::Unknown
             };
             code = SectionCode::Custom {
-                name: name,
-                kind: kind,
+                name,
+                kind,
             };
         } else {
             code = SectionCode::from_u32(id)?;
@@ -822,9 +822,9 @@ impl<'a> Parser<'a> {
         }
 
         self.state = ParserState::ImportSectionEntry {
-            module: module,
-            field: field,
-            ty: ty,
+            module,
+            field,
+            ty,
         };
         self.section_entries_left -= 1;
         Ok(())
@@ -870,8 +870,8 @@ impl<'a> Parser<'a> {
         }
         let default_target = self.read_var_u32()?;
         Ok(BrTable {
-            targets_table: targets_table,
-            default_target: default_target,
+            targets_table,
+            default_target,
         })
     }
 
@@ -1072,9 +1072,9 @@ impl<'a> Parser<'a> {
         let kind = self.read_external_kind()?;
         let index = self.read_var_u32()?;
         self.state = ParserState::ExportSectionEntry {
-            field: field,
-            kind: kind,
-            index: index
+            field,
+            kind,
+            index
         };
         self.section_entries_left -= 1;
         Ok(())
@@ -1160,8 +1160,8 @@ impl<'a> Parser<'a> {
             let index = self.read_var_u32()?;
             let name = self.read_string()?;
             result.push(Naming {
-                            index: index,
-                            name: name,
+                            index,
+                            name,
                         });
         }
         Ok(result)
@@ -1228,10 +1228,10 @@ impl<'a> Parser<'a> {
             }
         };
         self.state = ParserState::RelocSectionEntry(RelocEntry {
-            ty: ty,
-            offset: offset,
-            index: index,
-            addend: addend,
+            ty,
+            offset,
+            index,
+            addend,
         });
         self.section_entries_left -= 1;
         Ok(())
