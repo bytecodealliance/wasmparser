@@ -593,9 +593,16 @@ impl<'a> BinaryReader<'a> {
     }
 
     /// Read a `(count, value_type)` declaration of local variables of the same type.
-    pub fn read_local_decl(&mut self) -> Result<(u32, Type)> {
+    pub fn read_local_decl(&mut self, locals_total: &mut usize) -> Result<(u32, Type)> {
         let count = self.read_var_u32()?;
         let value_type = self.read_type()?;
+        *locals_total += count as usize;
+        if *locals_total > MAX_WASM_FUNCTION_LOCALS {
+            return Err(BinaryReaderError {
+                message: "local_count is out of bounds",
+                offset: self.position - 1,
+            });
+        }
         Ok((count, value_type))
     }
 
@@ -1147,10 +1154,8 @@ pub enum ParserState<'a> {
     InitExpressionOperator(Operator<'a>),
     EndInitExpressionBody,
 
-    BeginFunctionBody {
-        locals: Vec<(u32, Type)>,
-        range: Range,
-    },
+    BeginFunctionBody { range: Range },
+    FunctionBodyLocals { locals: Vec<(u32, Type)> },
     CodeOperator(Operator<'a>),
     EndFunctionBody,
     SkippingFunctionBody,
@@ -1414,27 +1419,25 @@ impl<'a> Parser<'a> {
         }
         let size = self.reader.read_var_u32()? as usize;
         let body_end = self.reader.position + size;
-        let local_count = self.reader.read_local_count()?;
-        let mut locals: Vec<(u32, Type)> = Vec::with_capacity(local_count);
-        let mut locals_total = 0;
-        for _ in 0..local_count {
-            let (count, ty) = self.reader.read_local_decl()?;
-            locals_total += count as usize;
-            if locals_total > MAX_WASM_FUNCTION_LOCALS {
-                return Err(BinaryReaderError {
-                               message: "local_count is out of bounds",
-                               offset: self.reader.position - 1,
-                           });
-            }
-            locals.push((count, ty));
-        }
         let range = Range {
             start: self.reader.position,
             end: body_end,
         };
-        self.state = ParserState::BeginFunctionBody { locals, range };
+        self.state = ParserState::BeginFunctionBody { range };
         self.function_range = Some(range);
         self.section_entries_left -= 1;
+        Ok(())
+    }
+
+    fn read_function_body_locals(&mut self) -> Result<()> {
+        let local_count = self.reader.read_local_count()?;
+        let mut locals: Vec<(u32, Type)> = Vec::with_capacity(local_count);
+        let mut locals_total = 0;
+        for _ in 0..local_count {
+            let (count, ty) = self.reader.read_local_decl(&mut locals_total)?;
+            locals.push((count, ty));
+        }
+        self.state = ParserState::FunctionBodyLocals { locals };
         Ok(())
     }
 
@@ -1791,7 +1794,8 @@ impl<'a> Parser<'a> {
                 }
                 self.init_expr_continuation = None;
             }
-            ParserState::BeginFunctionBody { .. } |
+            ParserState::BeginFunctionBody { .. } => self.read_function_body_locals()?,
+            ParserState::FunctionBodyLocals { .. } |
             ParserState::CodeOperator(_) => self.read_code_operator()?,
             ParserState::EndFunctionBody => self.read_function_body()?,
             ParserState::SkippingFunctionBody => {
@@ -1840,6 +1844,7 @@ impl<'a> Parser<'a> {
     fn skip_function_body(&mut self) {
         match self.state {
             ParserState::BeginFunctionBody { .. } |
+            ParserState::FunctionBodyLocals { .. } |
             ParserState::CodeOperator(_) => self.state = ParserState::SkippingFunctionBody,
             _ => panic!("Invalid reader state during skip function body"),
         }
@@ -1942,7 +1947,8 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
                 range = self.section_range.unwrap();
                 self.skip_section();
             }
-            ParserState::BeginFunctionBody { .. } => {
+            ParserState::BeginFunctionBody { .. } |
+            ParserState::FunctionBodyLocals { .. } => {
                 range = self.function_range.unwrap();
                 self.skip_function_body();
             }
