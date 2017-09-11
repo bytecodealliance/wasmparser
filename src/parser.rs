@@ -604,7 +604,7 @@ impl<'a> BinaryReader<'a> {
         )?;
         if *locals_total > MAX_WASM_FUNCTION_LOCALS {
             return Err(BinaryReaderError {
-                message: "local_count is out of bounds",
+                message: "locals_total is out of bounds",
                 offset: self.position - 1,
             });
         }
