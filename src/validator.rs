@@ -1441,7 +1441,7 @@ impl<'a> ValidatingParser<'a> {
                         self.create_validation_error("func type is not defined");
                 }
             }
-            ParserState::FunctionBodyLocals { ref locals, .. } => {
+            ParserState::FunctionBodyLocals { ref locals } => {
                 let index = (self.current_func_index + self.func_imports_count) as usize;
                 let ref func_type = self.types[self.func_type_indices[index] as usize];
                 self.current_operator_validator = Some(OperatorValidator::new(func_type, locals));
