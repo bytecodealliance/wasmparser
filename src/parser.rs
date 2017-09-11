@@ -596,7 +596,12 @@ impl<'a> BinaryReader<'a> {
     pub fn read_local_decl(&mut self, locals_total: &mut usize) -> Result<(u32, Type)> {
         let count = self.read_var_u32()?;
         let value_type = self.read_type()?;
-        *locals_total += count as usize;
+        *locals_total = locals_total.checked_add(count as usize).ok_or_else(||
+            BinaryReaderError {
+                message: "locals_total is out of bounds",
+                offset: self.position - 1,
+            }
+        )?;
         if *locals_total > MAX_WASM_FUNCTION_LOCALS {
             return Err(BinaryReaderError {
                 message: "local_count is out of bounds",
