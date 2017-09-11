@@ -580,6 +580,18 @@ impl<'a> BinaryReader<'a> {
         }
     }
 
+    /// Read a `count` indicating the number of times to call `read_local_decl`.
+    pub fn read_local_count(&mut self) -> Result<usize> {
+        let local_count = self.read_var_u32()? as usize;
+        if local_count > MAX_WASM_FUNCTION_LOCALS {
+            return Err(BinaryReaderError {
+                message: "local_count is out of bounds",
+                offset: self.position - 1,
+            });
+        }
+        Ok(local_count)
+    }
+
     /// Read a `(count, value_type)` declaration of local variables of the same type.
     pub fn read_local_decl(&mut self) -> Result<(u32, Type)> {
         let count = self.read_var_u32()?;
@@ -1402,14 +1414,7 @@ impl<'a> Parser<'a> {
         }
         let size = self.reader.read_var_u32()? as usize;
         let body_end = self.reader.position + size;
-        let local_count = self.reader.read_var_u32()? as usize;
-        if local_count > MAX_WASM_FUNCTION_LOCALS {
-            return Err(BinaryReaderError {
-                           message: "local_count is out of bounds",
-                           offset: self.reader.position - 1,
-                       });
-
-        }
+        let local_count = self.reader.read_local_count()?;
         let mut locals: Vec<(u32, Type)> = Vec::with_capacity(local_count);
         let mut locals_total = 0;
         for _ in 0..local_count {
