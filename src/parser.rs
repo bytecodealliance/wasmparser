@@ -206,9 +206,7 @@ impl<'a> IntoIterator for &'a BrTable<'a> {
     type IntoIter = BrTableIterator<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        BrTableIterator {
-            reader: BinaryReader::new(self.buffer),
-        }
+        BrTableIterator { reader: BinaryReader::new(self.buffer) }
     }
 }
 
@@ -865,9 +863,7 @@ impl<'a> BinaryReader<'a> {
             self.skip_var_32()?;
         }
         self.skip_var_32()?;
-        Ok(BrTable {
-               buffer: &self.buffer[start..self.position],
-           })
+        Ok(BrTable { buffer: &self.buffer[start..self.position] })
     }
 
     fn read_name_map(&mut self, limit: usize) -> Result<Vec<Naming<'a>>> {
