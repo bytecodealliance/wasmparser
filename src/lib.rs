@@ -27,7 +27,7 @@
 #![cfg_attr(not(feature = "std"), feature(alloc))]
 
 #[cfg(not(feature = "std"))]
-extern crate hashmap_core;
+extern crate hashmap_core2 as hashmap_core;
 
 #[cfg(not(feature = "std"))]
 #[macro_use]
