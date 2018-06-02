@@ -12,8 +12,8 @@ exclude = ["fuzz/"]
 
 [dependencies]
 
-[dependencies.hashmap_core]
-version = "0.1.1"
+[dependencies.hashmap_core2]
+version = "0.0.1"
 optional = true
 
 [badges]
@@ -25,4 +25,4 @@ travis-ci = { repository = "yurydelendik/wasmparser.rs" }
 # features needs to be enabled.
 default = ["std"]
 std = []
-core = ["hashmap_core"]
+core = ["hashmap_core2"]
