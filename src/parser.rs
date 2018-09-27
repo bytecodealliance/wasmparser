@@ -76,6 +76,7 @@ pub enum Type {
     F32,
     F64,
     AnyFunc,
+    AnyRef,
     Func,
     EmptyBlockType,
 }
@@ -670,6 +671,7 @@ impl<'a> BinaryReader<'a> {
             -0x03 => Ok(Type::F32),
             -0x04 => Ok(Type::F64),
             -0x10 => Ok(Type::AnyFunc),
+            -0x11 => Ok(Type::AnyRef),
             -0x20 => Ok(Type::Func),
             -0x40 => Ok(Type::EmptyBlockType),
             _ => Err(BinaryReaderError {
