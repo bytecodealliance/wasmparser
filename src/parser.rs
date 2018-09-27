@@ -340,6 +340,8 @@ pub enum Operator<'a> {
     I64Const { value: i64 },
     F32Const { value: Ieee32 },
     F64Const { value: Ieee64 },
+    RefNull,
+    RefIsNull,
     I32Eqz,
     I32Eq,
     I32Ne,
@@ -1536,6 +1538,9 @@ impl<'a> BinaryReader<'a> {
             0xc2 => Operator::I64Extend8S,
             0xc3 => Operator::I64Extend16S,
             0xc4 => Operator::I64Extend32S,
+
+            0xd0 => Operator::RefNull,
+            0xd1 => Operator::RefIsNull,
 
             0xfc => self.read_0xfc_operator()?,
 
