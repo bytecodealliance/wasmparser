@@ -267,7 +267,7 @@ pub struct RelocEntry {
 pub struct Ieee32(u32);
 
 impl Ieee32 {
-    pub fn bits(&self) -> u32 {
+    pub fn bits(self) -> u32 {
         self.0
     }
 }
@@ -280,7 +280,7 @@ impl Ieee32 {
 pub struct Ieee64(u64);
 
 impl Ieee64 {
-    pub fn bits(&self) -> u64 {
+    pub fn bits(self) -> u64 {
         self.0
     }
 }
