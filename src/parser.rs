@@ -195,16 +195,39 @@ pub trait WasmDecoder<'a> {
     fn last_state(&self) -> &ParserState<'a>;
 }
 
+#[derive(Debug, Copy, Clone)]
+struct WasmSectionBounds<'a> {
+    code: SectionCode<'a>,
+    range: Range,
+}
+
+#[derive(Debug, Copy, Clone)]
+struct WasmSectionEntryBounds<'a> {
+    section_bounds: WasmSectionBounds<'a>,
+    section_entries_left: u32,
+}
+
+#[derive(Debug)]
+enum WasmFragmentBounds<'a> {
+    File,
+    Section(WasmSectionBounds<'a>),
+    SectionEntry(WasmSectionEntryBounds<'a>),
+    Function {
+        entry_bounds: WasmSectionEntryBounds<'a>,
+        function_range: Range,
+    },
+    DataSegment {
+        entry_bounds: WasmSectionEntryBounds<'a>,
+        read_data_bytes: u32,
+    },
+}
+
 /// The `Parser` type. A simple event-driven parser of WebAssembly binary
 /// format. The `read(&mut self)` is used to iterate through WebAssembly records.
 pub struct Parser<'a> {
     reader: BinaryReader<'a>,
     state: ParserState<'a>,
-    section_range: Option<Range>,
-    function_range: Option<Range>,
-    init_expr_continuation: Option<InitExpressionContinuation>,
-    read_data_bytes: Option<u32>,
-    section_entries_left: u32,
+    bounds: WasmFragmentBounds<'a>,
 }
 
 const WASM_MAGIC_NUMBER: u32 = 0x6d736100;
@@ -225,11 +248,7 @@ impl<'a> Parser<'a> {
         Parser {
             reader: BinaryReader::new(data),
             state: ParserState::Initial,
-            section_range: None,
-            function_range: None,
-            init_expr_continuation: None,
-            read_data_bytes: None,
-            section_entries_left: 0,
+            bounds: WasmFragmentBounds::File,
         }
     }
 
@@ -283,21 +302,73 @@ impl<'a> Parser<'a> {
             end: payload_end,
         };
         self.state = ParserState::BeginSection { code, range };
-        self.section_range = Some(range);
+        self.bounds = WasmFragmentBounds::Section(WasmSectionBounds { code, range });
         Ok(())
     }
 
+    fn get_section_entries_left(&self) -> u32 {
+        match self.bounds {
+            WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                section_entries_left,
+                ..
+            })
+            | WasmFragmentBounds::Function {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_entries_left,
+                        ..
+                    },
+                ..
+            } => section_entries_left,
+            WasmFragmentBounds::DataSegment {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_entries_left,
+                        ..
+                    },
+                ..
+            } => section_entries_left,
+            _ => panic!("{:?}", self.bounds),
+        }
+    }
+
+    fn get_section_entries_left_mut(&mut self) -> &mut u32 {
+        match self.bounds {
+            WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                ref mut section_entries_left,
+                ..
+            })
+            | WasmFragmentBounds::Function {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        ref mut section_entries_left,
+                        ..
+                    },
+                ..
+            } => section_entries_left,
+            WasmFragmentBounds::DataSegment {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        ref mut section_entries_left,
+                        ..
+                    },
+                ..
+            } => section_entries_left,
+            _ => panic!(),
+        }
+    }
+
     fn read_type_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::TypeSectionEntry(self.reader.read_func_type()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_import_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let module = self.reader.read_string()?;
@@ -320,40 +391,39 @@ impl<'a> Parser<'a> {
         }
 
         self.state = ParserState::ImportSectionEntry { module, field, ty };
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_function_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::FunctionSectionEntry(self.reader.read_var_u32()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_memory_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::MemorySectionEntry(self.reader.read_memory_type()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_global_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::BeginGlobalSectionEntry(self.reader.read_global_type()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
-    fn read_init_expression_body(&mut self, cont: InitExpressionContinuation) {
+    fn read_init_expression_body(&mut self, _cont: InitExpressionContinuation) {
         self.state = ParserState::BeginInitExpressionBody;
-        self.init_expr_continuation = Some(cont);
     }
 
     fn read_init_expression_operator(&mut self) -> Result<()> {
@@ -367,23 +437,23 @@ impl<'a> Parser<'a> {
     }
 
     fn read_export_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let field = self.reader.read_string()?;
         let kind = self.reader.read_external_kind()?;
         let index = self.reader.read_var_u32()?;
         self.state = ParserState::ExportSectionEntry { field, kind, index };
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_element_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::BeginElementSectionEntry(self.reader.read_var_u32()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
@@ -403,8 +473,17 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
+    fn get_entry_bounds(&self) -> WasmSectionEntryBounds<'a> {
+        match self.bounds {
+            WasmFragmentBounds::SectionEntry(entry_bounds)
+            | WasmFragmentBounds::Function { entry_bounds, .. }
+            | WasmFragmentBounds::DataSegment { entry_bounds, .. } => entry_bounds,
+            _ => panic!(),
+        }
+    }
+
     fn read_function_body(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let size = self.reader.read_var_u32()? as usize;
@@ -413,9 +492,12 @@ impl<'a> Parser<'a> {
             start: self.reader.position,
             end: body_end,
         };
+        *self.get_section_entries_left_mut() -= 1;
         self.state = ParserState::BeginFunctionBody { range };
-        self.function_range = Some(range);
-        self.section_entries_left -= 1;
+        self.bounds = WasmFragmentBounds::Function {
+            entry_bounds: self.get_entry_bounds(),
+            function_range: range,
+        };
         Ok(())
     }
 
@@ -433,16 +515,26 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
+    fn get_function_range(&self) -> &Range {
+        match self.bounds {
+            WasmFragmentBounds::Function {
+                ref function_range, ..
+            } => function_range,
+            _ => panic!(),
+        }
+    }
+
     fn read_code_operator(&mut self) -> Result<()> {
-        if self.reader.position >= self.function_range.unwrap().end {
+        let function_range_end = self.get_function_range().end;
+        if self.reader.position >= function_range_end {
             if let ParserState::CodeOperator(Operator::End) = self.state {
                 self.state = ParserState::EndFunctionBody;
-                self.function_range = None;
+                self.bounds = WasmFragmentBounds::SectionEntry(self.get_entry_bounds());
                 return Ok(());
             }
             return Err(BinaryReaderError {
                 message: "Expected end of function marker",
-                offset: self.function_range.unwrap().end,
+                offset: function_range_end,
             });
         }
         let op = self.reader.read_operator()?;
@@ -451,28 +543,35 @@ impl<'a> Parser<'a> {
     }
 
     fn read_table_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         self.state = ParserState::TableSectionEntry(self.reader.read_table_type()?);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_data_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let index = self.reader.read_var_u32()?;
         self.state = ParserState::BeginDataSectionEntry(index);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_data_entry_body(&mut self) -> Result<()> {
+        let entry_bounds = match self.bounds {
+            WasmFragmentBounds::SectionEntry(entry_bounds) => entry_bounds,
+            _ => panic!(),
+        };
         let size = self.reader.read_var_u32()?;
         self.state = ParserState::BeginDataSectionEntryBody(size);
-        self.read_data_bytes = Some(size);
+        self.bounds = WasmFragmentBounds::DataSegment {
+            entry_bounds,
+            read_data_bytes: size,
+        };
         Ok(())
     }
 
@@ -489,8 +588,36 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn get_section_range(&self) -> &Range {
+        match self.bounds {
+            WasmFragmentBounds::Section(WasmSectionBounds { ref range, .. }) => range,
+            WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                section_bounds: WasmSectionBounds { ref range, .. },
+                ..
+            }) => range,
+            WasmFragmentBounds::Function {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_bounds: WasmSectionBounds { ref range, .. },
+                        ..
+                    },
+                ..
+            } => range,
+            WasmFragmentBounds::DataSegment {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_bounds: WasmSectionBounds { ref range, .. },
+                        ..
+                    },
+                ..
+            } => range,
+            WasmFragmentBounds::File => panic!(),
+        }
+    }
+
     fn read_name_entry(&mut self) -> Result<()> {
-        if self.reader.position >= self.section_range.unwrap().end {
+        let section_range_end = self.get_section_range().end;
+        if self.reader.position >= section_range_end {
             return self.position_to_section_end();
         }
         let ty = self.read_name_type()?;
@@ -557,7 +684,7 @@ impl<'a> Parser<'a> {
     }
 
     fn read_reloc_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let ty = self.read_reloc_type()?;
@@ -579,12 +706,12 @@ impl<'a> Parser<'a> {
             index,
             addend,
         });
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
     }
 
     fn read_linking_entry(&mut self) -> Result<()> {
-        if self.section_entries_left == 0 {
+        if self.get_section_entries_left() == 0 {
             return self.position_to_section_end();
         }
         let ty = self.reader.read_var_u32()?;
@@ -598,8 +725,15 @@ impl<'a> Parser<'a> {
             }
         };
         self.state = ParserState::LinkingSectionEntry(entry);
-        self.section_entries_left -= 1;
+        *self.get_section_entries_left_mut() -= 1;
         Ok(())
+    }
+
+    fn get_section_bounds(&self) -> WasmSectionBounds<'a> {
+        match self.bounds {
+            WasmFragmentBounds::Section(section_bounds) => section_bounds,
+            _ => panic!(),
+        }
     }
 
     fn read_section_body(&mut self) -> Result<()> {
@@ -608,70 +742,100 @@ impl<'a> Parser<'a> {
                 code: SectionCode::Type,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_type_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Import,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_import_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Function,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_function_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Memory,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_memory_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Global,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_global_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Export,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_export_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Element,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_element_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Code,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_function_body()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Table,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_table_entry()?;
             }
             ParserState::BeginSection {
                 code: SectionCode::Data,
                 ..
             } => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_data_entry()?;
             }
             ParserState::BeginSection {
@@ -703,7 +867,10 @@ impl<'a> Parser<'a> {
                 self.read_reloc_header()?;
             }
             ParserState::ReadingCustomSection(CustomSectionKind::Linking) => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_linking_entry()?;
             }
             ParserState::ReadingCustomSection(CustomSectionKind::Unknown) => {
@@ -715,10 +882,11 @@ impl<'a> Parser<'a> {
     }
 
     fn ensure_reader_position_in_section_range(&self) -> Result<()> {
-        if self.section_range.unwrap().end < self.reader.position {
+        let section_range_end = self.get_section_range().end;
+        if section_range_end < self.reader.position {
             return Err(BinaryReaderError {
                 message: "Position past the section end",
-                offset: self.section_range.unwrap().end,
+                offset: section_range_end,
             });
         }
         Ok(())
@@ -726,43 +894,76 @@ impl<'a> Parser<'a> {
 
     fn position_to_section_end(&mut self) -> Result<()> {
         self.ensure_reader_position_in_section_range()?;
-        self.reader.position = self.section_range.unwrap().end;
-        self.section_range = None;
+        self.reader.position = self.get_section_range().end;
+        self.bounds = WasmFragmentBounds::Section(match self.bounds {
+            WasmFragmentBounds::Section(bounds) => bounds,
+            WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds { section_bounds, .. }) => {
+                section_bounds
+            }
+            WasmFragmentBounds::Function {
+                entry_bounds: WasmSectionEntryBounds { section_bounds, .. },
+                ..
+            } => section_bounds,
+            WasmFragmentBounds::DataSegment {
+                entry_bounds: WasmSectionEntryBounds { section_bounds, .. },
+                ..
+            } => section_bounds,
+            WasmFragmentBounds::File => panic!(),
+        });
         self.state = ParserState::EndSection;
         Ok(())
     }
 
     fn read_section_body_bytes(&mut self) -> Result<()> {
         self.ensure_reader_position_in_section_range()?;
-        if self.section_range.unwrap().end == self.reader.position {
+        let section_range_end = self.get_section_range().end;
+        if section_range_end == self.reader.position {
             self.state = ParserState::EndSection;
-            self.section_range = None;
             return Ok(());
         }
-        let to_read =
-            if self.section_range.unwrap().end - self.reader.position < MAX_DATA_CHUNK_SIZE {
-                self.section_range.unwrap().end - self.reader.position
-            } else {
-                MAX_DATA_CHUNK_SIZE
-            };
+        let to_read = if section_range_end - self.reader.position < MAX_DATA_CHUNK_SIZE {
+            section_range_end - self.reader.position
+        } else {
+            MAX_DATA_CHUNK_SIZE
+        };
         let bytes = self.reader.read_bytes(to_read)?;
         self.state = ParserState::SectionRawData(bytes);
         Ok(())
     }
 
+    fn get_read_data_bytes(&self) -> u32 {
+        match self.bounds {
+            WasmFragmentBounds::DataSegment {
+                read_data_bytes, ..
+            } => read_data_bytes,
+            _ => panic!(),
+        }
+    }
+
+    fn get_read_data_bytes_mut(&mut self) -> &mut u32 {
+        match self.bounds {
+            WasmFragmentBounds::DataSegment {
+                ref mut read_data_bytes,
+                ..
+            } => read_data_bytes,
+            _ => panic!(),
+        }
+    }
+
     fn read_data_chunk(&mut self) -> Result<()> {
-        if self.read_data_bytes.unwrap() == 0 {
+        let read_data_bytes = self.get_read_data_bytes();
+        if read_data_bytes == 0 {
             self.state = ParserState::EndDataSectionEntryBody;
-            self.read_data_bytes = None;
+            self.bounds = WasmFragmentBounds::SectionEntry(self.get_entry_bounds());
             return Ok(());
         }
-        let to_read = if self.read_data_bytes.unwrap() as usize > MAX_DATA_CHUNK_SIZE {
+        let to_read = if read_data_bytes as usize > MAX_DATA_CHUNK_SIZE {
             MAX_DATA_CHUNK_SIZE
         } else {
-            self.read_data_bytes.unwrap() as usize
+            read_data_bytes as usize
         };
         let chunk = self.reader.read_bytes(to_read)?;
-        *self.read_data_bytes.as_mut().unwrap() -= to_read as u32;
+        *self.get_read_data_bytes_mut() -= to_read as u32;
         self.state = ParserState::DataSectionEntryBodyChunk(chunk);
         Ok(())
     }
@@ -774,6 +975,33 @@ impl<'a> Parser<'a> {
             self.read_section_header()?;
         }
         Ok(())
+    }
+
+    fn get_section_code(&self) -> &SectionCode {
+        match self.bounds {
+            WasmFragmentBounds::Section(WasmSectionBounds { ref code, .. }) => code,
+            WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                section_bounds: WasmSectionBounds { ref code, .. },
+                ..
+            }) => code,
+            WasmFragmentBounds::Function {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_bounds: WasmSectionBounds { ref code, .. },
+                        ..
+                    },
+                ..
+            } => code,
+            WasmFragmentBounds::DataSegment {
+                entry_bounds:
+                    WasmSectionEntryBounds {
+                        section_bounds: WasmSectionBounds { ref code, .. },
+                        ..
+                    },
+                ..
+            } => code,
+            WasmFragmentBounds::File => panic!(),
+        }
     }
 
     fn read_wrapped(&mut self) -> Result<()> {
@@ -806,28 +1034,22 @@ impl<'a> Parser<'a> {
             ParserState::BeginDataSectionEntry(_) => {
                 self.read_init_expression_body(InitExpressionContinuation::DataSection)
             }
-            ParserState::EndInitExpressionBody => {
-                match self.init_expr_continuation {
-                    Some(InitExpressionContinuation::GlobalSection) => {
-                        self.state = ParserState::EndGlobalSectionEntry
-                    }
-                    Some(InitExpressionContinuation::ElementSection) => {
-                        self.read_element_entry_body()?
-                    }
-                    Some(InitExpressionContinuation::DataSection) => self.read_data_entry_body()?,
-                    None => unreachable!(),
-                }
-                self.init_expr_continuation = None;
-            }
+            ParserState::EndInitExpressionBody => match *self.get_section_code() {
+                SectionCode::Global => self.state = ParserState::EndGlobalSectionEntry,
+                SectionCode::Element => self.read_element_entry_body()?,
+                SectionCode::Data => self.read_data_entry_body()?,
+                _ => unreachable!(),
+            },
             ParserState::BeginFunctionBody { .. } => self.read_function_body_locals()?,
             ParserState::FunctionBodyLocals { .. } | ParserState::CodeOperator(_) => {
                 self.read_code_operator()?
             }
             ParserState::EndFunctionBody => self.read_function_body()?,
             ParserState::SkippingFunctionBody => {
-                assert!(self.reader.position <= self.function_range.unwrap().end);
-                self.reader.position = self.function_range.unwrap().end;
-                self.function_range = None;
+                let function_range_end = self.get_function_range().end;
+                assert!(self.reader.position <= function_range_end);
+                self.reader.position = function_range_end;
+                self.bounds = WasmFragmentBounds::SectionEntry(self.get_entry_bounds());
                 self.read_function_body()?;
             }
             ParserState::EndDataSectionEntry => self.read_data_entry()?,
@@ -844,7 +1066,10 @@ impl<'a> Parser<'a> {
             ParserState::NameSectionEntry(_) => self.read_name_entry()?,
             ParserState::SourceMappingURL(_) => self.position_to_section_end()?,
             ParserState::RelocSectionHeader(_) => {
-                self.section_entries_left = self.reader.read_var_u32()?;
+                self.bounds = WasmFragmentBounds::SectionEntry(WasmSectionEntryBounds {
+                    section_bounds: self.get_section_bounds(),
+                    section_entries_left: self.reader.read_var_u32()?,
+                });
                 self.read_reloc_entry()?;
             }
             ParserState::RelocSectionEntry(_) => self.read_reloc_entry()?,
@@ -971,19 +1196,19 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
     where
         'a: 'b,
     {
-        let range;
+        let fragment_range;
         match self.state {
             ParserState::BeginSection { .. } => {
-                range = self.section_range.unwrap();
+                fragment_range = *self.get_section_range();
                 self.skip_section();
             }
             ParserState::BeginFunctionBody { .. } | ParserState::FunctionBodyLocals { .. } => {
-                range = self.function_range.unwrap();
+                fragment_range = *self.get_function_range();
                 self.skip_function_body();
             }
             _ => panic!("Invalid reader state during get binary reader operation"),
         };
-        BinaryReader::new(range.slice(self.reader.buffer))
+        BinaryReader::new(fragment_range.slice(self.reader.buffer))
     }
 
     /// Reads next record from the WebAssembly binary data. It also allows to
