@@ -17,6 +17,8 @@ use std::iter::Iterator;
 
 use super::{BinaryReader, BinaryReaderError, Range, Result, SectionCode, SectionHeader};
 
+use super::TypeSectionReader;
+
 #[derive(Debug)]
 pub enum ModuleReaderState<'a> {
     Initial,
@@ -143,6 +145,18 @@ impl<'a> ModuleReader<'a> {
                 eof: false,
             },
             _ => panic!("Unexpected state for get_sections_iterator"),
+        }
+    }
+
+    // Creates reader for the type section. Available when the reader just read
+    // the type section.
+    pub fn get_type_section_reader(&self) -> TypeSectionReader {
+        match self.state {
+            ModuleReaderState::Section {
+                code: SectionCode::Type,
+                range,
+            } => TypeSectionReader::new(range.slice(self.reader.buffer)),
+            _ => panic!("Invalid state for get_type_section_reader"),
         }
     }
 }
