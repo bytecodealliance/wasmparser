@@ -34,6 +34,7 @@ extern crate hashmap_core;
 extern crate alloc;
 
 pub use binary_reader::BinaryReader;
+use binary_reader::SectionHeader;
 
 pub use parser::ImportSectionEntryType;
 pub use parser::LinkingType;
@@ -71,10 +72,16 @@ pub use validator::ValidatingOperatorParser;
 pub use validator::ValidatingParser;
 pub use validator::WasmModuleResources;
 
+pub use readers::ModuleReader;
+pub use readers::ModuleReaderState;
+pub use readers::SectionsIterator;
+pub use readers::SectionsIteratorItem;
+
 mod binary_reader;
 mod limits;
 mod parser;
 mod primitives;
+mod readers;
 mod tests;
 mod validator;
 

@@ -52,6 +52,16 @@ fn is_name_prefix(name: &[u8], prefix: &'static str) -> bool {
     true
 }
 
+const WASM_MAGIC_NUMBER: u32 = 0x6d736100;
+const WASM_EXPERIMENTAL_VERSION: u32 = 0xd;
+const WASM_SUPPORTED_VERSION: u32 = 0x1;
+
+pub struct SectionHeader<'a> {
+    pub code: SectionCode<'a>,
+    pub payload_start: usize,
+    pub payload_len: usize,
+}
+
 /// A binary reader of the WebAssembly structures and types.
 #[derive(Clone)]
 pub struct BinaryReader<'a> {
@@ -431,6 +441,14 @@ impl<'a> BinaryReader<'a> {
             message: "Invalid var_32",
             offset: self.position - 1,
         })
+    }
+
+    pub(crate) fn skip_to(&mut self, position: usize) {
+        assert!(
+            self.position <= position && position <= self.buffer.len(),
+            "skip_to allowed only into region past current position"
+        );
+        self.position = position;
     }
 
     pub fn read_var_i32(&mut self) -> Result<i32> {
@@ -1035,6 +1053,37 @@ impl<'a> BinaryReader<'a> {
                     offset: self.position - 1,
                 })
             }
+        })
+    }
+
+    pub(crate) fn read_file_header(&mut self) -> Result<u32> {
+        let magic_number = self.read_u32()?;
+        if magic_number != WASM_MAGIC_NUMBER {
+            return Err(BinaryReaderError {
+                message: "Bad magic number",
+                offset: self.position - 4,
+            });
+        }
+        let version = self.read_u32()?;
+        if version != WASM_SUPPORTED_VERSION && version != WASM_EXPERIMENTAL_VERSION {
+            return Err(BinaryReaderError {
+                message: "Bad version number",
+                offset: self.position - 4,
+            });
+        }
+        Ok(version)
+    }
+
+    pub(crate) fn read_section_header(&mut self) -> Result<SectionHeader<'a>> {
+        let id_position = self.position;
+        let id = self.read_var_u7()?;
+        let payload_len = self.read_var_u32()? as usize;
+        let payload_start = self.position;
+        let code = self.read_section_code(id, id_position)?;
+        Ok(SectionHeader {
+            code,
+            payload_start,
+            payload_len,
         })
     }
 }
