@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-use super::{BinaryReader, BinaryReaderError, FuncType, Range, Result, SectionCode};
+use super::{BinaryReader, BinaryReaderError, FuncType, Result, SectionCode};
 
 use super::SectionHeader;
 
-pub use self::module::{ModuleReader, ModuleReaderState, SectionsIterator, SectionsIteratorItem};
-pub use self::type_section::{TypeSectionReader, TypeSectionReaderState};
+pub use self::module::ModuleReader;
+pub use self::module::Section;
+pub use self::type_section::TypeSectionReader;
 
 mod module;
 mod type_section;

@@ -13,45 +13,22 @@
  * limitations under the License.
  */
 
-use super::{BinaryReader, BinaryReaderError, FuncType};
-
-pub enum TypeSectionReaderState {
-    Initial,
-    Error(BinaryReaderError),
-    Count(u32),
-    Entry {
-        ty: FuncType,
-        index: u32,
-        count: u32,
-    },
-    End,
-}
+use super::{BinaryReader, FuncType, Result};
 
 pub struct TypeSectionReader<'a> {
     reader: BinaryReader<'a>,
-    state: TypeSectionReaderState,
+    count: u32,
 }
 
 impl<'a> TypeSectionReader<'a> {
-    pub fn new(data: &'a [u8]) -> TypeSectionReader<'a> {
-        TypeSectionReader {
-            reader: BinaryReader::new(data),
-            state: TypeSectionReaderState::Initial,
-        }
+    pub fn new(data: &'a [u8]) -> Result<TypeSectionReader<'a>> {
+        let mut reader = BinaryReader::new(data);
+        let count = reader.read_var_u32()?;
+        Ok(TypeSectionReader { reader, count })
     }
 
-    pub fn read_count(&mut self) {
-        match self.reader.read_var_u32() {
-            Ok(count) => self.state = TypeSectionReaderState::Count(count),
-            Err(err) => self.state = TypeSectionReaderState::Error(err),
-        }
-    }
-
-    pub fn read_entry(&mut self, index: u32, count: u32) {
-        match self.reader.read_func_type() {
-            Ok(ty) => self.state = TypeSectionReaderState::Entry { ty, index, count },
-            Err(err) => self.state = TypeSectionReaderState::Error(err),
-        }
+    pub fn get_count(&self) -> u32 {
+        self.count
     }
 
     /// Reads content of the type section. See also `TypeSectionReaderState` enum.
@@ -61,47 +38,15 @@ impl<'a> TypeSectionReader<'a> {
     /// # let data: &[u8] = &[0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
     /// #     0x01, 0x4, 0x01, 0x60, 0x00, 0x00, 0x03, 0x02, 0x01, 0x00,
     /// #     0x0a, 0x05, 0x01, 0x03, 0x00, 0x01, 0x0b];
-    /// use wasmparser::{ModuleReader, ModuleReaderState, TypeSectionReaderState};
-    /// let mut reader = ModuleReader::new(data);
-    /// match *reader.read() {
-    ///     ModuleReaderState::Header { .. } => (),
-    ///     _ => panic!("header expected")   
-    /// };
-    /// let mut type_reader = match *reader.read() {
-    ///     ModuleReaderState::Section { .. } => reader.get_type_section_reader(),
-    ///     _ => panic!("section expected")
-    ///
-    /// };
-    /// match *type_reader.read() {
-    ///     TypeSectionReaderState::Count(count) => assert!(count == 1),
-    ///     _ => panic!("type count expected")
-    /// };
-    /// match *type_reader.read() {
-    ///     TypeSectionReaderState::Entry { ref ty, .. } => println!("Type {:?}", ty),
-    ///     _ => panic!("section expected")
-    /// };
+    /// use wasmparser::ModuleReader;
+    /// let mut reader = ModuleReader::new(data).expect("module reader");
+    /// let section = reader.read().expect("section");
+    /// let mut type_reader = section.get_type_section_reader().expect("type section reader");
+    /// assert!(type_reader.get_count() == 1);
+    /// let ty = type_reader.read().expect("type #1");
+    /// println!("Type {:?}", ty);
     /// ```
-    pub fn read(&mut self) -> &TypeSectionReaderState {
-        match self.state {
-            TypeSectionReaderState::Initial => self.read_count(),
-            TypeSectionReaderState::Error(_) | TypeSectionReaderState::End => {
-                panic!("Unexpected state")
-            }
-            TypeSectionReaderState::Count(count) if count > 0 => self.read_entry(0, count),
-            TypeSectionReaderState::Entry { index, count, .. } if index + 1 < count => {
-                self.read_entry(index + 1, count)
-            }
-            TypeSectionReaderState::Count(_) | TypeSectionReaderState::Entry { .. } => {
-                if self.reader.eof() {
-                    self.state = TypeSectionReaderState::End;
-                } else {
-                    self.state = TypeSectionReaderState::Error(BinaryReaderError {
-                        message: "Unexpected type section end",
-                        offset: self.reader.position,
-                    });
-                }
-            }
-        };
-        &self.state
+    pub fn read(&mut self) -> Result<FuncType> {
+        self.reader.read_func_type()
     }
 }

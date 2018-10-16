@@ -73,11 +73,8 @@ pub use validator::ValidatingParser;
 pub use validator::WasmModuleResources;
 
 pub use readers::ModuleReader;
-pub use readers::ModuleReaderState;
-pub use readers::SectionsIterator;
-pub use readers::SectionsIteratorItem;
+pub use readers::Section;
 pub use readers::TypeSectionReader;
-pub use readers::TypeSectionReaderState;
 
 mod binary_reader;
 mod limits;
