@@ -16,8 +16,8 @@
 use super::{BinaryReader, BinaryReaderError, Result, SectionCode, SectionHeader};
 
 use super::{
-    CodeSectionReader, ExportSectionReader, FunctionSectionReader, ImportSectionReader,
-    TypeSectionReader,
+    CodeSectionReader, ExportSectionReader, FunctionSectionReader, GlobalSectionReader,
+    ImportSectionReader, TypeSectionReader,
 };
 
 #[derive(Debug)]
@@ -70,6 +70,15 @@ impl<'a> Section<'a> {
         match self.code {
             SectionCode::Import => ImportSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_import_section_reader"),
+        }
+    }
+
+    /// Creates reader for the global section. Available when the reader just read
+    /// the global section.
+    pub fn get_global_section_reader(&self) -> Result<GlobalSectionReader> {
+        match self.code {
+            SectionCode::Global => GlobalSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_global_section_reader"),
         }
     }
 }

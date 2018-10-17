@@ -1100,6 +1100,15 @@ impl<'a> BinaryReader<'a> {
             payload_len,
         })
     }
+
+    pub(crate) fn skip_init_expr(&mut self) -> Result<()> {
+        // TODO add skip_operator() method and/or validate init_expr operators.
+        loop {
+            if let Operator::End = self.read_operator()? {
+                return Ok(());
+            }
+        }
+    }
 }
 
 impl<'a> BrTable<'a> {

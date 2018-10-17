@@ -14,8 +14,8 @@
  */
 
 use super::{
-    BinaryReader, BinaryReaderError, ExternalKind, FuncType, ImportSectionEntryType, Result,
-    SectionCode,
+    BinaryReader, BinaryReaderError, ExternalKind, FuncType, GlobalType, ImportSectionEntryType,
+    Result, SectionCode,
 };
 
 use super::SectionHeader;
@@ -24,8 +24,11 @@ pub use self::code_section::CodeSectionReader;
 pub use self::export_section::Export;
 pub use self::export_section::ExportSectionReader;
 pub use self::function_section::FunctionSectionReader;
+pub use self::global_section::Global;
+pub use self::global_section::GlobalSectionReader;
 pub use self::import_section::Import;
 pub use self::import_section::ImportSectionReader;
+pub use self::init_expr::InitExpr;
 pub use self::module::ModuleReader;
 pub use self::module::Section;
 pub use self::type_section::TypeSectionReader;
@@ -33,6 +36,8 @@ pub use self::type_section::TypeSectionReader;
 mod code_section;
 mod export_section;
 mod function_section;
+mod global_section;
 mod import_section;
+mod init_expr;
 mod module;
 mod type_section;
