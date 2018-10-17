@@ -36,7 +36,6 @@ extern crate alloc;
 pub use binary_reader::BinaryReader;
 use binary_reader::SectionHeader;
 
-pub use parser::ImportSectionEntryType;
 pub use parser::LinkingType;
 pub use parser::LocalName;
 pub use parser::NameEntry;
@@ -57,6 +56,7 @@ pub use primitives::FuncType;
 pub use primitives::GlobalType;
 pub use primitives::Ieee32;
 pub use primitives::Ieee64;
+pub use primitives::ImportSectionEntryType;
 pub use primitives::MemoryImmediate;
 pub use primitives::MemoryType;
 pub use primitives::Naming;
@@ -73,7 +73,11 @@ pub use validator::ValidatingParser;
 pub use validator::WasmModuleResources;
 
 pub use readers::CodeSectionReader;
+pub use readers::Export;
+pub use readers::ExportSectionReader;
 pub use readers::FunctionSectionReader;
+pub use readers::Import;
+pub use readers::ImportSectionReader;
 pub use readers::ModuleReader;
 pub use readers::Section;
 pub use readers::TypeSectionReader;

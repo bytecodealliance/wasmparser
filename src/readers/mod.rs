@@ -13,17 +13,26 @@
  * limitations under the License.
  */
 
-use super::{BinaryReader, BinaryReaderError, FuncType, Result, SectionCode};
+use super::{
+    BinaryReader, BinaryReaderError, ExternalKind, FuncType, ImportSectionEntryType, Result,
+    SectionCode,
+};
 
 use super::SectionHeader;
 
 pub use self::code_section::CodeSectionReader;
+pub use self::export_section::Export;
+pub use self::export_section::ExportSectionReader;
 pub use self::function_section::FunctionSectionReader;
+pub use self::import_section::Import;
+pub use self::import_section::ImportSectionReader;
 pub use self::module::ModuleReader;
 pub use self::module::Section;
 pub use self::type_section::TypeSectionReader;
 
 mod code_section;
+mod export_section;
 mod function_section;
+mod import_section;
 mod module;
 mod type_section;

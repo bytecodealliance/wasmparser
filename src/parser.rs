@@ -22,8 +22,8 @@ use limits::{
 };
 
 use primitives::{
-    BinaryReaderError, CustomSectionKind, ExternalKind, FuncType, GlobalType, MemoryType, Naming,
-    Operator, Result, SectionCode, TableType, Type,
+    BinaryReaderError, CustomSectionKind, ExternalKind, FuncType, GlobalType,
+    ImportSectionEntryType, MemoryType, Naming, Operator, Result, SectionCode, TableType, Type,
 };
 
 use binary_reader::{BinaryReader, SectionHeader};
@@ -48,14 +48,6 @@ pub enum NameEntry<'a> {
     Module(&'a [u8]),
     Function(Box<[Naming<'a>]>),
     Local(Box<[LocalName<'a>]>),
-}
-
-#[derive(Debug)]
-pub enum ImportSectionEntryType {
-    Function(u32),
-    Table(TableType),
-    Memory(MemoryType),
-    Global(GlobalType),
 }
 
 #[derive(Debug)]
