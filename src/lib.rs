@@ -73,6 +73,8 @@ pub use validator::ValidatingParser;
 pub use validator::WasmModuleResources;
 
 pub use readers::CodeSectionReader;
+pub use readers::Data;
+pub use readers::DataSectionReader;
 pub use readers::Export;
 pub use readers::ExportSectionReader;
 pub use readers::FunctionSectionReader;
@@ -81,6 +83,7 @@ pub use readers::GlobalSectionReader;
 pub use readers::Import;
 pub use readers::ImportSectionReader;
 pub use readers::InitExpr;
+pub use readers::MemorySectionReader;
 pub use readers::ModuleReader;
 pub use readers::Section;
 pub use readers::TypeSectionReader;
