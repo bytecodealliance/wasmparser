@@ -38,7 +38,7 @@ impl<'a> ExportSectionReader<'a> {
         self.count
     }
 
-    /// Reads content of the code section.
+    /// Reads content of the export section.
     ///
     /// # Examples
     /// ```

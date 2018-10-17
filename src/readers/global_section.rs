@@ -37,7 +37,7 @@ impl<'a> GlobalSectionReader<'a> {
         self.count
     }
 
-    /// Reads content of the type section.
+    /// Reads content of the global section.
     ///
     /// # Examples
     /// ```

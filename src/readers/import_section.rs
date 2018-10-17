@@ -38,18 +38,17 @@ impl<'a> ImportSectionReader<'a> {
         self.count
     }
 
-    /// Reads content of the code section.
+    /// Reads content of the import section.
     ///
     /// # Examples
     /// ```
     /// # let data: &[u8] = &[0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
-    /// #     0x01, 0x4, 0x01, 0x60, 0x00, 0x00, 0x03, 0x02, 0x01, 0x00,
+    /// #     0x01, 0x4, 0x01, 0x60, 0x00, 0x00,
     /// #     0x02, 0x07, 0x01, 0x01, 0x41, 0x01, 0x66, 0x00, 0x00,
-    /// #     0x0a, 0x05, 0x01, 0x03, 0x00, 0x01, 0x0b];
+    /// #     0x03, 0x02, 0x01, 0x00, 0x0a, 0x05, 0x01, 0x03, 0x00, 0x01, 0x0b];
     /// use wasmparser::ModuleReader;
     /// let mut reader = ModuleReader::new(data).expect("module reader");
     /// let section = reader.read().expect("type section");
-    /// let section = reader.read().expect("function section");
     /// let section = reader.read().expect("import section");
     /// let mut import_reader = section.get_import_section_reader().expect("import section reader");
     /// for _ in 0..import_reader.get_count() {

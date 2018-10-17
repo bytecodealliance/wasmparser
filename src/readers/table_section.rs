@@ -31,7 +31,7 @@ impl<'a> TableSectionReader<'a> {
         self.count
     }
 
-    /// Reads content of the memory section.
+    /// Reads content of the table section.
     ///
     /// # Examples
     /// ```
