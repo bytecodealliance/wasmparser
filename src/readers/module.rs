@@ -16,9 +16,9 @@
 use super::{BinaryReader, BinaryReaderError, Result, SectionCode, SectionHeader};
 
 use super::{
-    CodeSectionReader, DataSectionReader, ElementSectionReader, ExportSectionReader,
-    FunctionSectionReader, GlobalSectionReader, ImportSectionReader, MemorySectionReader,
-    TableSectionReader, TypeSectionReader,
+    read_start_section_content, CodeSectionReader, DataSectionReader, ElementSectionReader,
+    ExportSectionReader, FunctionSectionReader, GlobalSectionReader, ImportSectionReader,
+    MemorySectionReader, TableSectionReader, TypeSectionReader,
 };
 
 #[derive(Debug)]
@@ -116,6 +116,13 @@ impl<'a> Section<'a> {
         match self.code {
             SectionCode::Element => ElementSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_element_section_reader"),
+        }
+    }
+
+    pub fn get_start_section_content(&self) -> Result<u32> {
+        match self.code {
+            SectionCode::Start => read_start_section_content(self.data, self.offset),
+            _ => panic!("Invalid state for get_start_section_content"),
         }
     }
 }

@@ -38,6 +38,7 @@ pub use self::init_expr::InitExpr;
 pub use self::memory_section::MemorySectionReader;
 pub use self::module::ModuleReader;
 pub use self::module::Section;
+use self::start_section::read_start_section_content;
 pub use self::table_section::TableSectionReader;
 pub use self::type_section::TypeSectionReader;
 
@@ -51,5 +52,6 @@ mod import_section;
 mod init_expr;
 mod memory_section;
 mod module;
+mod start_section;
 mod table_section;
 mod type_section;
