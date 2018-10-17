@@ -19,7 +19,7 @@ use super::TypeSectionReader;
 
 #[derive(Debug)]
 pub struct Section<'a> {
-    code: SectionCode<'a>,
+    pub code: SectionCode<'a>,
     offset: usize,
     data: &'a [u8],
 }
@@ -29,7 +29,7 @@ impl<'a> Section<'a> {
     // the type section.
     pub fn get_type_section_reader(&self) -> Result<TypeSectionReader> {
         match self.code {
-            SectionCode::Type => TypeSectionReader::new(self.data),
+            SectionCode::Type => TypeSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_type_section_reader"),
         }
     }
@@ -61,9 +61,24 @@ impl<'a> ModuleReader<'a> {
         self.read_ahead.is_none() && self.reader.eof()
     }
 
+    fn verify_section_end(&self, end: usize) -> Result<()> {
+        if self.reader.buffer.len() < end {
+            return Err(BinaryReaderError {
+                message: "Section body extends past end of file",
+                offset: self.reader.buffer.len(),
+            });
+        }
+        if self.reader.position > end {
+            return Err(BinaryReaderError {
+                message: "Section header is too big to fit into section body",
+                offset: end,
+            });
+        }
+        Ok(())
+    }
+
     /// Reads next top-level record from the WebAssembly binary data.
     /// The methods returns reference to current state of the reader.
-    /// See `ModuleReaderState` enum.
     ///
     /// # Examples
     /// ```
@@ -91,24 +106,57 @@ impl<'a> ModuleReader<'a> {
             None => self.reader.read_section_header()?,
         };
         let payload_end = payload_start + payload_len;
-        if self.reader.buffer.len() < payload_end {
-            return Err(BinaryReaderError {
-                message: "Section body extends past end of file",
-                offset: self.reader.buffer.len(),
-            });
-        }
-        if self.reader.position > payload_end {
-            return Err(BinaryReaderError {
-                message: "Section header is too big to fit into section body",
-                offset: payload_end,
-            });
-        }
+        self.verify_section_end(payload_end)?;
         let body_start = self.reader.position;
         self.reader.skip_to(payload_end);
         Ok(Section {
             code,
-            offset: self.reader.position,
+            offset: body_start,
             data: &self.reader.buffer[body_start..payload_end],
         })
+    }
+
+    fn ensure_read_ahead(&mut self) -> Result<()> {
+        if self.read_ahead.is_none() && !self.eof() {
+            self.read_ahead = Some(self.reader.read_section_header()?);
+        }
+        Ok(())
+    }
+
+    /// Skips custom sections.
+    ///
+    /// # Examples
+    /// ```
+    /// # let data: &[u8] = &[0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    /// #     0x00, 0x8, 0x03, 0x63, 0x61, 0x74, 0x01, 0x02, 0x03, 0x04,
+    /// #     0x01, 0x4, 0x01, 0x60, 0x00, 0x00, 0x03, 0x02, 0x01, 0x00,
+    /// #     0x0a, 0x05, 0x01, 0x03, 0x00, 0x01, 0x0b];
+    /// use wasmparser::ModuleReader;
+    /// use wasmparser::SectionCode;
+    /// let mut reader = ModuleReader::new(data).expect("reader");
+    /// while { reader.skip_custom_sections(); !reader.eof() } {
+    ///     let section = reader.read().expect("section");
+    ///     if let SectionCode::Custom {..} = section.code { panic!("no custom"); }
+    ///     println!("Section {:?}", section);
+    /// }
+    /// ```
+    pub fn skip_custom_sections(&mut self) -> Result<()> {
+        loop {
+            self.ensure_read_ahead()?;
+            match self.read_ahead {
+                Some(SectionHeader {
+                    code: SectionCode::Custom { .. },
+                    payload_start,
+                    payload_len,
+                }) => {
+                    self.verify_section_end(payload_start + payload_len)?;
+                    // Skip section
+                    self.read_ahead = None;
+                    self.reader.skip_to(payload_start + payload_len);
+                }
+                _ => break,
+            };
+        }
+        Ok(())
     }
 }

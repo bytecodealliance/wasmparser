@@ -21,8 +21,8 @@ pub struct TypeSectionReader<'a> {
 }
 
 impl<'a> TypeSectionReader<'a> {
-    pub fn new(data: &'a [u8]) -> Result<TypeSectionReader<'a>> {
-        let mut reader = BinaryReader::new(data);
+    pub fn new(data: &'a [u8], offset: usize) -> Result<TypeSectionReader<'a>> {
+        let mut reader = BinaryReader::new_with_offset(data, offset);
         let count = reader.read_var_u32()?;
         Ok(TypeSectionReader { reader, count })
     }
@@ -31,7 +31,7 @@ impl<'a> TypeSectionReader<'a> {
         self.count
     }
 
-    /// Reads content of the type section. See also `TypeSectionReaderState` enum.
+    /// Reads content of the type section.
     ///
     /// # Examples
     /// ```
@@ -42,9 +42,10 @@ impl<'a> TypeSectionReader<'a> {
     /// let mut reader = ModuleReader::new(data).expect("module reader");
     /// let section = reader.read().expect("section");
     /// let mut type_reader = section.get_type_section_reader().expect("type section reader");
-    /// assert!(type_reader.get_count() == 1);
-    /// let ty = type_reader.read().expect("type #1");
-    /// println!("Type {:?}", ty);
+    /// for _ in 0..type_reader.get_count() {
+    ///     let ty = type_reader.read().expect("type");
+    ///     println!("Type {:?}", ty);
+    /// }
     /// ```
     pub fn read(&mut self) -> Result<FuncType> {
         self.reader.read_func_type()
