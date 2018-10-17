@@ -75,6 +75,10 @@ pub use validator::WasmModuleResources;
 pub use readers::CodeSectionReader;
 pub use readers::Data;
 pub use readers::DataSectionReader;
+pub use readers::Element;
+pub use readers::ElementItems;
+pub use readers::ElementItemsReader;
+pub use readers::ElementSectionReader;
 pub use readers::Export;
 pub use readers::ExportSectionReader;
 pub use readers::FunctionSectionReader;
@@ -86,6 +90,7 @@ pub use readers::InitExpr;
 pub use readers::MemorySectionReader;
 pub use readers::ModuleReader;
 pub use readers::Section;
+pub use readers::TableSectionReader;
 pub use readers::TypeSectionReader;
 
 mod binary_reader;

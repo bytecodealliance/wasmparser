@@ -15,7 +15,7 @@
 
 use super::{
     BinaryReader, BinaryReaderError, ExternalKind, FuncType, GlobalType, ImportSectionEntryType,
-    MemoryType, Result, SectionCode,
+    MemoryType, Result, SectionCode, TableType,
 };
 
 use super::SectionHeader;
@@ -23,6 +23,10 @@ use super::SectionHeader;
 pub use self::code_section::CodeSectionReader;
 pub use self::data_section::Data;
 pub use self::data_section::DataSectionReader;
+pub use self::element_section::Element;
+pub use self::element_section::ElementItems;
+pub use self::element_section::ElementItemsReader;
+pub use self::element_section::ElementSectionReader;
 pub use self::export_section::Export;
 pub use self::export_section::ExportSectionReader;
 pub use self::function_section::FunctionSectionReader;
@@ -34,10 +38,12 @@ pub use self::init_expr::InitExpr;
 pub use self::memory_section::MemorySectionReader;
 pub use self::module::ModuleReader;
 pub use self::module::Section;
+pub use self::table_section::TableSectionReader;
 pub use self::type_section::TypeSectionReader;
 
 mod code_section;
 mod data_section;
+mod element_section;
 mod export_section;
 mod function_section;
 mod global_section;
@@ -45,4 +51,5 @@ mod import_section;
 mod init_expr;
 mod memory_section;
 mod module;
+mod table_section;
 mod type_section;
