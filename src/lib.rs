@@ -72,6 +72,8 @@ pub use validator::ValidatingOperatorParser;
 pub use validator::ValidatingParser;
 pub use validator::WasmModuleResources;
 
+pub use readers::CodeSectionReader;
+pub use readers::FunctionSectionReader;
 pub use readers::ModuleReader;
 pub use readers::Section;
 pub use readers::TypeSectionReader;

@@ -17,9 +17,13 @@ use super::{BinaryReader, BinaryReaderError, FuncType, Result, SectionCode};
 
 use super::SectionHeader;
 
+pub use self::code_section::CodeSectionReader;
+pub use self::function_section::FunctionSectionReader;
 pub use self::module::ModuleReader;
 pub use self::module::Section;
 pub use self::type_section::TypeSectionReader;
 
+mod code_section;
+mod function_section;
 mod module;
 mod type_section;

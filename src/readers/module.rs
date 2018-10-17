@@ -15,7 +15,7 @@
 
 use super::{BinaryReader, BinaryReaderError, Result, SectionCode, SectionHeader};
 
-use super::TypeSectionReader;
+use super::{CodeSectionReader, FunctionSectionReader, TypeSectionReader};
 
 #[derive(Debug)]
 pub struct Section<'a> {
@@ -25,12 +25,30 @@ pub struct Section<'a> {
 }
 
 impl<'a> Section<'a> {
-    // Creates reader for the type section. Available when the reader just read
-    // the type section.
+    /// Creates reader for the type section. Available when the reader just read
+    /// the type section.
     pub fn get_type_section_reader(&self) -> Result<TypeSectionReader> {
         match self.code {
             SectionCode::Type => TypeSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_type_section_reader"),
+        }
+    }
+
+    /// Creates reader for the function section. Available when the reader just read
+    /// the function section.
+    pub fn get_function_section_reader(&self) -> Result<FunctionSectionReader> {
+        match self.code {
+            SectionCode::Function => FunctionSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_function_section_reader"),
+        }
+    }
+
+    /// Creates reader for the code section. Available when the reader just read
+    /// the code section.
+    pub fn get_code_section_reader(&self) -> Result<CodeSectionReader> {
+        match self.code {
+            SectionCode::Code => CodeSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_function_section_reader"),
         }
     }
 }
