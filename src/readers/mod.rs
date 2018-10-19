@@ -21,6 +21,7 @@ use super::{
 use super::SectionHeader;
 
 pub use self::code_section::CodeSectionReader;
+pub use self::code_section::FunctionBody;
 pub use self::data_section::Data;
 pub use self::data_section::DataSectionReader;
 pub use self::element_section::Element;

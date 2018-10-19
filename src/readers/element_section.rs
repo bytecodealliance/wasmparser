@@ -49,6 +49,10 @@ impl<'a> ElementItemsReader<'a> {
         Ok(ElementItemsReader { reader, count })
     }
 
+    pub fn original_position(&self) -> usize {
+        self.reader.original_position()
+    }
+
     pub fn get_count(&self) -> u32 {
         self.count
     }
@@ -68,6 +72,10 @@ impl<'a> ElementSectionReader<'a> {
         let mut reader = BinaryReader::new_with_offset(data, offset);
         let count = reader.read_var_u32()?;
         Ok(ElementSectionReader { reader, count })
+    }
+
+    pub fn original_position(&self) -> usize {
+        self.reader.original_position()
     }
 
     pub fn get_count(&self) -> u32 {

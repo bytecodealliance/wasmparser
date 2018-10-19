@@ -26,7 +26,10 @@ impl<'a> InitExpr<'a> {
         InitExpr { offset, data }
     }
 
-    pub fn get_binary_reader(&self) -> BinaryReader {
+    pub fn get_binary_reader<'b>(&self) -> BinaryReader<'b>
+    where
+        'a: 'b,
+    {
         BinaryReader::new_with_offset(self.data, self.offset)
     }
 }

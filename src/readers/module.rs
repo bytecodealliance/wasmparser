@@ -31,7 +31,10 @@ pub struct Section<'a> {
 impl<'a> Section<'a> {
     /// Creates reader for the type section. Available when the reader just read
     /// the type section.
-    pub fn get_type_section_reader(&self) -> Result<TypeSectionReader> {
+    pub fn get_type_section_reader<'b>(&self) -> Result<TypeSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Type => TypeSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_type_section_reader"),
@@ -40,7 +43,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the function section. Available when the reader just read
     /// the function section.
-    pub fn get_function_section_reader(&self) -> Result<FunctionSectionReader> {
+    pub fn get_function_section_reader<'b>(&self) -> Result<FunctionSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Function => FunctionSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_function_section_reader"),
@@ -49,7 +55,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the code section. Available when the reader just read
     /// the code section.
-    pub fn get_code_section_reader(&self) -> Result<CodeSectionReader> {
+    pub fn get_code_section_reader<'b>(&self) -> Result<CodeSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Code => CodeSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_function_section_reader"),
@@ -58,7 +67,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the export section. Available when the reader just read
     /// the export section.
-    pub fn get_export_section_reader(&self) -> Result<ExportSectionReader> {
+    pub fn get_export_section_reader<'b>(&self) -> Result<ExportSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Export => ExportSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_export_section_reader"),
@@ -67,7 +79,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the import section. Available when the reader just read
     /// the import section.
-    pub fn get_import_section_reader(&self) -> Result<ImportSectionReader> {
+    pub fn get_import_section_reader<'b>(&self) -> Result<ImportSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Import => ImportSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_import_section_reader"),
@@ -76,7 +91,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the global section. Available when the reader just read
     /// the global section.
-    pub fn get_global_section_reader(&self) -> Result<GlobalSectionReader> {
+    pub fn get_global_section_reader<'b>(&self) -> Result<GlobalSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Global => GlobalSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_global_section_reader"),
@@ -85,7 +103,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the memory section. Available when the reader just read
     /// the memory section.
-    pub fn get_memory_section_reader(&self) -> Result<MemorySectionReader> {
+    pub fn get_memory_section_reader<'b>(&self) -> Result<MemorySectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Memory => MemorySectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_memory_section_reader"),
@@ -94,7 +115,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the data section. Available when the reader just read
     /// the data section.
-    pub fn get_data_section_reader(&self) -> Result<DataSectionReader> {
+    pub fn get_data_section_reader<'b>(&self) -> Result<DataSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Data => DataSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_data_section_reader"),
@@ -103,7 +127,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the table section. Available when the reader just read
     /// the table section.
-    pub fn get_table_section_reader(&self) -> Result<TableSectionReader> {
+    pub fn get_table_section_reader<'b>(&self) -> Result<TableSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Table => TableSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_table_section_reader"),
@@ -112,7 +139,10 @@ impl<'a> Section<'a> {
 
     /// Creates reader for the element section. Available when the reader just read
     /// the element section.
-    pub fn get_element_section_reader(&self) -> Result<ElementSectionReader> {
+    pub fn get_element_section_reader<'b>(&self) -> Result<ElementSectionReader<'b>>
+    where
+        'a: 'b,
+    {
         match self.code {
             SectionCode::Element => ElementSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_element_section_reader"),
@@ -125,13 +155,20 @@ impl<'a> Section<'a> {
             _ => panic!("Invalid state for get_start_section_content"),
         }
     }
+
+    pub fn get_binary_reader<'b>(&self) -> BinaryReader<'b>
+    where
+        'a: 'b,
+    {
+        BinaryReader::new_with_offset(self.data, self.offset)
+    }
 }
 
 /// Reads top-level WebAssembly file structure: header and sections.
 pub struct ModuleReader<'a> {
     reader: BinaryReader<'a>,
     version: u32,
-    read_ahead: Option<SectionHeader<'a>>,
+    read_ahead: Option<(usize, SectionHeader<'a>)>,
 }
 
 impl<'a> ModuleReader<'a> {
@@ -147,6 +184,13 @@ impl<'a> ModuleReader<'a> {
 
     pub fn get_version(&self) -> u32 {
         self.version
+    }
+
+    pub fn current_position(&self) -> usize {
+        match self.read_ahead {
+            Some((position, _)) => position,
+            _ => self.reader.current_position(),
+        }
     }
 
     pub fn eof(&self) -> bool {
@@ -194,7 +238,7 @@ impl<'a> ModuleReader<'a> {
             payload_start,
             payload_len,
         } = match self.read_ahead.take() {
-            Some(section_header) => section_header,
+            Some((_, section_header)) => section_header,
             None => self.reader.read_section_header()?,
         };
         let payload_end = payload_start + payload_len;
@@ -210,7 +254,8 @@ impl<'a> ModuleReader<'a> {
 
     fn ensure_read_ahead(&mut self) -> Result<()> {
         if self.read_ahead.is_none() && !self.eof() {
-            self.read_ahead = Some(self.reader.read_section_header()?);
+            let position = self.reader.current_position();
+            self.read_ahead = Some((position, self.reader.read_section_header()?));
         }
         Ok(())
     }
@@ -236,11 +281,14 @@ impl<'a> ModuleReader<'a> {
         loop {
             self.ensure_read_ahead()?;
             match self.read_ahead {
-                Some(SectionHeader {
-                    code: SectionCode::Custom { .. },
-                    payload_start,
-                    payload_len,
-                }) => {
+                Some((
+                    _,
+                    SectionHeader {
+                        code: SectionCode::Custom { .. },
+                        payload_start,
+                        payload_len,
+                    },
+                )) => {
                     self.verify_section_end(payload_start + payload_len)?;
                     // Skip section
                     self.read_ahead = None;

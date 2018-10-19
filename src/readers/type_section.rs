@@ -27,6 +27,10 @@ impl<'a> TypeSectionReader<'a> {
         Ok(TypeSectionReader { reader, count })
     }
 
+    pub fn original_position(&self) -> usize {
+        self.reader.original_position()
+    }
+
     pub fn get_count(&self) -> u32 {
         self.count
     }

@@ -81,6 +81,7 @@ pub use readers::ElementItemsReader;
 pub use readers::ElementSectionReader;
 pub use readers::Export;
 pub use readers::ExportSectionReader;
+pub use readers::FunctionBody;
 pub use readers::FunctionSectionReader;
 pub use readers::Global;
 pub use readers::GlobalSectionReader;
