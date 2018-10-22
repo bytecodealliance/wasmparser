@@ -125,10 +125,17 @@ pub struct MemoryImmediate {
     pub offset: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Naming<'a> {
     pub index: u32,
     pub name: &'a [u8],
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum NameType {
+    Module,
+    Function,
+    Local,
 }
 
 /// A br_table entries representation.

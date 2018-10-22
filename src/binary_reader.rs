@@ -20,8 +20,8 @@ use limits::{
 
 use primitives::{
     BinaryReaderError, BrTable, CustomSectionKind, ExternalKind, FuncType, GlobalType, Ieee32,
-    Ieee64, MemoryImmediate, MemoryType, Naming, Operator, ResizableLimits, Result, SectionCode,
-    TableType, Type,
+    Ieee64, MemoryImmediate, MemoryType, NameType, Naming, Operator, ResizableLimits, Result,
+    SectionCode, TableType, Type,
 };
 
 const MAX_WASM_BR_TABLE_SIZE: usize = MAX_WASM_FUNCTION_SIZE;
@@ -455,6 +455,23 @@ impl<'a> BinaryReader<'a> {
             message: "Invalid var_32",
             offset: self.original_position() - 1,
         })
+    }
+
+    pub fn skip_bytes(&mut self, len: usize) -> Result<()> {
+        self.ensure_has_bytes(len)?;
+        self.position += len;
+        Ok(())
+    }
+
+    pub fn skip_string(&mut self) -> Result<()> {
+        let len = self.read_var_u32()? as usize;
+        if len > MAX_WASM_STRING_SIZE {
+            return Err(BinaryReaderError {
+                message: "string size in out of bounds",
+                offset: self.original_position() - 1,
+            });
+        }
+        self.skip_bytes(len)
     }
 
     pub(crate) fn skip_to(&mut self, position: usize) {
@@ -1099,6 +1116,19 @@ impl<'a> BinaryReader<'a> {
             payload_start,
             payload_len,
         })
+    }
+
+    pub(crate) fn read_name_type(&mut self) -> Result<NameType> {
+        let code = self.read_var_u7()?;
+        match code {
+            0 => Ok(NameType::Module),
+            1 => Ok(NameType::Function),
+            2 => Ok(NameType::Local),
+            _ => Err(BinaryReaderError {
+                message: "Invalid name type",
+                offset: self.original_position() - 1,
+            }),
+        }
     }
 
     pub(crate) fn skip_init_expr(&mut self) -> Result<()> {

@@ -15,12 +15,14 @@
 
 use std::iter::{IntoIterator, Iterator};
 
-use super::{BinaryReader, BinaryReaderError, Result, SectionCode, SectionHeader};
+use super::{
+    BinaryReader, BinaryReaderError, CustomSectionKind, Result, SectionCode, SectionHeader,
+};
 
 use super::{
     read_start_section_content, CodeSectionReader, DataSectionReader, ElementSectionReader,
     ExportSectionReader, FunctionSectionReader, GlobalSectionReader, ImportSectionReader,
-    MemorySectionReader, TableSectionReader, TypeSectionReader,
+    MemorySectionReader, NameSectionReader, TableSectionReader, TypeSectionReader,
 };
 
 #[derive(Debug)]
@@ -148,6 +150,19 @@ impl<'a> Section<'a> {
         match self.code {
             SectionCode::Element => ElementSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_element_section_reader"),
+        }
+    }
+
+    pub fn get_name_section_reader<'b>(&self) -> Result<NameSectionReader<'b>>
+    where
+        'a: 'b,
+    {
+        match self.code {
+            SectionCode::Custom {
+                kind: CustomSectionKind::Name,
+                ..
+            } => NameSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_name_section_reader"),
         }
     }
 
