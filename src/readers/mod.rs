@@ -15,7 +15,8 @@
 
 use super::{
     BinaryReader, BinaryReaderError, CustomSectionKind, ExternalKind, FuncType, GlobalType,
-    ImportSectionEntryType, MemoryType, NameType, Naming, Result, SectionCode, TableType,
+    ImportSectionEntryType, LinkingType, MemoryType, NameType, Naming, RelocType, Result,
+    SectionCode, TableType,
 };
 
 use super::SectionHeader;
@@ -54,6 +55,11 @@ pub use self::name_section::ModuleName;
 pub use self::name_section::Name;
 pub use self::name_section::NameSectionReader;
 
+pub use self::linking_section::LinkingSectionReader;
+
+pub use self::reloc_section::Reloc;
+pub use self::reloc_section::RelocSectionReader;
+
 mod code_section;
 mod data_section;
 mod element_section;
@@ -62,9 +68,11 @@ mod function_section;
 mod global_section;
 mod import_section;
 mod init_expr;
+mod linking_section;
 mod memory_section;
 mod module;
 mod name_section;
+mod reloc_section;
 mod section_reader;
 mod start_section;
 mod table_section;

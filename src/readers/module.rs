@@ -22,7 +22,8 @@ use super::{
 use super::{
     read_start_section_content, CodeSectionReader, DataSectionReader, ElementSectionReader,
     ExportSectionReader, FunctionSectionReader, GlobalSectionReader, ImportSectionReader,
-    MemorySectionReader, NameSectionReader, TableSectionReader, TypeSectionReader,
+    LinkingSectionReader, MemorySectionReader, NameSectionReader, RelocSectionReader,
+    TableSectionReader, TypeSectionReader,
 };
 
 #[derive(Debug)]
@@ -163,6 +164,32 @@ impl<'a> Section<'a> {
                 ..
             } => NameSectionReader::new(self.data, self.offset),
             _ => panic!("Invalid state for get_name_section_reader"),
+        }
+    }
+
+    pub fn get_linking_section_reader<'b>(&self) -> Result<LinkingSectionReader<'b>>
+    where
+        'a: 'b,
+    {
+        match self.code {
+            SectionCode::Custom {
+                kind: CustomSectionKind::Linking,
+                ..
+            } => LinkingSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_linking_section_reader"),
+        }
+    }
+
+    pub fn get_reloc_section_reader<'b>(&self) -> Result<RelocSectionReader<'b>>
+    where
+        'a: 'b,
+    {
+        match self.code {
+            SectionCode::Custom {
+                kind: CustomSectionKind::Reloc,
+                ..
+            } => RelocSectionReader::new(self.data, self.offset),
+            _ => panic!("Invalid state for get_reloc_section_reader"),
         }
     }
 

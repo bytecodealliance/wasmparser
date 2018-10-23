@@ -138,6 +138,23 @@ pub enum NameType {
     Local,
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum LinkingType {
+    StackPointer(u32),
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum RelocType {
+    FunctionIndexLEB,
+    TableIndexSLEB,
+    TableIndexI32,
+    GlobalAddrLEB,
+    GlobalAddrSLEB,
+    GlobalAddrI32,
+    TypeIndexLEB,
+    GlobalIndexLEB,
+}
+
 /// A br_table entries representation.
 #[derive(Debug)]
 pub struct BrTable<'a> {
