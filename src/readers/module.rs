@@ -20,10 +20,10 @@ use super::{
 };
 
 use super::{
-    read_start_section_content, CodeSectionReader, DataSectionReader, ElementSectionReader,
-    ExportSectionReader, FunctionSectionReader, GlobalSectionReader, ImportSectionReader,
-    LinkingSectionReader, MemorySectionReader, NameSectionReader, RelocSectionReader,
-    TableSectionReader, TypeSectionReader,
+    read_sourcemappingurl_section_content, read_start_section_content, CodeSectionReader,
+    DataSectionReader, ElementSectionReader, ExportSectionReader, FunctionSectionReader,
+    GlobalSectionReader, ImportSectionReader, LinkingSectionReader, MemorySectionReader,
+    NameSectionReader, RelocSectionReader, TableSectionReader, TypeSectionReader,
 };
 
 #[derive(Debug)]
@@ -196,6 +196,19 @@ impl<'a> Section<'a> {
     pub fn get_start_section_content(&self) -> Result<u32> {
         match self.code {
             SectionCode::Start => read_start_section_content(self.data, self.offset),
+            _ => panic!("Invalid state for get_start_section_content"),
+        }
+    }
+
+    pub fn get_sourcemappingurl_section_content<'b>(&self) -> Result<&'b [u8]>
+    where
+        'a: 'b,
+    {
+        match self.code {
+            SectionCode::Custom {
+                kind: CustomSectionKind::SourceMappingURL,
+                ..
+            } => read_sourcemappingurl_section_content(self.data, self.offset),
             _ => panic!("Invalid state for get_start_section_content"),
         }
     }

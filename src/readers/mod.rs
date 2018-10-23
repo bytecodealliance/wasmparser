@@ -60,6 +60,8 @@ pub use self::linking_section::LinkingSectionReader;
 pub use self::reloc_section::Reloc;
 pub use self::reloc_section::RelocSectionReader;
 
+use self::sourcemappingurl_section::read_sourcemappingurl_section_content;
+
 mod code_section;
 mod data_section;
 mod element_section;
@@ -74,6 +76,7 @@ mod module;
 mod name_section;
 mod reloc_section;
 mod section_reader;
+mod sourcemappingurl_section;
 mod start_section;
 mod table_section;
 mod type_section;
