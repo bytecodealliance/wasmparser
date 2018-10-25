@@ -1,4 +1,4 @@
-/* Copyright 2017 Mozilla Foundation
+/* Copyright 2018 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ use primitives::{
 use parser::{Parser, ParserInput, ParserState, WasmDecoder};
 
 use operators_validator::{
-    OperatorValidator, OperatorValidatorConfig, WasmModuleResources,
+    FunctionEnd, OperatorValidator, OperatorValidatorConfig, WasmModuleResources,
     DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
 
@@ -746,22 +746,24 @@ impl<'b> ValidatingOperatorParser<'b> {
         'b: 'c,
     {
         let op = self.reader.read_operator()?;
-        let check = self.operator_validator.process_operator(&op, resources);
-        if check.is_err() {
-            return Err(BinaryReaderError {
-                message: check.err().unwrap(),
-                offset: self.func_body_offset + self.reader.current_position(),
-            });
-        }
-        if check.ok().unwrap() {
-            self.end_function = true;
-            if !self.reader.eof() {
+        match self.operator_validator.process_operator(&op, resources) {
+            Err(err) => {
                 return Err(BinaryReaderError {
-                    message: "unexpected end of function",
+                    message: err,
                     offset: self.func_body_offset + self.reader.current_position(),
                 });
             }
-        }
+            Ok(FunctionEnd::Yes) => {
+                self.end_function = true;
+                if !self.reader.eof() {
+                    return Err(BinaryReaderError {
+                        message: "unexpected end of function",
+                        offset: self.func_body_offset + self.reader.current_position(),
+                    });
+                }
+            }
+            _ => (),
+        };
         Ok(op)
     }
 }
