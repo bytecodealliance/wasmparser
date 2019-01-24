@@ -1403,10 +1403,7 @@ impl<'a> ValidatingParser<'a> {
         self.check_value_type(global_type.content_type)
     }
 
-    fn check_import_entry(
-        &self,
-        import_type: &ImportSectionEntryType,
-    ) -> ValidatorResult<'a, ()> {
+    fn check_import_entry(&self, import_type: &ImportSectionEntryType) -> ValidatorResult<'a, ()> {
         match *import_type {
             ImportSectionEntryType::Function(type_index) => {
                 if self.func_type_indices.len() >= MAX_WASM_FUNCTIONS {
@@ -1564,10 +1561,7 @@ impl<'a> ValidatingParser<'a> {
                     self.types.push(func_type.clone());
                 }
             }
-            ParserState::ImportSectionEntry {
-                ref ty,
-                ..
-            } => {
+            ParserState::ImportSectionEntry { ref ty, .. } => {
                 let check = self.check_import_entry(ty);
                 if check.is_err() {
                     self.validation_error = check.err();

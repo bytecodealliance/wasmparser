@@ -14,8 +14,8 @@
  */
 
 use std::boxed::Box;
-use std::vec::Vec;
 use std::str;
+use std::vec::Vec;
 
 use limits::{
     MAX_WASM_FUNCTION_LOCALS, MAX_WASM_FUNCTION_PARAMS, MAX_WASM_FUNCTION_RETURNS,
@@ -551,13 +551,10 @@ impl<'a> BinaryReader<'a> {
             });
         }
         let bytes = self.read_bytes(len)?;
-        str::from_utf8(bytes)
-            .map_err(|_| {
-                BinaryReaderError {
-                    message: "non-utf8 string",
-                    offset: self.original_position() - 1,
-                }
-            })
+        str::from_utf8(bytes).map_err(|_| BinaryReaderError {
+            message: "non-utf8 string",
+            offset: self.original_position() - 1,
+        })
     }
 
     fn read_memarg_of_align(&mut self, align: u32) -> Result<MemoryImmediate> {
@@ -777,7 +774,7 @@ impl<'a> BinaryReader<'a> {
                 return Err(BinaryReaderError {
                     message: "Unknown 0xFE opcode",
                     offset: self.original_position() - 1,
-                })
+                });
             }
         })
     }
@@ -1060,7 +1057,7 @@ impl<'a> BinaryReader<'a> {
                 return Err(BinaryReaderError {
                     message: "Unknown opcode",
                     offset: self.original_position() - 1,
-                })
+                });
             }
         })
     }
@@ -1081,7 +1078,7 @@ impl<'a> BinaryReader<'a> {
                 return Err(BinaryReaderError {
                     message: "Unknown 0xfc opcode",
                     offset: self.original_position() - 1,
-                })
+                });
             }
         })
     }

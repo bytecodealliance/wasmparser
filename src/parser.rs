@@ -269,33 +269,33 @@ impl<'a> Parser<'a> {
             ParserSectionReader::CodeSectionReader(ref reader) => return reader.original_position(),
             ParserSectionReader::DataSectionReader(ref reader) => return reader.original_position(),
             ParserSectionReader::ElementSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::ExportSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::FunctionSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::GlobalSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::ImportSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::MemorySectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::TableSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::TypeSectionReader(ref reader) => return reader.original_position(),
             ParserSectionReader::NameSectionReader(ref reader) => return reader.original_position(),
             ParserSectionReader::LinkingSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             ParserSectionReader::RelocSectionReader(ref reader) => {
-                return reader.original_position()
+                return reader.original_position();
             }
             _ => (),
         };
