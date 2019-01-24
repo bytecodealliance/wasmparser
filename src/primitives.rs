@@ -170,6 +170,7 @@ pub enum RelocType {
 #[derive(Debug)]
 pub struct BrTable<'a> {
     pub(crate) buffer: &'a [u8],
+    pub(crate) cnt: usize,
 }
 
 /// An IEEE binary32 immediate floating point value, represented as a u32

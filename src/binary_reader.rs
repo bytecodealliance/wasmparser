@@ -359,6 +359,7 @@ impl<'a> BinaryReader<'a> {
         self.skip_var_32()?;
         Ok(BrTable {
             buffer: &self.buffer[start..self.position],
+            cnt: targets_len as usize,
         })
     }
 
@@ -1171,6 +1172,12 @@ impl<'a> BinaryReader<'a> {
 }
 
 impl<'a> BrTable<'a> {
+    /// Returns the number of `br_table` entries, not including the default
+    /// label
+    pub fn len(&self) -> usize {
+        self.cnt
+    }
+
     /// Reads br_table entries.
     ///
     /// # Examples
