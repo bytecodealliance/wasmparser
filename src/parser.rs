@@ -47,7 +47,7 @@ pub struct LocalName<'a> {
 
 #[derive(Debug)]
 pub enum NameEntry<'a> {
-    Module(&'a [u8]),
+    Module(&'a str),
     Function(Box<[Naming<'a>]>),
     Local(Box<[LocalName<'a>]>),
 }
@@ -86,15 +86,15 @@ pub enum ParserState<'a> {
 
     TypeSectionEntry(FuncType),
     ImportSectionEntry {
-        module: &'a [u8],
-        field: &'a [u8],
+        module: &'a str,
+        field: &'a str,
         ty: ImportSectionEntryType,
     },
     FunctionSectionEntry(u32),
     TableSectionEntry(TableType),
     MemorySectionEntry(MemoryType),
     ExportSectionEntry {
-        field: &'a [u8],
+        field: &'a str,
         kind: ExternalKind,
         index: u32,
     },
@@ -132,7 +132,7 @@ pub enum ParserState<'a> {
     RelocSectionEntry(RelocEntry),
     LinkingSectionEntry(LinkingType),
 
-    SourceMappingURL(&'a [u8]),
+    SourceMappingURL(&'a str),
 }
 
 #[derive(Debug, Copy, Clone)]

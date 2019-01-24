@@ -39,7 +39,7 @@ pub enum CustomSectionKind {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SectionCode<'a> {
     Custom {
-        name: &'a [u8],
+        name: &'a str,
         kind: CustomSectionKind,
     },
     Type,     // Function signature declarations
@@ -129,7 +129,7 @@ pub struct MemoryImmediate {
 #[derive(Debug, Copy, Clone)]
 pub struct Naming<'a> {
     pub index: u32,
-    pub name: &'a [u8],
+    pub name: &'a str,
 }
 
 #[derive(Debug, Copy, Clone)]

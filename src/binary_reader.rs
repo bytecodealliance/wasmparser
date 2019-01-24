@@ -15,6 +15,7 @@
 
 use std::boxed::Box;
 use std::vec::Vec;
+use std::str;
 
 use limits::{
     MAX_WASM_FUNCTION_LOCALS, MAX_WASM_FUNCTION_PARAMS, MAX_WASM_FUNCTION_RETURNS,
@@ -29,30 +30,12 @@ use primitives::{
 
 const MAX_WASM_BR_TABLE_SIZE: usize = MAX_WASM_FUNCTION_SIZE;
 
-fn is_name(name: &[u8], expected: &'static str) -> bool {
-    if name.len() != expected.len() {
-        return false;
-    }
-    let expected_bytes = expected.as_bytes();
-    for i in 0..name.len() {
-        if name[i] != expected_bytes[i] {
-            return false;
-        }
-    }
-    true
+fn is_name(name: &str, expected: &'static str) -> bool {
+    name == expected
 }
 
-fn is_name_prefix(name: &[u8], prefix: &'static str) -> bool {
-    if name.len() < prefix.len() {
-        return false;
-    }
-    let expected_bytes = prefix.as_bytes();
-    for i in 0..expected_bytes.len() {
-        if name[i] != expected_bytes[i] {
-            return false;
-        }
-    }
-    true
+fn is_name_prefix(name: &str, prefix: &'static str) -> bool {
+    name.starts_with(prefix)
 }
 
 const WASM_MAGIC_NUMBER: u32 = 0x6d736100;
@@ -558,7 +541,7 @@ impl<'a> BinaryReader<'a> {
         Ok(Ieee64(value))
     }
 
-    pub fn read_string(&mut self) -> Result<&'a [u8]> {
+    pub fn read_string(&mut self) -> Result<&'a str> {
         let len = self.read_var_u32()? as usize;
         if len > MAX_WASM_STRING_SIZE {
             return Err(BinaryReaderError {
@@ -566,7 +549,14 @@ impl<'a> BinaryReader<'a> {
                 offset: self.original_position() - 1,
             });
         }
-        self.read_bytes(len)
+        let bytes = self.read_bytes(len)?;
+        str::from_utf8(bytes)
+            .map_err(|_| {
+                BinaryReaderError {
+                    message: "non-utf8 string",
+                    offset: self.original_position() - 1,
+                }
+            })
     }
 
     fn read_memarg_of_align(&mut self, align: u32) -> Result<MemoryImmediate> {

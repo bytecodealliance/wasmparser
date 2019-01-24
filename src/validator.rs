@@ -1282,7 +1282,7 @@ pub struct ValidatingParser<'a> {
     current_func_index: u32,
     func_imports_count: u32,
     init_expression_state: Option<InitExpressionState>,
-    exported_names: HashSet<Vec<u8>>,
+    exported_names: HashSet<String>,
     current_operator_validator: Option<OperatorValidator>,
     config: ValidatingParserConfig,
 }
@@ -1342,16 +1342,6 @@ impl<'a> ValidatingParser<'a> {
             message,
             offset: self.read_position.unwrap(),
         }))
-    }
-
-    fn check_utf8(&self, bytes: &[u8]) -> ValidatorResult<'a, ()> {
-        match str::from_utf8(bytes) {
-            Ok(_) => Ok(()),
-            Err(utf8_error) => match utf8_error.error_len() {
-                None => self.create_error("Invalid utf-8: unexpected end of string"),
-                Some(_) => self.create_error("Invalid utf-8: unexpected byte"),
-            },
-        }
     }
 
     fn check_value_type(&self, ty: Type) -> ValidatorResult<'a, ()> {
@@ -1415,12 +1405,8 @@ impl<'a> ValidatingParser<'a> {
 
     fn check_import_entry(
         &self,
-        module: &[u8],
-        field: &[u8],
         import_type: &ImportSectionEntryType,
     ) -> ValidatorResult<'a, ()> {
-        self.check_utf8(module)?;
-        self.check_utf8(field)?;
         match *import_type {
             ImportSectionEntryType::Function(type_index) => {
                 if self.func_type_indices.len() >= MAX_WASM_FUNCTIONS {
@@ -1481,12 +1467,11 @@ impl<'a> ValidatingParser<'a> {
 
     fn check_export_entry(
         &self,
-        field: &[u8],
+        field: &str,
         kind: ExternalKind,
         index: u32,
     ) -> ValidatorResult<'a, ()> {
-        self.check_utf8(field)?;
-        if self.exported_names.contains(&Vec::from(field)) {
+        if self.exported_names.contains(field) {
             return self.create_error("non-unique export name");
         }
         match kind {
@@ -1532,9 +1517,6 @@ impl<'a> ValidatingParser<'a> {
 
     fn process_begin_section(&self, code: &SectionCode) -> ValidatorResult<'a, SectionOrderState> {
         let order_state = SectionOrderState::from_section_code(code);
-        if let SectionCode::Custom { name, .. } = *code {
-            self.check_utf8(name)?;
-        }
         Ok(match self.section_order_state {
             SectionOrderState::Initial => {
                 if order_state.is_none() {
@@ -1583,11 +1565,10 @@ impl<'a> ValidatingParser<'a> {
                 }
             }
             ParserState::ImportSectionEntry {
-                module,
-                field,
                 ref ty,
+                ..
             } => {
-                let check = self.check_import_entry(module, field, ty);
+                let check = self.check_import_entry(ty);
                 if check.is_err() {
                     self.validation_error = check.err();
                 } else {
@@ -1666,7 +1647,7 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::ExportSectionEntry { field, kind, index } => {
                 self.validation_error = self.check_export_entry(field, kind, index).err();
-                self.exported_names.insert(Vec::from(field));
+                self.exported_names.insert(field.to_string());
             }
             ParserState::StartSectionEntry(func_index) => {
                 self.validation_error = self.check_start(func_index).err();
