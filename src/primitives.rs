@@ -14,6 +14,8 @@
  */
 
 use std::boxed::Box;
+use std::error::Error;
+use std::fmt;
 use std::result;
 
 #[derive(Debug, Copy, Clone)]
@@ -23,6 +25,14 @@ pub struct BinaryReaderError {
 }
 
 pub type Result<T> = result::Result<T, BinaryReaderError>;
+
+impl Error for BinaryReaderError {}
+
+impl fmt::Display for BinaryReaderError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} (at offset {})", self.message, self.offset)
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CustomSectionKind {
