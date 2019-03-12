@@ -21,12 +21,11 @@ extern crate criterion;
 extern crate wasmparser;
 
 use criterion::Criterion;
-use wasmparser::{Parser, OperatorValidatorConfig, ValidatingParser, ValidatingParserConfig};
-
+use wasmparser::{OperatorValidatorConfig, Parser, ValidatingParser, ValidatingParserConfig};
 
 use std::fs::{read_dir, File};
-use std::path::PathBuf;
 use std::io::Read;
+use std::path::PathBuf;
 
 fn it_works_benchmark(c: &mut Criterion) {
     c.bench_function("it works benchmark", move |b| {
@@ -53,7 +52,6 @@ fn validator_not_fails_benchmark(c: &mut Criterion) {
         }
     });
 }
-
 
 criterion_group!(benchmark, it_works_benchmark, validator_not_fails_benchmark);
 criterion_main!(benchmark);
