@@ -1,5 +1,4 @@
 pub fn read_file_data(path: &PathBuf) -> Vec<u8> {
-    println!("Parsing {:?}", path);
     let mut data = Vec::new();
     let mut f = File::open(path).ok().unwrap();
     f.read_to_end(&mut data).unwrap();
