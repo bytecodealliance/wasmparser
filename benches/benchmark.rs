@@ -27,31 +27,35 @@ use std::io::Read;
 use std::path::PathBuf;
 
 fn it_works_benchmark(c: &mut Criterion) {
-    let mut data: Vec<u8> = vec![];
+    let mut data: Vec<Vec<u8>> = vec![vec![]];
     for entry in read_dir("tests").unwrap() {
         let dir = entry.unwrap();
         if !dir.file_type().unwrap().is_file() {
             continue;
         }
-        data = read_file_data(&dir.path());
+        data.push(read_file_data(&dir.path()));
     }
-    c.bench_function("it works benchmark", move |b| {
-        b.iter(|| Parser::new(data.as_slice()))
-    });
+    for d in data {
+        c.bench_function("it works benchmark", move |b| {
+            b.iter(|| Parser::new(d.as_slice()))
+        });
+    }
 }
 
 fn validator_not_fails_benchmark(c: &mut Criterion) {
-    let mut data: Vec<u8> = vec![];
+    let mut data: Vec<Vec<u8>> = vec![vec![]];
     for entry in read_dir("tests").unwrap() {
         let dir = entry.unwrap();
         if !dir.file_type().unwrap().is_file() {
             continue;
         }
-        data = read_file_data(&dir.path());
+        data.push(read_file_data(&dir.path()));
     }
-    c.bench_function("validator no fails benchmark", move |b| {
-        b.iter(|| ValidatingParser::new(data.as_slice(), VALIDATOR_CONFIG));
-    });
+    for d in data {
+        c.bench_function("validator no fails benchmark", move |b| {
+            b.iter(|| ValidatingParser::new(d.as_slice(), VALIDATOR_CONFIG));
+        });
+    }
 }
 
 criterion_group!(benchmark, it_works_benchmark, validator_not_fails_benchmark);
