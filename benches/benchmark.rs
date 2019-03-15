@@ -35,11 +35,11 @@ fn it_works_benchmark(c: &mut Criterion) {
         }
         data.push(read_file_data(&dir.path()));
     }
-    for d in data {
-        c.bench_function("it works benchmark", move |b| {
+    c.bench_function("it works benchmark", move |b| {
+        for d in &mut data {
             b.iter(|| Parser::new(d.as_slice()))
-        });
-    }
+        }
+    });
 }
 
 fn validator_not_fails_benchmark(c: &mut Criterion) {
@@ -51,11 +51,11 @@ fn validator_not_fails_benchmark(c: &mut Criterion) {
         }
         data.push(read_file_data(&dir.path()));
     }
-    for d in data {
-        c.bench_function("validator no fails benchmark", move |b| {
+    c.bench_function("validator no fails benchmark", move |b| {
+        for d in &mut data {
             b.iter(|| ValidatingParser::new(d.as_slice(), VALIDATOR_CONFIG));
-        });
-    }
+        }
+    });
 }
 
 criterion_group!(benchmark, it_works_benchmark, validator_not_fails_benchmark);
