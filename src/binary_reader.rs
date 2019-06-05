@@ -25,7 +25,7 @@ use limits::{
 use primitives::{
     BinaryReaderError, BrTable, CustomSectionKind, ExternalKind, FuncType, GlobalType, Ieee32,
     Ieee64, LinkingType, MemoryImmediate, MemoryType, NameType, Operator, RelocType,
-    ResizableLimits, Result, SIMDLineIndex, SectionCode, TableType, Type, V128,
+    ResizableLimits, Result, SIMDLineIndex, SectionCode, TableType, Type, TypeOrFuncType, V128,
 };
 
 const MAX_WASM_BR_TABLE_SIZE: usize = MAX_WASM_FUNCTION_SIZE;
@@ -790,19 +790,30 @@ impl<'a> BinaryReader<'a> {
         })
     }
 
+    fn read_type_or_func_type(&mut self) -> Result<TypeOrFuncType> {
+        let position = self.position;
+        if let Ok(ty) = self.read_type() {
+            Ok(TypeOrFuncType::Type(ty))
+        } else {
+            self.position = position;
+            let idx = self.read_var_u32()?;
+            Ok(TypeOrFuncType::FuncType(idx))
+        }
+    }
+
     pub fn read_operator(&mut self) -> Result<Operator<'a>> {
         let code = self.read_u8()? as u8;
         Ok(match code {
             0x00 => Operator::Unreachable,
             0x01 => Operator::Nop,
             0x02 => Operator::Block {
-                ty: self.read_type()?,
+                ty: self.read_type_or_func_type()?,
             },
             0x03 => Operator::Loop {
-                ty: self.read_type()?,
+                ty: self.read_type_or_func_type()?,
             },
             0x04 => Operator::If {
-                ty: self.read_type()?,
+                ty: self.read_type_or_func_type()?,
             },
             0x05 => Operator::Else,
             0x0b => Operator::End,
