@@ -249,7 +249,7 @@ impl<'a> BinaryReader<'a> {
         let returns_len = self.read_var_u32()? as usize;
         if returns_len > MAX_WASM_FUNCTION_RETURNS {
             return Err(BinaryReaderError {
-                message: "function params size is out of bound",
+                message: "function returns size is out of bound",
                 offset: self.original_position() - 1,
             });
         }
