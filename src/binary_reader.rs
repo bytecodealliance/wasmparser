@@ -517,6 +517,23 @@ impl<'a> BinaryReader<'a> {
         Ok((result << ashift) >> ashift)
     }
 
+    pub fn read_var_s33(&mut self) -> Result<i64> {
+        // Note: this is not quite spec compliant, in that it doesn't enforce
+        // that the number is encoded in ceil(N / 7) bytes. We should make a
+        // generic-over-N decoding function and replace all the various
+        // `read_var_{i,s}NN` methods with calls to instantiations of that.
+
+        let n = self.read_var_i64()?;
+        if n > (1 << 33 - 1) {
+            Err(BinaryReaderError {
+                message: "Invalid var_s33",
+                offset: self.original_position() - 1,
+            })
+        } else {
+            Ok(n)
+        }
+    }
+
     pub fn read_var_i64(&mut self) -> Result<i64> {
         let mut result: i64 = 0;
         let mut shift = 0;
@@ -790,14 +807,20 @@ impl<'a> BinaryReader<'a> {
         })
     }
 
-    fn read_type_or_func_type(&mut self) -> Result<TypeOrFuncType> {
+    fn read_blocktype(&mut self) -> Result<TypeOrFuncType> {
         let position = self.position;
         if let Ok(ty) = self.read_type() {
             Ok(TypeOrFuncType::Type(ty))
         } else {
             self.position = position;
-            let idx = self.read_var_u32()?;
-            Ok(TypeOrFuncType::FuncType(idx))
+            let idx = self.read_var_s33()?;
+            if idx < 0 || idx > (std::u32::MAX as i64) {
+                return Err(BinaryReaderError {
+                    message: "invalid function type",
+                    offset: position,
+                });
+            }
+            Ok(TypeOrFuncType::FuncType(idx as u32))
         }
     }
 
@@ -807,13 +830,13 @@ impl<'a> BinaryReader<'a> {
             0x00 => Operator::Unreachable,
             0x01 => Operator::Nop,
             0x02 => Operator::Block {
-                ty: self.read_type_or_func_type()?,
+                ty: self.read_blocktype()?,
             },
             0x03 => Operator::Loop {
-                ty: self.read_type_or_func_type()?,
+                ty: self.read_blocktype()?,
             },
             0x04 => Operator::If {
-                ty: self.read_type_or_func_type()?,
+                ty: self.read_blocktype()?,
             },
             0x05 => Operator::Else,
             0x0b => Operator::End,
