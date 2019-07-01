@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-use std::cmp::min;
-use std::result;
+use core::cmp::min;
+use core::result;
 use std::str;
 use std::vec::Vec;
 
-use primitives::{
+use crate::primitives::{
     FuncType, GlobalType, MemoryImmediate, MemoryType, Operator, SIMDLaneIndex, TableType, Type,
     TypeOrFuncType,
 };
@@ -1456,7 +1456,7 @@ impl OperatorValidator {
             Operator::V128Bitselect => {
                 self.check_simd_enabled()?;
                 self.check_operands(&[Type::V128, Type::V128, Type::V128])?;
-                self.func_state.change_frame_with_type(2, Type::V128)?;
+                self.func_state.change_frame_with_type(3, Type::V128)?;
             }
             Operator::I8x16AnyTrue
             | Operator::I8x16AllTrue
@@ -1484,7 +1484,7 @@ impl OperatorValidator {
             | Operator::I64x2ShrU => {
                 self.check_simd_enabled()?;
                 self.check_operands_2(Type::V128, Type::I32)?;
-                self.func_state.change_frame_with_type(1, Type::V128)?;
+                self.func_state.change_frame_with_type(2, Type::V128)?;
             }
 
             Operator::MemoryInit { segment } => {
