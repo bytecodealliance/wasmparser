@@ -1418,7 +1418,7 @@ impl<'a> BinaryReader<'a> {
                     lanes[i] = self.read_lane_index(32)?
                 }
                 Operator::V8x16Shuffle { lanes }
-            },
+            }
             0xc2 => Operator::I8x16LoadSplat {
                 memarg: self.read_memarg_of_align(4)?,
             },
