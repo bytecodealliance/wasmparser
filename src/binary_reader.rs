@@ -1429,7 +1429,7 @@ impl<'a> BinaryReader<'a> {
                 memarg: self.read_memarg_of_align(2)?,
             },
             0xc5 => Operator::I64x2LoadSplat {
-                memarg: self.read_memarg_of_align(4)?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             _ => {
                 return Err(BinaryReaderError {
