@@ -1420,16 +1420,16 @@ impl<'a> BinaryReader<'a> {
                 Operator::V8x16Shuffle { lanes }
             }
             0xc2 => Operator::I8x16LoadSplat {
-                memarg: self.read_memarg_of_align(1)?,
+                memarg: self.read_memarg_of_align(0)?,
             },
             0xc3 => Operator::I16x8LoadSplat {
                 memarg: self.read_memarg_of_align(1)?,
             },
             0xc4 => Operator::I32x4LoadSplat {
-                memarg: self.read_memarg_of_align(1)?,
+                memarg: self.read_memarg_of_align(2)?,
             },
             0xc5 => Operator::I64x2LoadSplat {
-                memarg: self.read_memarg_of_align(2)?,
+                memarg: self.read_memarg_of_align(4)?,
             },
             _ => {
                 return Err(BinaryReaderError {
