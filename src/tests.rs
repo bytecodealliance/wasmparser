@@ -44,6 +44,26 @@ mod simple_tests {
         data
     }
 
+    fn scan_tests_files(prefix: &str) -> Vec<PathBuf> {
+        let mut files = Vec::new();
+
+        for entry in read_dir("tests/").unwrap() {
+            let dir = entry.unwrap();
+            if !dir.file_type().unwrap().is_file() {
+                continue;
+            }
+
+            let path = dir.path();
+            let file = path.to_str().unwrap();
+
+            if file.starts_with(prefix) {
+                files.push(path);
+            }
+        }
+
+        return files;
+    }
+
     #[test]
     fn it_works() {
         for entry in read_dir("tests").unwrap() {
@@ -232,4 +252,64 @@ mod simple_tests {
             ParserState::EndWasm
         );
     }
+
+    fn run_floats_disabled_test(path: &PathBuf) {
+        let data = read_file_data(path);
+
+        let no_floats_config = Some(ValidatingParserConfig {
+            operator_config: OperatorValidatorConfig {
+                enable_floats: false,
+                enable_threads: true,
+                enable_reference_types: true,
+                enable_simd: true,
+                enable_bulk_memory: true,
+                enable_multi_value: true,
+            },
+            mutable_global_imports: true,
+        });
+
+        let mut parser = ValidatingParser::new(data.as_slice(), no_floats_config);
+        let mut error = false;
+
+        loop {
+            let state = parser.read();
+            if let ParserState::Error(_) = *state {
+                error = true;
+                break;
+            }
+            if let ParserState::EndWasm = *state {
+                break;
+            }
+        }
+
+        assert!(error);
+    }
+
+    #[test]
+    fn floats_disabled() {
+        // `float_exprs.*.wasm`
+        let mut tests_count = 0;
+        for path in scan_tests_files("tests/float_exprs.") {
+            run_floats_disabled_test(&path);
+            tests_count += 1;
+        }
+        assert_eq!(96, tests_count);
+
+        // `float_memory.*.wasm`
+        let mut tests_count = 0;
+        for path in scan_tests_files("tests/float_memory.") {
+            run_floats_disabled_test(&path);
+            tests_count += 1;
+        }
+        assert_eq!(6, tests_count);
+
+        // `float_misc.*.wasm`
+        let mut tests_count = 0;
+        for path in scan_tests_files("tests/float_misc.") {
+            run_floats_disabled_test(&path);
+            tests_count += 1;
+        }
+        assert_eq!(1, tests_count);
+    }
+
 }
