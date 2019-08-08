@@ -264,6 +264,7 @@ type OperatorValidatorResult<T> = result::Result<T, &'static str>;
 
 #[derive(Copy, Clone, Debug)]
 pub struct OperatorValidatorConfig {
+    pub enable_floats: bool,
     pub enable_threads: bool,
     pub enable_reference_types: bool,
     pub enable_simd: bool,
@@ -273,6 +274,7 @@ pub struct OperatorValidatorConfig {
 
 pub(crate) const DEFAULT_OPERATOR_VALIDATOR_CONFIG: OperatorValidatorConfig =
     OperatorValidatorConfig {
+        enable_floats: true,
         enable_threads: false,
         enable_reference_types: false,
         enable_simd: false,
@@ -484,6 +486,13 @@ impl OperatorValidator {
         let align = memarg.flags;
         if align > max_align {
             return Err("align is required to be at most the number of accessed bytes");
+        }
+        Ok(())
+    }
+
+    fn check_floats_enabled(&self) -> OperatorValidatorResult<()> {
+        if !self.config.enable_floats {
+            return Err("threads support is not enabled");
         }
         Ok(())
     }
@@ -747,11 +756,13 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32Load { ref memarg } => {
+                self.check_floats_enabled()?;
                 self.check_memarg(memarg, 2, resources)?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64Load { ref memarg } => {
+                self.check_floats_enabled()?;
                 self.check_memarg(memarg, 3, resources)?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
@@ -817,11 +828,13 @@ impl OperatorValidator {
                 self.func_state.change_frame(2)?;
             }
             Operator::F32Store { ref memarg } => {
+                self.check_floats_enabled()?;
                 self.check_memarg(memarg, 2, resources)?;
                 self.check_operands_2(Type::I32, Type::F32)?;
                 self.func_state.change_frame(2)?;
             }
             Operator::F64Store { ref memarg } => {
+                self.check_floats_enabled()?;
                 self.check_memarg(memarg, 3, resources)?;
                 self.check_operands_2(Type::I32, Type::F64)?;
                 self.func_state.change_frame(2)?;
@@ -866,8 +879,14 @@ impl OperatorValidator {
             }
             Operator::I32Const { .. } => self.func_state.change_frame_with_type(0, Type::I32)?,
             Operator::I64Const { .. } => self.func_state.change_frame_with_type(0, Type::I64)?,
-            Operator::F32Const { .. } => self.func_state.change_frame_with_type(0, Type::F32)?,
-            Operator::F64Const { .. } => self.func_state.change_frame_with_type(0, Type::F64)?,
+            Operator::F32Const { .. } => {
+                self.check_floats_enabled()?;
+                self.func_state.change_frame_with_type(0, Type::F32)?;
+            }
+            Operator::F64Const { .. } => {
+                self.check_floats_enabled()?;
+                self.func_state.change_frame_with_type(0, Type::F64)?;
+            }
             Operator::I32Eqz => {
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::I32)?;
@@ -908,6 +927,7 @@ impl OperatorValidator {
             | Operator::F32Gt
             | Operator::F32Le
             | Operator::F32Ge => {
+                self.check_floats_enabled()?;
                 self.check_operands_2(Type::F32, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::I32)?;
             }
@@ -917,6 +937,7 @@ impl OperatorValidator {
             | Operator::F64Gt
             | Operator::F64Le
             | Operator::F64Ge => {
+                self.check_floats_enabled()?;
                 self.check_operands_2(Type::F64, Type::F64)?;
                 self.func_state.change_frame_with_type(2, Type::I32)?;
             }
@@ -971,6 +992,7 @@ impl OperatorValidator {
             | Operator::F32Trunc
             | Operator::F32Nearest
             | Operator::F32Sqrt => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
@@ -981,6 +1003,7 @@ impl OperatorValidator {
             | Operator::F32Min
             | Operator::F32Max
             | Operator::F32Copysign => {
+                self.check_floats_enabled()?;
                 self.check_operands_2(Type::F32, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::F32)?;
             }
@@ -991,6 +1014,7 @@ impl OperatorValidator {
             | Operator::F64Trunc
             | Operator::F64Nearest
             | Operator::F64Sqrt => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1001,6 +1025,7 @@ impl OperatorValidator {
             | Operator::F64Min
             | Operator::F64Max
             | Operator::F64Copysign => {
+                self.check_floats_enabled()?;
                 self.check_operands_2(Type::F64, Type::F64)?;
                 self.func_state.change_frame_with_type(2, Type::F64)?;
             }
@@ -1029,26 +1054,32 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32ConvertSI32 | Operator::F32ConvertUI32 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32ConvertSI64 | Operator::F32ConvertUI64 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32DemoteF64 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64ConvertSI32 | Operator::F64ConvertUI32 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64ConvertSI64 | Operator::F64ConvertUI64 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64PromoteF32 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1061,10 +1092,12 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32ReinterpretI32 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64ReinterpretI64 => {
+                self.check_floats_enabled()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1267,11 +1300,13 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::F32x4Splat => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::F64x2Splat => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
@@ -1325,27 +1360,60 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(2, Type::V128)?;
             }
             Operator::F32x4ExtractLane { lane } => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 4)?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32x4ReplaceLane { lane } => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 4)?;
                 self.check_operands_2(Type::V128, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
             }
             Operator::F64x2ExtractLane { lane } => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 2)?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64x2ReplaceLane { lane } => {
+                self.check_floats_enabled()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 2)?;
                 self.check_operands_2(Type::V128, Type::F64)?;
+                self.func_state.change_frame_with_type(2, Type::V128)?;
+            }
+            Operator::F32x4Eq
+            | Operator::F32x4Ne
+            | Operator::F32x4Lt
+            | Operator::F32x4Gt
+            | Operator::F32x4Le
+            | Operator::F32x4Ge
+            | Operator::F64x2Eq
+            | Operator::F64x2Ne
+            | Operator::F64x2Lt
+            | Operator::F64x2Gt
+            | Operator::F64x2Le
+            | Operator::F64x2Ge
+            | Operator::F32x4Add
+            | Operator::F32x4Sub
+            | Operator::F32x4Mul
+            | Operator::F32x4Div
+            | Operator::F32x4Min
+            | Operator::F32x4Max
+            | Operator::F64x2Add
+            | Operator::F64x2Sub
+            | Operator::F64x2Mul
+            | Operator::F64x2Div
+            | Operator::F64x2Min
+            | Operator::F64x2Max => {
+                self.check_floats_enabled()?;
+                self.check_simd_enabled()?;
+                self.check_operands_2(Type::V128, Type::V128)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
             }
             Operator::I8x16Eq
@@ -1378,18 +1446,6 @@ impl OperatorValidator {
             | Operator::I32x4LeU
             | Operator::I32x4GeS
             | Operator::I32x4GeU
-            | Operator::F32x4Eq
-            | Operator::F32x4Ne
-            | Operator::F32x4Lt
-            | Operator::F32x4Gt
-            | Operator::F32x4Le
-            | Operator::F32x4Ge
-            | Operator::F64x2Eq
-            | Operator::F64x2Ne
-            | Operator::F64x2Lt
-            | Operator::F64x2Gt
-            | Operator::F64x2Le
-            | Operator::F64x2Ge
             | Operator::V128And
             | Operator::V128Or
             | Operator::V128Xor
@@ -1411,42 +1467,35 @@ impl OperatorValidator {
             | Operator::I32x4Sub
             | Operator::I32x4Mul
             | Operator::I64x2Add
-            | Operator::I64x2Sub
-            | Operator::F32x4Add
-            | Operator::F32x4Sub
-            | Operator::F32x4Mul
-            | Operator::F32x4Div
-            | Operator::F32x4Min
-            | Operator::F32x4Max
-            | Operator::F64x2Add
-            | Operator::F64x2Sub
-            | Operator::F64x2Mul
-            | Operator::F64x2Div
-            | Operator::F64x2Min
-            | Operator::F64x2Max => {
+            | Operator::I64x2Sub => {
                 self.check_simd_enabled()?;
                 self.check_operands_2(Type::V128, Type::V128)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
+            }
+            Operator::F32x4Abs
+            | Operator::F32x4Neg
+            | Operator::F32x4Sqrt
+            | Operator::F64x2Abs
+            | Operator::F64x2Neg
+            | Operator::F64x2Sqrt
+            | Operator::F32x4ConvertSI32x4
+            | Operator::F32x4ConvertUI32x4
+            | Operator::F64x2ConvertSI64x2
+            | Operator::F64x2ConvertUI64x2 => {
+                self.check_floats_enabled()?;
+                self.check_simd_enabled()?;
+                self.check_operands_1(Type::V128)?;
+                self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::V128Not
             | Operator::I8x16Neg
             | Operator::I16x8Neg
             | Operator::I32x4Neg
             | Operator::I64x2Neg
-            | Operator::F32x4Abs
-            | Operator::F32x4Neg
-            | Operator::F32x4Sqrt
-            | Operator::F64x2Abs
-            | Operator::F64x2Neg
-            | Operator::F64x2Sqrt
             | Operator::I32x4TruncSF32x4Sat
             | Operator::I32x4TruncUF32x4Sat
             | Operator::I64x2TruncSF64x2Sat
-            | Operator::I64x2TruncUF64x2Sat
-            | Operator::F32x4ConvertSI32x4
-            | Operator::F32x4ConvertUI32x4
-            | Operator::F64x2ConvertSI64x2
-            | Operator::F64x2ConvertUI64x2 => {
+            | Operator::I64x2TruncUF64x2Sat => {
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
