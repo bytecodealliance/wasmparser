@@ -492,7 +492,7 @@ impl OperatorValidator {
 
     fn check_floats_enabled(&self) -> OperatorValidatorResult<()> {
         if !self.config.enable_floats {
-            return Err("threads support is not enabled");
+            return Err("floats support is not enabled");
         }
         Ok(())
     }
