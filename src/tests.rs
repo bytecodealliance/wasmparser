@@ -26,12 +26,14 @@ mod simple_tests {
 
     const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {
         operator_config: OperatorValidatorConfig {
-            enable_floats: true,
             enable_threads: true,
             enable_reference_types: true,
             enable_simd: true,
             enable_bulk_memory: true,
             enable_multi_value: true,
+
+            #[cfg(feature = "deterministic")]
+            deterministic_only: true,
         },
         mutable_global_imports: true,
     });
@@ -253,12 +255,13 @@ mod simple_tests {
         );
     }
 
-    fn run_floats_disabled_test(path: &PathBuf) {
+    #[cfg(feature = "deterministic")]
+    fn run_deterministic_enabled_test(path: &PathBuf) {
         let data = read_file_data(path);
 
-        let no_floats_config = Some(ValidatingParserConfig {
+        let config = Some(ValidatingParserConfig {
             operator_config: OperatorValidatorConfig {
-                enable_floats: false,
+                deterministic_only: false,
                 enable_threads: true,
                 enable_reference_types: true,
                 enable_simd: true,
@@ -268,7 +271,7 @@ mod simple_tests {
             mutable_global_imports: true,
         });
 
-        let mut parser = ValidatingParser::new(data.as_slice(), no_floats_config);
+        let mut parser = ValidatingParser::new(data.as_slice(), config);
         let mut error = false;
 
         loop {
@@ -285,12 +288,13 @@ mod simple_tests {
         assert!(error);
     }
 
+    #[cfg(feature = "deterministic")]
     #[test]
-    fn floats_disabled() {
+    fn deterministic_enabled() {
         // `float_exprs.*.wasm`
         let mut tests_count = 0;
         for path in scan_tests_files("tests/float_exprs.") {
-            run_floats_disabled_test(&path);
+            run_deterministic_enabled_test(&path);
             tests_count += 1;
         }
         assert_eq!(96, tests_count);
@@ -298,7 +302,7 @@ mod simple_tests {
         // `float_memory.*.wasm`
         let mut tests_count = 0;
         for path in scan_tests_files("tests/float_memory.") {
-            run_floats_disabled_test(&path);
+            run_deterministic_enabled_test(&path);
             tests_count += 1;
         }
         assert_eq!(6, tests_count);
@@ -306,7 +310,7 @@ mod simple_tests {
         // `float_misc.*.wasm`
         let mut tests_count = 0;
         for path in scan_tests_files("tests/float_misc.") {
-            run_floats_disabled_test(&path);
+            run_deterministic_enabled_test(&path);
             tests_count += 1;
         }
         assert_eq!(1, tests_count);
