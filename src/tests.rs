@@ -267,7 +267,6 @@ mod simple_tests {
                 enable_bulk_memory: true,
                 enable_multi_value: true,
             },
-            mutable_global_imports: true,
         });
 
         let mut parser = ValidatingParser::new(data.as_slice(), config);
@@ -337,6 +336,9 @@ mod wast_tests {
                 enable_simd: false,
                 enable_bulk_memory: false,
                 enable_multi_value: false,
+
+                #[cfg(feature = "deterministic")]
+                deterministic_only: true,
             },
         };
 
