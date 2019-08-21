@@ -497,7 +497,7 @@ impl OperatorValidator {
     #[cfg(feature = "deterministic")]
     fn check_non_deterministic_enabled(&self) -> OperatorValidatorResult<()> {
         if !self.config.deterministic_only {
-            return Err("floats support is not enabled");
+            return Err("deterministic_only support is not enabled");
         }
         Ok(())
     }
