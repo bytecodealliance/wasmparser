@@ -263,19 +263,30 @@ impl<'a> Section<'a> {
             SectionCode::Data => SectionContent::Data(self.get_data_section_reader()?),
             SectionCode::Table => SectionContent::Table(self.get_table_section_reader()?),
             SectionCode::Element => SectionContent::Element(self.get_element_section_reader()?),
-            SectionCode::Custom { kind: CustomSectionKind::Name, .. } => SectionContent::Name(self.get_name_section_reader()?),
-            SectionCode::Custom { kind: CustomSectionKind::Producers, .. } => {
-                SectionContent::Producers(self.get_producers_section_reader()?)
-            }
-            SectionCode::Custom { kind: CustomSectionKind::Linking, .. } => SectionContent::Linking(self.get_linking_section_reader()?),
-            SectionCode::Custom { kind: CustomSectionKind::Reloc, .. } => SectionContent::Reloc(self.get_reloc_section_reader()?),
+            SectionCode::Custom {
+                kind: CustomSectionKind::Name,
+                ..
+            } => SectionContent::Name(self.get_name_section_reader()?),
+            SectionCode::Custom {
+                kind: CustomSectionKind::Producers,
+                ..
+            } => SectionContent::Producers(self.get_producers_section_reader()?),
+            SectionCode::Custom {
+                kind: CustomSectionKind::Linking,
+                ..
+            } => SectionContent::Linking(self.get_linking_section_reader()?),
+            SectionCode::Custom {
+                kind: CustomSectionKind::Reloc,
+                ..
+            } => SectionContent::Reloc(self.get_reloc_section_reader()?),
             SectionCode::Start => SectionContent::Start(self.get_start_section_content()?),
             SectionCode::DataCount => {
                 SectionContent::DataCount(self.get_data_count_section_content()?)
             }
-            SectionCode::Custom { kind: CustomSectionKind::SourceMappingURL, .. } => {
-                SectionContent::SourceMappingURL(self.get_sourcemappingurl_section_content()?)
-            }
+            SectionCode::Custom {
+                kind: CustomSectionKind::SourceMappingURL,
+                ..
+            } => SectionContent::SourceMappingURL(self.get_sourcemappingurl_section_content()?),
             SectionCode::Custom { .. } => SectionContent::Custom(self.get_binary_reader()),
         };
         Ok(c)
