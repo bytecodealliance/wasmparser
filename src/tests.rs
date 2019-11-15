@@ -514,7 +514,7 @@ mod wast_tests {
                 config
             },
             |name, line| match (name, line) {
-                ("ref_func.wast", _) | ("br_table.wast", _) | ("select.wast", _) => true,
+                ("br_table.wast", _) | ("select.wast", _) => true,
                 _ => false,
             },
         );

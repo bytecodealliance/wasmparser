@@ -1334,7 +1334,7 @@ impl OperatorValidator {
                 if function_index as usize >= resources.func_type_indices().len() {
                     return Err("function index out of bounds");
                 }
-                self.func_state.change_frame_with_type(0, Type::AnyRef)?;
+                self.func_state.change_frame_with_type(0, Type::AnyFunc)?;
             }
             Operator::V128Load { ref memarg } => {
                 self.check_simd_enabled()?;

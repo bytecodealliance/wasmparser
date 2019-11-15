@@ -45,6 +45,7 @@ type ValidatorResult<'a, T> = result::Result<T, ParserState<'a>>;
 struct InitExpressionState {
     ty: Type,
     global_count: usize,
+    function_count: usize,
     validated: bool,
 }
 
@@ -331,6 +332,12 @@ impl<'a> ValidatingParser<'a> {
                 }
                 self.resources.globals[global_index as usize].content_type
             }
+            Operator::RefFunc { function_index } => {
+                if function_index as usize >= state.function_count {
+                    return self.create_error("init_expr function index out of bounds");
+                }
+                Type::AnyFunc
+            }
             _ => return self.create_error("invalid init_expr operator"),
         };
         if !is_subtype_supertype(ty, state.ty) {
@@ -496,6 +503,7 @@ impl<'a> ValidatingParser<'a> {
                     self.init_expression_state = Some(InitExpressionState {
                         ty: global_type.content_type,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                     self.resources.globals.push(global_type);
@@ -539,6 +547,7 @@ impl<'a> ValidatingParser<'a> {
                     self.init_expression_state = Some(InitExpressionState {
                         ty: Type::I32,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                 }
@@ -603,6 +612,7 @@ impl<'a> ValidatingParser<'a> {
                     self.init_expression_state = Some(InitExpressionState {
                         ty: Type::I32,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                 }
