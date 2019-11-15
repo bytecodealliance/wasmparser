@@ -488,12 +488,9 @@ mod wast_tests {
                 config
             },
             |name, line| match (name, line) {
-                ("simd_address.wast", _)
-                | ("simd_const.wast", _)
-                | ("simd_f32x4_cmp.wast", _)
-                | ("simd_store.wast", _)
-                | ("simd_lane.wast", _)
-                | ("simd_load.wast", _) => true,
+                // FIXME(WebAssembly/simd#140) needs a few updates to the
+                // `*.wast` file to successfully parse it (or so I think)
+                ("simd_lane.wast", _) => true,
                 _ => false,
             },
         );
