@@ -1329,6 +1329,13 @@ impl OperatorValidator {
                 self.check_operands(&[Type::AnyRef])?;
                 self.func_state.change_frame_with_type(1, Type::I32)?;
             }
+            Operator::RefFunc { index } => {
+                self.check_reference_types_enabled()?;
+                if index as usize >= resources.func_type_indices().len() {
+                    return Err("function index out of bounds");
+                }
+                self.func_state.change_frame_with_type(0, Type::Null)?;
+            }
             Operator::V128Load { ref memarg } => {
                 self.check_simd_enabled()?;
                 self.check_memarg(memarg, 4, resources)?;

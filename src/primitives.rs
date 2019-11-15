@@ -286,6 +286,7 @@ pub enum Operator<'a> {
     F64Const { value: Ieee64 },
     RefNull,
     RefIsNull,
+    RefFunc { index: u32 },
     I32Eqz,
     I32Eq,
     I32Ne,
