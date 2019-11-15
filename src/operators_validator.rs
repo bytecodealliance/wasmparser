@@ -572,6 +572,9 @@ impl OperatorValidator {
             | TypeOrFuncType::Type(Type::I64)
             | TypeOrFuncType::Type(Type::F32)
             | TypeOrFuncType::Type(Type::F64) => Ok(()),
+            TypeOrFuncType::Type(Type::AnyRef) | TypeOrFuncType::Type(Type::AnyFunc) => {
+                self.check_reference_types_enabled()
+            }
             TypeOrFuncType::Type(Type::V128) => self.check_simd_enabled(),
             TypeOrFuncType::FuncType(idx) => {
                 let idx = idx as usize;
