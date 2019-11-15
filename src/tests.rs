@@ -513,23 +513,11 @@ mod wast_tests {
             {
                 let mut config: ValidatingParserConfig = default_config();
                 config.operator_config.enable_reference_types = true;
+                config.operator_config.enable_bulk_memory = true;
                 config
             },
             |name, line| match (name, line) {
-                ("ref_null.wast", _)
-                | ("ref_is_null.wast", _)
-                | ("ref_func.wast", _)
-                | ("linking.wast", _)
-                | ("globals.wast", _)
-                | ("imports.wast", _)
-                | ("br_table.wast", _)
-                | ("select.wast", _)
-                | ("table_get.wast", _)
-                | ("table_set.wast", _)
-                | ("table_size.wast", _)
-                | ("table_fill.wast", _)
-                | ("table_grow.wast", _)
-                | ("exports.wast", _) => true,
+                ("ref_func.wast", _) | ("br_table.wast", _) | ("select.wast", _) => true,
                 _ => false,
             },
         );

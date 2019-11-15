@@ -241,11 +241,15 @@ impl<'a> ValidatingParser<'a> {
     }
 
     fn check_table_type(&self, table_type: &TableType) -> ValidatorResult<'a, ()> {
-        if let Type::AnyFunc = table_type.element_type {
-            self.check_limits(&table_type.limits)
-        } else {
-            self.create_error("element is not anyfunc")
+        match table_type.element_type {
+            Type::AnyFunc => {}
+            _ => {
+                if !self.config.operator_config.enable_reference_types {
+                    return self.create_error("element is not anyfunc");
+                }
+            }
         }
+        self.check_limits(&table_type.limits)
     }
 
     fn check_memory_type(&self, memory_type: &MemoryType) -> ValidatorResult<'a, ()> {
@@ -277,7 +281,9 @@ impl<'a> ValidatingParser<'a> {
                 Ok(())
             }
             ImportSectionEntryType::Table(ref table_type) => {
-                if self.resources.tables.len() >= MAX_WASM_TABLES {
+                if !self.config.operator_config.enable_reference_types
+                    && self.resources.tables.len() >= MAX_WASM_TABLES
+                {
                     return self.create_error("tables count must be at most 1");
                 }
                 self.check_table_type(table_type)
@@ -462,7 +468,9 @@ impl<'a> ValidatingParser<'a> {
                 }
             }
             ParserState::TableSectionEntry(ref table_type) => {
-                if self.resources.tables.len() >= MAX_WASM_TABLES {
+                if !self.config.operator_config.enable_reference_types
+                    && self.resources.tables.len() >= MAX_WASM_TABLES
+                {
                     self.validation_error =
                         self.create_validation_error("tables count must be at most 1");
                 } else {
