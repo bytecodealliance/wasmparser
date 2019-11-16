@@ -124,10 +124,7 @@ impl<'a> PassiveElementItems<'a> {
         self.amt
     }
 
-    pub fn get_next_func_idx<'b>(&mut self) -> Result<Option<u32>>
-    where
-        'a: 'b,
-    {
+    pub fn get_next_func_idx(&mut self) -> Result<Option<u32>> {
         let ret = match self.reader.read_with_offset()? {
             (Operator::RefNull, _) => None,
             (Operator::RefFunc { index }, _) => Some(index),
