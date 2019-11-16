@@ -394,28 +394,16 @@ mod wast_tests {
             })
             .unwrap();
 
-        let line = |span: wast::Span| {
-            let (line, _col) = span.linecol_in(&contents);
-            line + 1
-        };
-        let skip = |span: wast::Span| {
-            let line = line(span);
-            if skip_test(filename, line as u64) {
-                println!("{}:{}: skipping", filename, line);
-                true
-            } else {
-                false
-            }
-        };
-
         for directive in wast.directives {
             use wast::WastDirective::*;
+            let (line, _col) = directive.span().linecol_in(&contents);
+            let line = line + 1;
+            if skip_test(filename, line as u64) {
+                println!("{}:{}: skipping", filename, line);
+                continue;
+            }
             match directive {
                 Module(module) | AssertUnlinkable { module, .. } => {
-                    if skip(module.span) {
-                        continue;
-                    }
-                    let line = line(module.span);
                     if let Err(err) = validate_module(module, config.clone()) {
                         panic!("{}:{}: invalid module: {}", filename, line, err.message);
                     }
@@ -425,10 +413,6 @@ mod wast_tests {
                     module: wast::QuoteModule::Module(module),
                     ..
                 } => {
-                    if skip(module.span) {
-                        continue;
-                    }
-                    let line = line(module.span);
                     // TODO diffentiate between assert_invalid and assert_malformed
                     if let Ok(_) = validate_module(module, config.clone()) {
                         panic!(
