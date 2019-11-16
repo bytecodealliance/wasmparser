@@ -119,15 +119,20 @@ pub struct PassiveElementItems<'a> {
     reader: OperatorsReader<'a>,
 }
 
+pub enum PassiveElementItem {
+    Null,
+    Func(u32),
+}
+
 impl<'a> PassiveElementItems<'a> {
     pub fn get_count(&self) -> u32 {
         self.amt
     }
 
-    pub fn get_next_func_idx(&mut self) -> Result<Option<u32>> {
+    pub fn get_next_func_idx(&mut self) -> Result<PassiveElementItem> {
         let ret = match self.reader.read_with_offset()? {
-            (Operator::RefNull, _) => None,
-            (Operator::RefFunc { index }, _) => Some(index),
+            (Operator::RefNull, _) => PassiveElementItem::Null,
+            (Operator::RefFunc { index }, _) => PassiveElementItem::Func(index),
             (_, offset) => {
                 return Err(BinaryReaderError {
                     message: "invalid passive segment",
