@@ -129,7 +129,7 @@ impl<'a> PassiveElementItems<'a> {
         self.amt
     }
 
-    pub fn get_next_func_idx(&mut self) -> Result<PassiveElementItem> {
+    pub fn read(&mut self) -> Result<PassiveElementItem> {
         let ret = match self.reader.read_with_offset()? {
             (Operator::RefNull, _) => PassiveElementItem::Null,
             (Operator::RefFunc { index }, _) => PassiveElementItem::Func(index),
