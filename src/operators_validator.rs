@@ -572,6 +572,9 @@ impl OperatorValidator {
             | TypeOrFuncType::Type(Type::I64)
             | TypeOrFuncType::Type(Type::F32)
             | TypeOrFuncType::Type(Type::F64) => Ok(()),
+            TypeOrFuncType::Type(Type::AnyRef) | TypeOrFuncType::Type(Type::AnyFunc) => {
+                self.check_reference_types_enabled()
+            }
             TypeOrFuncType::Type(Type::V128) => self.check_simd_enabled(),
             TypeOrFuncType::FuncType(idx) => {
                 let idx = idx as usize;
@@ -1329,12 +1332,12 @@ impl OperatorValidator {
                 self.check_operands(&[Type::AnyRef])?;
                 self.func_state.change_frame_with_type(1, Type::I32)?;
             }
-            Operator::RefFunc { index } => {
+            Operator::RefFunc { function_index } => {
                 self.check_reference_types_enabled()?;
-                if index as usize >= resources.func_type_indices().len() {
+                if function_index as usize >= resources.func_type_indices().len() {
                     return Err("function index out of bounds");
                 }
-                self.func_state.change_frame_with_type(0, Type::Null)?;
+                self.func_state.change_frame_with_type(0, Type::AnyFunc)?;
             }
             Operator::V128Load { ref memarg } => {
                 self.check_simd_enabled()?;
@@ -1682,34 +1685,37 @@ impl OperatorValidator {
             }
             Operator::TableGet { table } => {
                 self.check_reference_types_enabled()?;
-                if table as usize >= resources.tables().len() {
-                    return Err("table index out of bounds");
-                }
+                let ty = match resources.tables().get(table as usize) {
+                    Some(ty) => ty.element_type,
+                    None => return Err("table index out of bounds"),
+                };
                 self.check_operands(&[Type::I32])?;
-                self.func_state.change_frame_with_type(1, Type::AnyRef)?;
+                self.func_state.change_frame_with_type(1, ty)?;
             }
             Operator::TableSet { table } => {
                 self.check_reference_types_enabled()?;
-                if table as usize >= resources.tables().len() {
-                    return Err("table index out of bounds");
-                }
-                self.check_operands(&[Type::I32, Type::AnyRef])?;
+                let ty = match resources.tables().get(table as usize) {
+                    Some(ty) => ty.element_type,
+                    None => return Err("table index out of bounds"),
+                };
+                self.check_operands(&[Type::I32, ty])?;
                 self.func_state.change_frame(2)?;
             }
             Operator::TableGrow { table } => {
                 self.check_reference_types_enabled()?;
-                if table as usize >= resources.tables().len() {
-                    return Err("table index out of bounds");
-                }
-                self.check_operands(&[Type::I32])?;
-                self.func_state.change_frame_with_type(1, Type::I32)?;
+                let ty = match resources.tables().get(table as usize) {
+                    Some(ty) => ty.element_type,
+                    None => return Err("table index out of bounds"),
+                };
+                self.check_operands(&[ty, Type::I32])?;
+                self.func_state.change_frame_with_type(2, Type::I32)?;
             }
             Operator::TableSize { table } => {
                 self.check_reference_types_enabled()?;
                 if table as usize >= resources.tables().len() {
                     return Err("table index out of bounds");
                 }
-                self.func_state.change_frame_with_type(1, Type::I32)?;
+                self.func_state.change_frame_with_type(0, Type::I32)?;
             }
             Operator::TableFill { table } => {
                 self.check_bulk_memory_enabled()?;

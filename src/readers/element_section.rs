@@ -132,7 +132,7 @@ impl<'a> PassiveElementItems<'a> {
     pub fn read(&mut self) -> Result<PassiveElementItem> {
         let ret = match self.reader.read_with_offset()? {
             (Operator::RefNull, _) => PassiveElementItem::Null,
-            (Operator::RefFunc { index }, _) => PassiveElementItem::Func(index),
+            (Operator::RefFunc { function_index }, _) => PassiveElementItem::Func(function_index),
             (_, offset) => {
                 return Err(BinaryReaderError {
                     message: "invalid passive segment",
