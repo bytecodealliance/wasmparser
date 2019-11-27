@@ -1179,15 +1179,15 @@ impl<'a> BinaryReader<'a> {
                 Operator::DataDrop { segment }
             }
             0x0a => {
-                let src = self.read_u8()?;
-                if src != 0 {
+                let dst = self.read_u8()?;
+                if dst != 0 {
                     return Err(BinaryReaderError {
                         message: "reserved byte must be zero",
                         offset: self.original_position() - 1,
                     });
                 }
-                let dst = self.read_u8()?;
-                if dst != 0 {
+                let src = self.read_u8()?;
+                if src != 0 {
                     return Err(BinaryReaderError {
                         message: "reserved byte must be zero",
                         offset: self.original_position() - 1,
