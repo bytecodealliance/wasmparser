@@ -1653,7 +1653,7 @@ impl<'a> BrTable<'a> {
         self.cnt
     }
 
-    /// Returns whether `BrTable` is empty.
+    /// Returns whether `BrTable` doesn't have any labels apart from the default one.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
