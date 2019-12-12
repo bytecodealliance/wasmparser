@@ -1102,11 +1102,19 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
     /// #              0x80, 0x80, 0x80, 0x0, 0x0, 0x0, 0xb];
     /// use wasmparser::{WasmDecoder, Parser, ParserState};
     /// let mut parser = Parser::new(data);
+    /// let mut types = Vec::new();
+    /// let mut function_types = Vec::new();
     /// let mut function_readers = Vec::new();
     /// loop {
-    ///     match *parser.read() {
+    ///     match parser.read() {
     ///         ParserState::Error(_) |
     ///         ParserState::EndWasm => break,
+    ///         ParserState::TypeSectionEntry(ty) => {
+    ///             types.push(ty.clone());
+    ///         }
+    ///         ParserState::FunctionSectionEntry(id) => {
+    ///             function_types.push(id.clone());
+    ///         }
     ///         ParserState::BeginFunctionBody {..} => {
     ///             let reader = parser.create_binary_reader();
     ///             function_readers.push(reader);
@@ -1115,9 +1123,23 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
     ///     }
     /// }
     /// for (i, reader) in function_readers.iter_mut().enumerate() {
-    ///     println!("Function {}", i);
+    ///     // Access the function type through the types table.
+    ///     let ty = &types[function_types[i] as usize];
+    ///     println!("\nFunction {} of type {:?}", i, ty);
+    ///     // Read the local declarations required by the function body.
+    ///     let mut local_count = reader.read_local_count().unwrap();
+    ///     let mut local_decls = Vec::new();
+    ///     let n = local_count;
+    ///     for _ in 0..n {
+    ///         let local_decl = reader.read_local_decl(&mut local_count).unwrap();
+    ///         local_decls.push(local_decl);
+    ///     }
+    ///     println!("    locals: {:?}", local_decls);
+    ///     println!("    local_count (before) = {}", n);
+    ///     println!("    local_count (after)  = {}", local_count);
+    ///     // Read the operations of the function body.
     ///     while let Ok(ref op) = reader.read_operator() {
-    ///       println!("  {:?}", op);
+    ///         println!("  {:?}", op);
     ///     }
     /// }
     /// ```
