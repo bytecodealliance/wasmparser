@@ -1129,14 +1129,10 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
     ///     // Read the local declarations required by the function body.
     ///     let mut local_count = reader.read_local_count().unwrap();
     ///     let mut local_decls = Vec::new();
-    ///     let n = local_count;
-    ///     for _ in 0..n {
+    ///     for _ in 0..local_count {
     ///         let local_decl = reader.read_local_decl(&mut local_count).unwrap();
     ///         local_decls.push(local_decl);
     ///     }
-    ///     println!("    locals: {:?}", local_decls);
-    ///     println!("    local_count (before) = {}", n);
-    ///     println!("    local_count (after)  = {}", local_count);
     ///     // Read the operations of the function body.
     ///     while let Ok(ref op) = reader.read_operator() {
     ///         println!("  {:?}", op);
