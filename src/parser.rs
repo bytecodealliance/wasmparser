@@ -1127,12 +1127,14 @@ impl<'a> WasmDecoder<'a> for Parser<'a> {
     ///     let ty = &types[function_types[i] as usize];
     ///     println!("\nFunction {} of type {:?}", i, ty);
     ///     // Read the local declarations required by the function body.
-    ///     let mut local_count = reader.read_local_count().unwrap();
-    ///     let mut local_decls = Vec::new();
-    ///     for _ in 0..local_count {
+    ///     let local_decls_len = reader.read_local_count().unwrap();
+    ///     let mut local_decls = Vec::with_capacity(local_decls_len);
+    ///     let mut local_count = ty.params.len();
+    ///     for _ in 0..local_decls_len {
     ///         let local_decl = reader.read_local_decl(&mut local_count).unwrap();
     ///         local_decls.push(local_decl);
     ///     }
+    ///     println!("Function locals: vars {:?}; total {} ", local_decls, local_count);
     ///     // Read the operations of the function body.
     ///     while let Ok(ref op) = reader.read_operator() {
     ///         println!("  {:?}", op);
