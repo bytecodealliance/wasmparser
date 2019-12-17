@@ -183,7 +183,7 @@ pub enum RelocType {
 }
 
 /// A br_table entries representation.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BrTable<'a> {
     pub(crate) buffer: &'a [u8],
     pub(crate) cnt: usize,
