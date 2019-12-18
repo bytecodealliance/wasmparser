@@ -14,8 +14,8 @@
  */
 
 use super::{
-    BinaryReader, BinaryReaderError, InitExpr, Result, SectionIteratorLimited,
-    SectionReader, SectionWithLimitedItems, Type,
+    BinaryReader, BinaryReaderError, InitExpr, Result, SectionIteratorLimited, SectionReader,
+    SectionWithLimitedItems, Type,
 };
 use crate::{ExternalKind, Operator};
 

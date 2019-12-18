@@ -68,15 +68,15 @@ pub use crate::validator::ValidatingParserConfig;
 pub use crate::operators_validator::OperatorValidatorConfig;
 pub use crate::operators_validator::WasmModuleResources;
 
-pub use crate::readers::ElementItems;
-pub use crate::readers::ElementItem;
-pub use crate::readers::ElementItemsReader;
 pub use crate::readers::CodeSectionReader;
 pub use crate::readers::CustomSectionContent;
 pub use crate::readers::Data;
 pub use crate::readers::DataKind;
 pub use crate::readers::DataSectionReader;
 pub use crate::readers::Element;
+pub use crate::readers::ElementItem;
+pub use crate::readers::ElementItems;
+pub use crate::readers::ElementItemsReader;
 pub use crate::readers::ElementKind;
 pub use crate::readers::ElementSectionReader;
 pub use crate::readers::Export;
