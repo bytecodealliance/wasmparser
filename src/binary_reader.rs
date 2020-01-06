@@ -988,6 +988,18 @@ impl<'a> BinaryReader<'a> {
             },
             0x1a => Operator::Drop,
             0x1b => Operator::Select,
+            0x1c => {
+                let results = self.read_var_u32()?;
+                if results != 1 {
+                    return Err(BinaryReaderError {
+                        message: "bad number of results",
+                        offset: self.position,
+                    });
+                }
+                Operator::TypedSelect {
+                    ty: self.read_type()?,
+                }
+            }
             0x20 => Operator::LocalGet {
                 local_index: self.read_var_u32()?,
             },

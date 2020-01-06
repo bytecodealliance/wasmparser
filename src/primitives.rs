@@ -83,6 +83,15 @@ pub enum Type {
     EmptyBlockType,
 }
 
+impl Type {
+    pub(crate) fn is_valid_for_old_select(&self) -> bool {
+        match self {
+            Type::I32 | Type::I64 | Type::F32 | Type::F64 => true,
+            _ => false,
+        }
+    }
+}
+
 /// Either a value type or a function type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TypeOrFuncType {
@@ -246,6 +255,7 @@ pub enum Operator<'a> {
     CallIndirect { index: u32, table_index: u32 },
     Drop,
     Select,
+    TypedSelect { ty: Type },
     LocalGet { local_index: u32 },
     LocalSet { local_index: u32 },
     LocalTee { local_index: u32 },
