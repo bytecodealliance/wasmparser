@@ -26,9 +26,9 @@ use crate::primitives::{
 pub(crate) fn is_subtype_supertype(subtype: Type, supertype: Type) -> bool {
     match supertype {
         Type::AnyRef => {
-            subtype == Type::AnyRef || subtype == Type::AnyFunc || subtype == Type::Null
+            subtype == Type::AnyRef || subtype == Type::AnyFunc || subtype == Type::NullRef
         }
-        Type::AnyFunc => subtype == Type::AnyFunc || subtype == Type::Null,
+        Type::AnyFunc => subtype == Type::AnyFunc || subtype == Type::NullRef,
         _ => subtype == supertype,
     }
 }
@@ -1323,7 +1323,7 @@ impl OperatorValidator {
             }
             Operator::RefNull => {
                 self.check_reference_types_enabled()?;
-                self.func_state.change_frame_with_type(0, Type::Null)?;
+                self.func_state.change_frame_with_type(0, Type::NullRef)?;
             }
             Operator::RefIsNull => {
                 self.check_reference_types_enabled()?;

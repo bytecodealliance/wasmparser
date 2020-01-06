@@ -78,9 +78,9 @@ pub enum Type {
     V128,
     AnyFunc,
     AnyRef,
+    NullRef,
     Func,
     EmptyBlockType,
-    Null,
 }
 
 /// Either a value type or a function type.

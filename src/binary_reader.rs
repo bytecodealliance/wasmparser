@@ -188,6 +188,7 @@ impl<'a> BinaryReader<'a> {
             -0x05 => Ok(Type::V128),
             -0x10 => Ok(Type::AnyFunc),
             -0x11 => Ok(Type::AnyRef),
+            -0x12 => Ok(Type::NullRef),
             -0x20 => Ok(Type::Func),
             -0x40 => Ok(Type::EmptyBlockType),
             _ => Err(BinaryReaderError {
