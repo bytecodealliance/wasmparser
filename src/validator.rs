@@ -35,7 +35,7 @@ use crate::operators_validator::{
     is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
     WasmModuleResources, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
-use crate::{ElementItem, ElemSectionEntryTable};
+use crate::{ElemSectionEntryTable, ElementItem};
 
 use crate::readers::FunctionBody;
 

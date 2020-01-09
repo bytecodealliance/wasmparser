@@ -921,9 +921,10 @@ impl<'a> Parser<'a> {
                 self.read_init_expression_body(InitExpressionContinuationSection::Global)
             }
             ParserState::EndGlobalSectionEntry => self.read_global_entry()?,
-            ParserState::BeginElementSectionEntry { table: ElemSectionEntryTable::Active(_), .. } => {
-                self.read_init_expression_body(InitExpressionContinuationSection::Element)
-            }
+            ParserState::BeginElementSectionEntry {
+                table: ElemSectionEntryTable::Active(_),
+                ..
+            } => self.read_init_expression_body(InitExpressionContinuationSection::Element),
             ParserState::BeginElementSectionEntry { table: _, .. } => {
                 self.read_element_entry_body()?
             }

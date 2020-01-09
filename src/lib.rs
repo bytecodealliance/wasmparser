@@ -27,6 +27,7 @@ pub use crate::binary_reader::BinaryReader;
 pub use crate::binary_reader::Range;
 use crate::binary_reader::SectionHeader;
 
+pub use crate::parser::ElemSectionEntryTable;
 pub use crate::parser::LocalName;
 pub use crate::parser::NameEntry;
 pub use crate::parser::Parser;
@@ -34,7 +35,6 @@ pub use crate::parser::ParserInput;
 pub use crate::parser::ParserState;
 pub use crate::parser::RelocEntry;
 pub use crate::parser::WasmDecoder;
-pub use crate::parser::ElemSectionEntryTable;
 
 pub use crate::primitives::BinaryReaderError;
 pub use crate::primitives::BrTable;
