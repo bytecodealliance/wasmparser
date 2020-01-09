@@ -34,6 +34,7 @@ pub use crate::parser::ParserInput;
 pub use crate::parser::ParserState;
 pub use crate::parser::RelocEntry;
 pub use crate::parser::WasmDecoder;
+pub use crate::parser::ElemSectionEntryTable;
 
 pub use crate::primitives::BinaryReaderError;
 pub use crate::primitives::BrTable;

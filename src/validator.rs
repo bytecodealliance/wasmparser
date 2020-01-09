@@ -35,7 +35,7 @@ use crate::operators_validator::{
     is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
     WasmModuleResources, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
-use crate::ElementItem;
+use crate::{ElementItem, ElemSectionEntryTable};
 
 use crate::readers::FunctionBody;
 
@@ -524,7 +524,7 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::BeginElementSectionEntry { table, ty } => {
                 self.resources.element_count += 1;
-                if let Some(table_index) = table {
+                if let ElemSectionEntryTable::Active(table_index) = table {
                     let table = match self.resources.tables.get(table_index as usize) {
                         Some(t) => t,
                         None => {
