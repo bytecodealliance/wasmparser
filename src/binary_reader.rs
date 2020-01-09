@@ -1542,16 +1542,16 @@ impl<'a> BinaryReader<'a> {
                 Operator::V8x16Shuffle { lanes }
             }
             0xc2 => Operator::V8x16LoadSplat {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(0)?,
             },
             0xc3 => Operator::V16x8LoadSplat {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(1)?,
             },
             0xc4 => Operator::V32x4LoadSplat {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(2)?,
             },
             0xc5 => Operator::V64x2LoadSplat {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xc6 => Operator::I8x16NarrowI16x8S,
             0xc7 => Operator::I8x16NarrowI16x8U,
@@ -1566,22 +1566,22 @@ impl<'a> BinaryReader<'a> {
             0xd0 => Operator::I32x4WidenLowI16x8U,
             0xd1 => Operator::I32x4WidenHighI16x8U,
             0xd2 => Operator::I16x8Load8x8S {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd3 => Operator::I16x8Load8x8U {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd4 => Operator::I32x4Load16x4S {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd5 => Operator::I32x4Load16x4U {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd6 => Operator::I64x2Load32x2S {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd7 => Operator::I64x2Load32x2U {
-                memarg: self.read_memarg()?,
+                memarg: self.read_memarg_of_align(3)?,
             },
             0xd8 => Operator::V128AndNot,
             0xd9 => Operator::I8x16RoundingAverageU,
