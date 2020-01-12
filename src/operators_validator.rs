@@ -344,6 +344,8 @@ pub trait WasmModuleResources {
     fn type_at(&self, at: u32) -> &Self::FuncType;
     /// Returns the table at given index.
     fn table_at(&self, at: u32) -> &Self::TableType;
+    /// Returns the table at given index if any.
+    fn table_at_checked(&self, at: u32) -> Option<&Self::TableType>;
     /// Returns the linear memory at given index.
     fn memory_at(&self, at: u32) -> &Self::MemoryType;
     /// Returns the global variable at given index.

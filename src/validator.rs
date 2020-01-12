@@ -121,6 +121,10 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         &self.tables[at as usize]
     }
 
+    fn table_at_checked(&self, at: u32) -> Option<&Self::TableType> {
+        self.tables.get(at as usize)
+    }
+
     fn memory_at(&self, at: u32) -> &Self::MemoryType {
         &self.memories[at as usize]
     }
