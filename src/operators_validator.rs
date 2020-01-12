@@ -335,6 +335,15 @@ pub trait WasmModuleResources {
     fn global_at(&self, at: u32) -> &Self::GlobalType;
     fn signature_id_at(&self, at: u32) -> u32;
 
+    /// Returns the number of types.
+    fn len_types(&self) -> usize;
+    /// Returns the number of tables.
+    fn len_tables(&self) -> usize;
+    /// Returns the number of linear memories.
+    fn len_memories(&self) -> usize;
+    /// Returns the number of global variables.
+    fn len_globals(&self) -> usize;
+
     fn types(&self) -> &[FuncType];
     fn tables(&self) -> &[TableType];
     fn memories(&self) -> &[MemoryType];

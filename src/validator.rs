@@ -133,6 +133,22 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.func_type_indices[at as usize]
     }
 
+    fn len_types(&self) -> usize {
+        self.types.len()
+    }
+
+    fn len_tables(&self) -> usize {
+        self.tables.len()
+    }
+
+    fn len_memories(&self) -> usize {
+        self.memories.len()
+    }
+
+    fn len_globals(&self) -> usize {
+        self.globals.len()
+    }
+
     fn types(&self) -> &[FuncType] {
         &self.types
     }
