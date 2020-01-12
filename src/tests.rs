@@ -429,8 +429,6 @@ mod wast_tests {
                 | Invoke { .. }
                 | AssertTrap { .. }
                 | AssertReturn { .. }
-                | AssertReturnCanonicalNan { .. }
-                | AssertReturnArithmeticNan { .. }
                 | AssertReturnFunc { .. }
                 | AssertExhaustion { .. } => {}
             }
@@ -473,6 +471,13 @@ mod wast_tests {
                 // FIXME(WebAssembly/simd#140) needs a few updates to the
                 // `*.wast` file to successfully parse it (or so I think)
                 ("simd_lane.wast", _) => true,
+                ("simd_load_extend.wast", _) => true,
+                ("simd_f32x4_arith.wast", _) => true,
+                ("simd_f64x2_arith.wast", _) => true,
+                ("simd_f32x4.wast", _) => true,
+                ("simd_f64x2.wast", _) => true,
+                ("simd_const.wast", _) => true,
+                ("simd_load_splat.wast", _) => true,
                 _ => false,
             },
         );
@@ -496,7 +501,10 @@ mod wast_tests {
                 config
             },
             |name, line| match (name, line) {
-                ("br_table.wast", _) | ("select.wast", _) => true,
+                ("br_table.wast", _)
+                | ("select.wast", _)
+                | ("binary.wast", _)
+                | ("linking.wast", 280) => true,
                 _ => false,
             },
         );

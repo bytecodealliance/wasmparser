@@ -26,9 +26,9 @@ use crate::primitives::{
 pub(crate) fn is_subtype_supertype(subtype: Type, supertype: Type) -> bool {
     match supertype {
         Type::AnyRef => {
-            subtype == Type::AnyRef || subtype == Type::AnyFunc || subtype == Type::Null
+            subtype == Type::AnyRef || subtype == Type::AnyFunc || subtype == Type::NullRef
         }
-        Type::AnyFunc => subtype == Type::AnyFunc || subtype == Type::Null,
+        Type::AnyFunc => subtype == Type::AnyFunc || subtype == Type::NullRef,
         _ => subtype == supertype,
     }
 }
@@ -642,7 +642,7 @@ impl OperatorValidator {
         self.check_memory_index(0, resources)?;
         let align = memarg.flags;
         if align > max_align {
-            return Err("align is required to be at most the number of accessed bytes");
+            return Err("alignment must not be larger than natural");
         }
         Ok(())
     }
@@ -769,28 +769,35 @@ impl OperatorValidator {
         self.check_frame_size(3)?;
         let func_state = &self.func_state;
         let last_block = func_state.last_block();
-        Ok(if last_block.is_stack_polymorphic() {
+
+        let ty = if last_block.is_stack_polymorphic() {
             match func_state.stack_types.len() - last_block.stack_starts_at {
-                0 => None,
+                0 => return Ok(None),
                 1 => {
                     self.check_operands_1(Type::I32)?;
-                    None
+                    return Ok(None);
                 }
                 2 => {
                     self.check_operands_1(Type::I32)?;
-                    Some(func_state.stack_types[func_state.stack_types.len() - 2])
+                    func_state.stack_types[func_state.stack_types.len() - 2]
                 }
                 _ => {
                     let ty = func_state.stack_types[func_state.stack_types.len() - 3];
                     self.check_operands_2(ty, Type::I32)?;
-                    Some(ty)
+                    ty
                 }
             }
         } else {
             let ty = func_state.stack_types[func_state.stack_types.len() - 3];
             self.check_operands_2(ty, Type::I32)?;
-            Some(ty)
-        })
+            ty
+        };
+
+        if !ty.is_valid_for_old_select() {
+            return Err("invalid type for select");
+        }
+
+        Ok(Some(ty))
     }
 
     pub(crate) fn process_operator(
@@ -905,6 +912,10 @@ impl OperatorValidator {
             Operator::Select => {
                 let ty = self.check_select()?;
                 self.func_state.change_frame_after_select(ty)?;
+            }
+            Operator::TypedSelect { ty } => {
+                self.check_operands(&[Type::I32, ty, ty])?;
+                self.func_state.change_frame_after_select(Some(ty))?;
             }
             Operator::LocalGet { local_index } => {
                 if local_index as usize >= self.func_state.local_types.len() {
@@ -1468,7 +1479,7 @@ impl OperatorValidator {
             }
             Operator::RefNull => {
                 self.check_reference_types_enabled()?;
-                self.func_state.change_frame_with_type(0, Type::Null)?;
+                self.func_state.change_frame_with_type(0, Type::NullRef)?;
             }
             Operator::RefIsNull => {
                 self.check_reference_types_enabled()?;
@@ -1656,6 +1667,7 @@ impl OperatorValidator {
             | Operator::I32x4GeS
             | Operator::I32x4GeU
             | Operator::V128And
+            | Operator::V128AndNot
             | Operator::V128Or
             | Operator::V128Xor
             | Operator::I8x16Add
@@ -1676,7 +1688,14 @@ impl OperatorValidator {
             | Operator::I32x4Sub
             | Operator::I32x4Mul
             | Operator::I64x2Add
-            | Operator::I64x2Sub => {
+            | Operator::I64x2Sub
+            | Operator::I64x2Mul
+            | Operator::I8x16RoundingAverageU
+            | Operator::I16x8RoundingAverageU
+            | Operator::I8x16NarrowI16x8S
+            | Operator::I8x16NarrowI16x8U
+            | Operator::I16x8NarrowI32x4S
+            | Operator::I16x8NarrowI32x4U => {
                 self.check_simd_enabled()?;
                 self.check_operands_2(Type::V128, Type::V128)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
@@ -1704,7 +1723,15 @@ impl OperatorValidator {
             | Operator::I32x4TruncSatF32x4S
             | Operator::I32x4TruncSatF32x4U
             | Operator::I64x2TruncSatF64x2S
-            | Operator::I64x2TruncSatF64x2U => {
+            | Operator::I64x2TruncSatF64x2U
+            | Operator::I16x8WidenLowI8x16S
+            | Operator::I16x8WidenHighI8x16S
+            | Operator::I16x8WidenLowI8x16U
+            | Operator::I16x8WidenHighI8x16U
+            | Operator::I32x4WidenLowI16x8S
+            | Operator::I32x4WidenHighI16x8S
+            | Operator::I32x4WidenLowI16x8U
+            | Operator::I32x4WidenHighI16x8U => {
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
@@ -1773,7 +1800,13 @@ impl OperatorValidator {
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
-            Operator::V64x2LoadSplat { ref memarg } => {
+            Operator::V64x2LoadSplat { ref memarg }
+            | Operator::I16x8Load8x8S { ref memarg }
+            | Operator::I16x8Load8x8U { ref memarg }
+            | Operator::I32x4Load16x4S { ref memarg }
+            | Operator::I32x4Load16x4U { ref memarg }
+            | Operator::I64x2Load32x2S { ref memarg }
+            | Operator::I64x2Load32x2U { ref memarg } => {
                 self.check_simd_enabled()?;
                 self.check_memarg(memarg, 3, resources)?;
                 self.check_operands_1(Type::I32)?;

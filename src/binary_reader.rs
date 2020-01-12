@@ -188,6 +188,7 @@ impl<'a> BinaryReader<'a> {
             -0x05 => Ok(Type::V128),
             -0x10 => Ok(Type::AnyFunc),
             -0x11 => Ok(Type::AnyRef),
+            -0x12 => Ok(Type::NullRef),
             -0x20 => Ok(Type::Func),
             -0x40 => Ok(Type::EmptyBlockType),
             _ => Err(BinaryReaderError {
@@ -706,9 +707,9 @@ impl<'a> BinaryReader<'a> {
         })
     }
 
-    fn read_memarg_of_align(&mut self, align: u32) -> Result<MemoryImmediate> {
+    fn read_memarg_of_align(&mut self, max_align: u32) -> Result<MemoryImmediate> {
         let imm = self.read_memarg()?;
-        if align != imm.flags {
+        if imm.flags > max_align {
             return Err(BinaryReaderError {
                 message: "Unexpected memarg alignment",
                 offset: self.original_position() - 1,
@@ -987,6 +988,18 @@ impl<'a> BinaryReader<'a> {
             },
             0x1a => Operator::Drop,
             0x1b => Operator::Select,
+            0x1c => {
+                let results = self.read_var_u32()?;
+                if results != 1 {
+                    return Err(BinaryReaderError {
+                        message: "bad number of results",
+                        offset: self.position,
+                    });
+                }
+                Operator::TypedSelect {
+                    ty: self.read_type()?,
+                }
+            }
             0x20 => Operator::LocalGet {
                 local_index: self.read_var_u32()?,
             },
@@ -1506,6 +1519,7 @@ impl<'a> BinaryReader<'a> {
             0x89 => Operator::I64x2ShrU,
             0x8a => Operator::I64x2Add,
             0x8d => Operator::I64x2Sub,
+            0x90 => Operator::I64x2Mul,
             0x95 => Operator::F32x4Abs,
             0x96 => Operator::F32x4Neg,
             0x97 => Operator::F32x4Sqrt,
@@ -1552,6 +1566,39 @@ impl<'a> BinaryReader<'a> {
             0xc5 => Operator::V64x2LoadSplat {
                 memarg: self.read_memarg_of_align(3)?,
             },
+            0xc6 => Operator::I8x16NarrowI16x8S,
+            0xc7 => Operator::I8x16NarrowI16x8U,
+            0xc8 => Operator::I16x8NarrowI32x4S,
+            0xc9 => Operator::I16x8NarrowI32x4U,
+            0xca => Operator::I16x8WidenLowI8x16S,
+            0xcb => Operator::I16x8WidenHighI8x16S,
+            0xcc => Operator::I16x8WidenLowI8x16U,
+            0xcd => Operator::I16x8WidenHighI8x16U,
+            0xce => Operator::I32x4WidenLowI16x8S,
+            0xcf => Operator::I32x4WidenHighI16x8S,
+            0xd0 => Operator::I32x4WidenLowI16x8U,
+            0xd1 => Operator::I32x4WidenHighI16x8U,
+            0xd2 => Operator::I16x8Load8x8S {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd3 => Operator::I16x8Load8x8U {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd4 => Operator::I32x4Load16x4S {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd5 => Operator::I32x4Load16x4U {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd6 => Operator::I64x2Load32x2S {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd7 => Operator::I64x2Load32x2U {
+                memarg: self.read_memarg_of_align(3)?,
+            },
+            0xd8 => Operator::V128AndNot,
+            0xd9 => Operator::I8x16RoundingAverageU,
+            0xda => Operator::I16x8RoundingAverageU,
             _ => {
                 return Err(BinaryReaderError {
                     message: "Unknown 0xfd opcode",

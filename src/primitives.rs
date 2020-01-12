@@ -78,9 +78,18 @@ pub enum Type {
     V128,
     AnyFunc,
     AnyRef,
+    NullRef,
     Func,
     EmptyBlockType,
-    Null,
+}
+
+impl Type {
+    pub(crate) fn is_valid_for_old_select(&self) -> bool {
+        match self {
+            Type::I32 | Type::I64 | Type::F32 | Type::F64 => true,
+            _ => false,
+        }
+    }
 }
 
 /// Either a value type or a function type.
@@ -146,7 +155,7 @@ pub enum ImportSectionEntryType {
     Global(GlobalType),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct MemoryImmediate {
     pub flags: u32,
     pub offset: u32,
@@ -183,7 +192,7 @@ pub enum RelocType {
 }
 
 /// A br_table entries representation.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BrTable<'a> {
     pub(crate) buffer: &'a [u8],
     pub(crate) cnt: usize,
@@ -229,7 +238,7 @@ pub type SIMDLaneIndex = u8;
 /// Instructions as defined [here].
 ///
 /// [here]: https://webassembly.github.io/spec/core/binary/instructions.html
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operator<'a> {
     Unreachable,
     Nop,
@@ -246,6 +255,7 @@ pub enum Operator<'a> {
     CallIndirect { index: u32, table_index: u32 },
     Drop,
     Select,
+    TypedSelect { ty: Type },
     LocalGet { local_index: u32 },
     LocalSet { local_index: u32 },
     LocalTee { local_index: u32 },
@@ -577,6 +587,7 @@ pub enum Operator<'a> {
     F64x2Ge,
     V128Not,
     V128And,
+    V128AndNot,
     V128Or,
     V128Xor,
     V128Bitselect,
@@ -623,6 +634,7 @@ pub enum Operator<'a> {
     I64x2ShrU,
     I64x2Add,
     I64x2Sub,
+    I64x2Mul,
     F32x4Abs,
     F32x4Neg,
     F32x4Sqrt,
@@ -655,4 +667,24 @@ pub enum Operator<'a> {
     V16x8LoadSplat { memarg: MemoryImmediate },
     V32x4LoadSplat { memarg: MemoryImmediate },
     V64x2LoadSplat { memarg: MemoryImmediate },
+    I8x16NarrowI16x8S,
+    I8x16NarrowI16x8U,
+    I16x8NarrowI32x4S,
+    I16x8NarrowI32x4U,
+    I16x8WidenLowI8x16S,
+    I16x8WidenHighI8x16S,
+    I16x8WidenLowI8x16U,
+    I16x8WidenHighI8x16U,
+    I32x4WidenLowI16x8S,
+    I32x4WidenHighI16x8S,
+    I32x4WidenLowI16x8U,
+    I32x4WidenHighI16x8U,
+    I16x8Load8x8S { memarg: MemoryImmediate },
+    I16x8Load8x8U { memarg: MemoryImmediate },
+    I32x4Load16x4S { memarg: MemoryImmediate },
+    I32x4Load16x4U { memarg: MemoryImmediate },
+    I64x2Load32x2S { memarg: MemoryImmediate },
+    I64x2Load32x2U { memarg: MemoryImmediate },
+    I8x16RoundingAverageU,
+    I16x8RoundingAverageU,
 }
