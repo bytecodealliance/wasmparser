@@ -351,7 +351,7 @@ pub trait WasmModuleResources {
     /// Returns the global variable at given index.
     fn global_at(&self, at: u32) -> &Self::GlobalType;
     /// Returns the function signature ID at given index.
-    fn signature_id_at(&self, at: u32) -> u32;
+    fn func_type_id_at(&self, at: u32) -> u32;
 
     /// Returns the number of types.
     fn len_types(&self) -> usize;
@@ -361,9 +361,10 @@ pub trait WasmModuleResources {
     fn len_memories(&self) -> usize;
     /// Returns the number of global variables.
     fn len_globals(&self) -> usize;
+    /// Returns the number of function type indices.
+    fn len_func_type_id(&self) -> usize;
 
     fn types(&self) -> &[FuncType];
-    fn func_type_indices(&self) -> &[u32];
 
     fn element_count(&self) -> u32;
     fn data_count(&self) -> u32;
@@ -979,10 +980,10 @@ impl OperatorValidator {
                 self.func_state.start_dead_code()
             }
             Operator::Call { function_index } => {
-                if function_index as usize >= resources.func_type_indices().len() {
+                if function_index as usize >= resources.len_func_type_id() {
                     return Err("function index out of bounds");
                 }
-                let type_index = resources.func_type_indices()[function_index as usize];
+                let type_index = resources.func_type_id_at(function_index);
                 let ty = &resources.types()[type_index as usize];
                 self.check_operands(&ty.params)?;
                 self.func_state
@@ -1586,7 +1587,7 @@ impl OperatorValidator {
             }
             Operator::RefFunc { function_index } => {
                 self.check_reference_types_enabled()?;
-                if function_index as usize >= resources.func_type_indices().len() {
+                if function_index as usize >= resources.len_func_type_id() {
                     return Err("function index out of bounds");
                 }
                 self.func_state.change_frame_with_type(0, Type::AnyFunc)?;

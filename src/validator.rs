@@ -133,7 +133,7 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         &self.globals[at as usize]
     }
 
-    fn signature_id_at(&self, at: u32) -> u32 {
+    fn func_type_id_at(&self, at: u32) -> u32 {
         self.func_type_indices[at as usize]
     }
 
@@ -153,12 +153,12 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.globals.len()
     }
 
-    fn types(&self) -> &[FuncType] {
-        &self.types
+    fn len_func_type_id(&self) -> usize {
+        self.func_type_indices.len()
     }
 
-    fn func_type_indices(&self) -> &[u32] {
-        &self.func_type_indices
+    fn types(&self) -> &[FuncType] {
+        &self.types
     }
 
     fn element_count(&self) -> u32 {
@@ -895,7 +895,7 @@ pub fn validate_function_body<
         locals.push((count, ty));
     }
     let operators_reader = function_body.get_operators_reader()?;
-    let func_type_index = resources.func_type_indices()[func_index as usize];
+    let func_type_index = resources.func_type_id_at(func_index);
     let func_type = &resources.types()[func_type_index as usize];
     let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config);
     let mut eof_found = false;
