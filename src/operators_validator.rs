@@ -363,7 +363,6 @@ pub trait WasmModuleResources {
     fn len_globals(&self) -> usize;
 
     fn types(&self) -> &[FuncType];
-    fn tables(&self) -> &[TableType];
     fn func_type_indices(&self) -> &[u32];
 
     fn element_count(&self) -> u32;
@@ -990,7 +989,7 @@ impl OperatorValidator {
                     .change_frame_with_types(ty.params.len(), &ty.returns)?;
             }
             Operator::CallIndirect { index, table_index } => {
-                if table_index as usize >= resources.tables().len() {
+                if table_index as usize >= resources.len_tables() {
                     return Err("table index out of bounds");
                 }
                 if index as usize >= resources.types().len() {
@@ -1941,7 +1940,7 @@ impl OperatorValidator {
                 if table > 0 {
                     self.check_reference_types_enabled()?;
                 }
-                if table as usize >= resources.tables().len() {
+                if table as usize >= resources.len_tables() {
                     return Err("table index out of bounds");
                 }
                 self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
@@ -1961,8 +1960,8 @@ impl OperatorValidator {
                 if src_table > 0 || dst_table > 0 {
                     self.check_reference_types_enabled()?;
                 }
-                if src_table as usize >= resources.tables().len()
-                    || dst_table as usize >= resources.tables().len()
+                if src_table as usize >= resources.len_tables()
+                    || dst_table as usize >= resources.len_tables()
                 {
                     return Err("table index out of bounds");
                 }
@@ -1971,8 +1970,8 @@ impl OperatorValidator {
             }
             Operator::TableGet { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.tables().get(table as usize) {
-                    Some(ty) => ty.element_type,
+                let ty = match resources.table_at_checked(table) {
+                    Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
                 self.check_operands(&[Type::I32])?;
@@ -1980,8 +1979,8 @@ impl OperatorValidator {
             }
             Operator::TableSet { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.tables().get(table as usize) {
-                    Some(ty) => ty.element_type,
+                let ty = match resources.table_at_checked(table) {
+                    Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
                 self.check_operands(&[Type::I32, ty])?;
@@ -1989,8 +1988,8 @@ impl OperatorValidator {
             }
             Operator::TableGrow { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.tables().get(table as usize) {
-                    Some(ty) => ty.element_type,
+                let ty = match resources.table_at_checked(table) {
+                    Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
                 self.check_operands(&[ty, Type::I32])?;
@@ -1998,15 +1997,15 @@ impl OperatorValidator {
             }
             Operator::TableSize { table } => {
                 self.check_reference_types_enabled()?;
-                if table as usize >= resources.tables().len() {
+                if table as usize >= resources.len_tables() {
                     return Err("table index out of bounds");
                 }
                 self.func_state.change_frame_with_type(0, Type::I32)?;
             }
             Operator::TableFill { table } => {
                 self.check_bulk_memory_enabled()?;
-                let ty = match resources.tables().get(table as usize) {
-                    Some(ty) => ty.element_type,
+                let ty = match resources.table_at_checked(table) {
+                    Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
                 self.check_operands(&[Type::I32, ty, Type::I32])?;
