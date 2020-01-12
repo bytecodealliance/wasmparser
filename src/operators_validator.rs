@@ -363,7 +363,6 @@ pub trait WasmModuleResources {
     fn types(&self) -> &[FuncType];
     fn tables(&self) -> &[TableType];
     fn memories(&self) -> &[MemoryType];
-    fn globals(&self) -> &[GlobalType];
     fn func_type_indices(&self) -> &[u32];
 
     fn element_count(&self) -> u32;
@@ -1040,21 +1039,21 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, local_type)?;
             }
             Operator::GlobalGet { global_index } => {
-                if global_index as usize >= resources.globals().len() {
+                if global_index as usize >= resources.len_globals() {
                     return Err("global index out of bounds");
                 }
-                let ty = &resources.globals()[global_index as usize];
-                self.func_state.change_frame_with_type(0, ty.content_type)?;
+                let ty = &resources.global_at(global_index);
+                self.func_state.change_frame_with_type(0, ty.content_type().to_parser_type())?;
             }
             Operator::GlobalSet { global_index } => {
-                if global_index as usize >= resources.globals().len() {
+                if global_index as usize >= resources.len_globals() {
                     return Err("global index out of bounds");
                 }
-                let ty = &resources.globals()[global_index as usize];
-                if !ty.mutable {
+                let ty = &resources.global_at(global_index);
+                if !ty.is_mutable() {
                     return Err("global expected to be mutable");
                 }
-                self.check_operands_1(ty.content_type)?;
+                self.check_operands_1(ty.content_type().to_parser_type())?;
                 self.func_state.change_frame(1)?;
             }
             Operator::I32Load { ref memarg } => {

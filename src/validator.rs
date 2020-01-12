@@ -161,10 +161,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         &self.memories
     }
 
-    fn globals(&self) -> &[GlobalType] {
-        &self.globals
-    }
-
     fn func_type_indices(&self) -> &[u32] {
         &self.func_type_indices
     }
