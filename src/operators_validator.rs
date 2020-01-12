@@ -122,11 +122,16 @@ impl FuncState {
         }
         Ok(())
     }
-    fn push_block(
+    fn push_block<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
         &mut self,
         ty: TypeOrFuncType,
         block_type: BlockType,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         let (start_types, return_types) = match ty {
             TypeOrFuncType::Type(Type::EmptyBlockType) => (vec![], vec![]),
@@ -324,11 +329,11 @@ pub trait WasmModuleResources {
     type MemoryType: WasmMemoryType;
     type GlobalType: WasmGlobalType;
 
-    fn type_at(&self, at: u32) -> &[Self::FuncType];
-    fn table_at(&self, at: u32) -> &[Self::TableType];
-    fn memory_at(&self, at: u32) -> &[Self::MemoryType];
-    fn global_at(&self, at: u32) -> &[Self::GlobalType];
-    fn signature_id_at(&self, at: u32) -> &[u32];
+    fn type_at(&self, at: u32) -> &Self::FuncType;
+    fn table_at(&self, at: u32) -> &Self::TableType;
+    fn memory_at(&self, at: u32) -> &Self::MemoryType;
+    fn global_at(&self, at: u32) -> &Self::GlobalType;
+    fn signature_id_at(&self, at: u32) -> u32;
 
     fn types(&self) -> &[FuncType];
     fn tables(&self) -> &[TableType];
@@ -340,12 +345,17 @@ pub trait WasmModuleResources {
     fn data_count(&self) -> u32;
 }
 
-pub trait DefaultWasmModuleResources: WasmModuleResources<
+pub trait DefaultWasmModuleResources:
+    WasmModuleResources<
     FuncType = crate::FuncType,
     TableType = crate::TableType,
     MemoryType = crate::MemoryType,
     GlobalType = crate::GlobalType,
-> {}
+>
+{
+}
+
+impl WasmType for crate::Type {}
 
 impl WasmFuncType for crate::FuncType {
     type Type = crate::Type;
@@ -608,10 +618,20 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_memory_index(
+    fn check_memory_index<
+        F: WasmFuncType,
+        T: WasmTableType,
+        M: WasmMemoryType,
+        G: WasmGlobalType,
+    >(
         &self,
         memory_index: u32,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         if memory_index as usize >= resources.memories().len() {
             return Err("no linear memories are present");
@@ -619,10 +639,20 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_shared_memory_index(
+    fn check_shared_memory_index<
+        F: WasmFuncType,
+        T: WasmTableType,
+        M: WasmMemoryType,
+        G: WasmGlobalType,
+    >(
         &self,
         memory_index: u32,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         if memory_index as usize >= resources.memories().len() {
             return Err("no linear memories are present");
@@ -633,11 +663,16 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_memarg(
+    fn check_memarg<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
         &self,
         memarg: &MemoryImmediate,
         max_align: u32,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         self.check_memory_index(0, resources)?;
         let align = memarg.flags;
@@ -689,10 +724,20 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_shared_memarg_wo_align(
+    fn check_shared_memarg_wo_align<
+        F: WasmFuncType,
+        T: WasmTableType,
+        M: WasmMemoryType,
+        G: WasmGlobalType,
+    >(
         &self,
         _: &MemoryImmediate,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         self.check_shared_memory_index(0, resources)?;
         Ok(())
@@ -705,10 +750,15 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_block_type(
+    fn check_block_type<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
         &self,
         ty: TypeOrFuncType,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<()> {
         match ty {
             TypeOrFuncType::Type(Type::EmptyBlockType)
@@ -743,10 +793,20 @@ impl OperatorValidator {
         }
     }
 
-    fn check_block_params(
+    fn check_block_params<
+        F: WasmFuncType,
+        T: WasmTableType,
+        M: WasmMemoryType,
+        G: WasmGlobalType,
+    >(
         &self,
         ty: TypeOrFuncType,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
         skip: usize,
     ) -> OperatorValidatorResult<()> {
         if let TypeOrFuncType::FuncType(idx) = ty {
@@ -800,10 +860,20 @@ impl OperatorValidator {
         Ok(Some(ty))
     }
 
-    pub(crate) fn process_operator(
+    pub(crate) fn process_operator<
+        F: WasmFuncType,
+        T: WasmTableType,
+        M: WasmMemoryType,
+        G: WasmGlobalType,
+    >(
         &mut self,
         operator: &Operator,
-        resources: &dyn WasmModuleResources,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
     ) -> OperatorValidatorResult<FunctionEnd> {
         if self.func_state.end_function {
             return Err("unexpected operator");

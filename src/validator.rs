@@ -32,8 +32,9 @@ use crate::primitives::{
 use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
 
 use crate::operators_validator::{
-    is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
-    WasmModuleResources, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
+    is_subtype_supertype, DefaultWasmModuleResources, FunctionEnd, OperatorValidator,
+    OperatorValidatorConfig, WasmFuncType, WasmGlobalType, WasmMemoryType, WasmModuleResources,
+    WasmTableType, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
 use crate::{ElemSectionEntryTable, ElementItem};
 
@@ -104,7 +105,34 @@ struct ValidatingParserResources {
     func_type_indices: Vec<u32>,
 }
 
+impl DefaultWasmModuleResources for ValidatingParserResources {}
+
 impl<'a> WasmModuleResources for ValidatingParserResources {
+    type FuncType = crate::FuncType;
+    type TableType = crate::TableType;
+    type MemoryType = crate::MemoryType;
+    type GlobalType = crate::GlobalType;
+
+    fn type_at(&self, at: u32) -> &Self::FuncType {
+        &self.types[at as usize]
+    }
+
+    fn table_at(&self, at: u32) -> &Self::TableType {
+        &self.tables[at as usize]
+    }
+
+    fn memory_at(&self, at: u32) -> &Self::MemoryType {
+        &self.memories[at as usize]
+    }
+
+    fn global_at(&self, at: u32) -> &Self::GlobalType {
+        &self.globals[at as usize]
+    }
+
+    fn signature_id_at(&self, at: u32) -> u32 {
+        self.func_type_indices[at as usize]
+    }
+
     fn types(&self) -> &[FuncType] {
         &self.types
     }
@@ -175,7 +203,7 @@ impl<'a> ValidatingParser<'a> {
         }
     }
 
-    pub fn get_resources(&self) -> &dyn WasmModuleResources {
+    pub fn get_resources(&self) -> &dyn DefaultWasmModuleResources {
         &self.resources
     }
 
@@ -775,7 +803,15 @@ impl<'b> ValidatingOperatorParser<'b> {
     ///     }
     /// }
     /// ```
-    pub fn next<'c>(&mut self, resources: &dyn WasmModuleResources) -> Result<Operator<'c>>
+    pub fn next<'c, F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
+        &mut self,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
+    ) -> Result<Operator<'c>>
     where
         'b: 'c,
     {
@@ -804,11 +840,21 @@ impl<'b> ValidatingOperatorParser<'b> {
 
 /// Test whether the given buffer contains a valid WebAssembly function.
 /// The resources parameter contains all needed data to validate the operators.
-pub fn validate_function_body(
+pub fn validate_function_body<
+    F: WasmFuncType,
+    T: WasmTableType,
+    M: WasmMemoryType,
+    G: WasmGlobalType,
+>(
     bytes: &[u8],
     offset: usize,
     func_index: u32,
-    resources: &dyn WasmModuleResources,
+    resources: &dyn WasmModuleResources<
+        FuncType = F,
+        TableType = T,
+        MemoryType = M,
+        GlobalType = G,
+    >,
     operator_config: Option<OperatorValidatorConfig>,
 ) -> Result<()> {
     let operator_config = operator_config.unwrap_or(DEFAULT_OPERATOR_VALIDATOR_CONFIG);
