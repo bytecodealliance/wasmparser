@@ -253,14 +253,159 @@ enum BlockType {
     If,
 }
 
+/// Types that quality as Wasm types for validation purposes.
+///
+/// Must be comparable with `wasmparser` given Wasm types and
+/// must be comparable to themselves.
+pub trait WasmType: PartialEq<crate::Type> + PartialEq + Eq {}
+
+/// Types that qualify as Wasm function types for validation purposes.
+pub trait WasmFuncType {
+    /// A type that is comparable with Wasm types.
+    type Type: WasmType;
+
+    /// Returns the number of input types.
+    fn len_inputs(&self) -> usize;
+    /// Returns the number of output types.
+    fn len_outputs(&self) -> usize;
+    /// Returns the type at given index if any.
+    ///
+    /// # Note
+    ///
+    /// The returned type may be wrapped by the user crate and thus
+    /// the actually returned type only has to be comparable to a Wasm type.
+    fn input_at<T>(&self, at: u32) -> Option<&Self::Type>;
+    /// Returns the type at given index if any.
+    ///
+    /// # Note
+    ///
+    /// The returned type may be wrapped by the user crate and thus
+    /// the actually returned type only has to be comparable to a Wasm type.
+    fn output_at<T>(&self, at: u32) -> Option<&Self::Type>;
+}
+
+/// Types that qualify as Wasm table types for validation purposes.
+pub trait WasmTableType {
+    /// A type that is comparable with Wasm types.
+    type Type: WasmType;
+
+    /// Returns the element type of the table.
+    fn element_type(&self) -> &Self::Type;
+    /// Returns the initial limit of the table.
+    fn initial_limit(&self) -> u32;
+    /// Returns the maximum limit of the table if any.
+    fn maximum_limit(&self) -> Option<u32>;
+}
+
+/// Types that qualify as Wasm memory types for validation purposes.
+pub trait WasmMemoryType {
+    /// Returns `true` if the linear memory is shared.
+    fn is_shared(&self) -> bool;
+    /// Returns the initial limit of the linear memory.
+    fn initial_limit(&self) -> u32;
+    /// Returns the maximum limit of the linear memory if any.
+    fn maximum_limit(&self) -> Option<u32>;
+}
+
+/// Types that qualify as Wasm global types for validation purposes.
+pub trait WasmGlobalType {
+    /// A type that is comparable with Wasm types.
+    type Type: WasmType;
+
+    /// Returns `true` if the global variable is mutable.
+    fn is_mutable(&self) -> bool;
+    /// Returns the content type of the global variable.
+    fn content_type(&self) -> &Self::Type;
+}
+
 pub trait WasmModuleResources {
+    type FuncType: WasmFuncType;
+    type TableType: WasmTableType;
+    type MemoryType: WasmMemoryType;
+    type GlobalType: WasmGlobalType;
+
+    fn type_at(&self, at: u32) -> &[Self::FuncType];
+    fn table_at(&self, at: u32) -> &[Self::TableType];
+    fn memory_at(&self, at: u32) -> &[Self::MemoryType];
+    fn global_at(&self, at: u32) -> &[Self::GlobalType];
+    fn signature_id_at(&self, at: u32) -> &[u32];
+
     fn types(&self) -> &[FuncType];
     fn tables(&self) -> &[TableType];
     fn memories(&self) -> &[MemoryType];
     fn globals(&self) -> &[GlobalType];
     fn func_type_indices(&self) -> &[u32];
+
     fn element_count(&self) -> u32;
     fn data_count(&self) -> u32;
+}
+
+pub trait DefaultWasmModuleResources: WasmModuleResources<
+    FuncType = crate::FuncType,
+    TableType = crate::TableType,
+    MemoryType = crate::MemoryType,
+    GlobalType = crate::GlobalType,
+> {}
+
+impl WasmFuncType for crate::FuncType {
+    type Type = crate::Type;
+
+    fn len_inputs(&self) -> usize {
+        self.params.len()
+    }
+
+    fn len_outputs(&self) -> usize {
+        self.returns.len()
+    }
+
+    fn input_at<T>(&self, at: u32) -> Option<&Self::Type> {
+        self.params.get(at as usize)
+    }
+
+    fn output_at<T>(&self, at: u32) -> Option<&Self::Type> {
+        self.returns.get(at as usize)
+    }
+}
+
+impl WasmGlobalType for crate::GlobalType {
+    type Type = crate::Type;
+
+    fn is_mutable(&self) -> bool {
+        self.mutable
+    }
+
+    fn content_type(&self) -> &Self::Type {
+        &self.content_type
+    }
+}
+
+impl WasmTableType for crate::TableType {
+    type Type = crate::Type;
+
+    fn element_type(&self) -> &Self::Type {
+        &self.element_type
+    }
+
+    fn initial_limit(&self) -> u32 {
+        self.limits.initial
+    }
+
+    fn maximum_limit(&self) -> Option<u32> {
+        self.limits.maximum
+    }
+}
+
+impl WasmMemoryType for crate::MemoryType {
+    fn is_shared(&self) -> bool {
+        self.shared
+    }
+
+    fn initial_limit(&self) -> u32 {
+        self.limits.initial
+    }
+    fn maximum_limit(&self) -> Option<u32> {
+        self.limits.maximum
+    }
 }
 
 pub enum FunctionEnd {
