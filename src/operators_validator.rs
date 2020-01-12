@@ -324,15 +324,24 @@ pub trait WasmGlobalType {
 }
 
 pub trait WasmModuleResources {
+    /// The function type used for validation.
     type FuncType: WasmFuncType;
+    /// The table type used for validation.
     type TableType: WasmTableType;
+    /// The memory type used for validation.
     type MemoryType: WasmMemoryType;
+    /// The global type used for validation.
     type GlobalType: WasmGlobalType;
 
+    /// Returns the type at given index.
     fn type_at(&self, at: u32) -> &Self::FuncType;
+    /// Returns the table at given index.
     fn table_at(&self, at: u32) -> &Self::TableType;
+    /// Returns the linear memory at given index.
     fn memory_at(&self, at: u32) -> &Self::MemoryType;
+    /// Returns the global variable at given index.
     fn global_at(&self, at: u32) -> &Self::GlobalType;
+    /// Returns the function signature ID at given index.
     fn signature_id_at(&self, at: u32) -> u32;
 
     /// Returns the number of types.
