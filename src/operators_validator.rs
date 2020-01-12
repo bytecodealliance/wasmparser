@@ -17,10 +17,7 @@ use std::cmp::min;
 use std::result;
 use std::str;
 
-use crate::primitives::{
-    FuncType, GlobalType, MemoryImmediate, MemoryType, Operator, SIMDLaneIndex, TableType, Type,
-    TypeOrFuncType,
-};
+use crate::primitives::{MemoryImmediate, Operator, SIMDLaneIndex, Type, TypeOrFuncType};
 
 /// Test if `subtype` is a subtype of `supertype`.
 pub(crate) fn is_subtype_supertype(subtype: Type, supertype: Type) -> bool {
@@ -137,8 +134,15 @@ impl FuncState {
             TypeOrFuncType::Type(Type::EmptyBlockType) => (vec![], vec![]),
             TypeOrFuncType::Type(ty) => (vec![], vec![ty]),
             TypeOrFuncType::FuncType(idx) => {
-                let ty = &resources.types()[idx as usize];
-                (ty.params.clone().into_vec(), ty.returns.clone().into_vec())
+                let ty = resources.type_at(idx);
+                (
+                    wasm_func_type_inputs(ty)
+                        .map(WasmType::to_parser_type)
+                        .collect::<Vec<_>>(),
+                    wasm_func_type_outputs(ty)
+                        .map(WasmType::to_parser_type)
+                        .collect::<Vec<_>>(),
+                )
             }
         };
         if block_type == BlockType::If {
@@ -207,16 +211,16 @@ impl FuncState {
         self.stack_types.push(ty);
         Ok(())
     }
-    fn change_frame_with_types(
+    fn change_frame_with_types<I>(
         &mut self,
         remove_count: usize,
-        new_items: &[Type],
-    ) -> OperatorValidatorResult<()> {
+        new_items: I,
+    ) -> OperatorValidatorResult<()>
+    where
+        I: Iterator<Item = Type>,
+    {
         self.remove_frame_stack_types(remove_count)?;
-        if new_items.is_empty() {
-            return Ok(());
-        }
-        self.stack_types.extend_from_slice(new_items);
+        self.stack_types.extend(new_items);
         Ok(())
     }
     fn change_frame_to_exact_types_from(&mut self, depth: usize) -> OperatorValidatorResult<()> {
@@ -286,14 +290,50 @@ pub trait WasmFuncType {
     ///
     /// The returned type may be wrapped by the user crate and thus
     /// the actually returned type only has to be comparable to a Wasm type.
-    fn input_at<T>(&self, at: u32) -> Option<&Self::Type>;
+    fn input_at(&self, at: u32) -> Option<&Self::Type>;
     /// Returns the type at given index if any.
     ///
     /// # Note
     ///
     /// The returned type may be wrapped by the user crate and thus
     /// the actually returned type only has to be comparable to a Wasm type.
-    fn output_at<T>(&self, at: u32) -> Option<&Self::Type>;
+    fn output_at(&self, at: u32) -> Option<&Self::Type>;
+}
+
+/// Returns an iterator over the input types of a Wasm function type.
+fn wasm_func_type_inputs<'a, F, T>(func_type: &'a F) -> impl ExactSizeIterator<Item = &'a T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    // Quick'n dirty implementation.
+    // We might create an actual custom iterator
+    // type if performance issues arise.
+    let mut result = Vec::new();
+    let mut n = 0;
+    while let Some(ty) = func_type.input_at(n) {
+        result.push(ty);
+        n += 1;
+    }
+    result.into_iter()
+}
+
+/// Returns an iterator over the output types of a Wasm function type.
+fn wasm_func_type_outputs<'a, F, T>(func_type: &'a F) -> impl ExactSizeIterator<Item = &'a T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    // Quick'n dirty implementation.
+    // We might create an actual custom iterator
+    // type if performance issues arise.
+    let mut result = Vec::new();
+    let mut n = 0;
+    while let Some(ty) = func_type.output_at(n) {
+        result.push(ty);
+        n += 1;
+    }
+    result.into_iter()
 }
 
 /// Types that qualify as Wasm table types for validation purposes.
@@ -364,8 +404,6 @@ pub trait WasmModuleResources {
     /// Returns the number of function type indices.
     fn len_func_type_id(&self) -> usize;
 
-    fn types(&self) -> &[FuncType];
-
     /// Returns the number of elements.
     fn element_count(&self) -> u32;
     /// Returns the number of bytes in the Wasm data section.
@@ -399,11 +437,11 @@ impl WasmFuncType for crate::FuncType {
         self.returns.len()
     }
 
-    fn input_at<T>(&self, at: u32) -> Option<&Self::Type> {
+    fn input_at(&self, at: u32) -> Option<&Self::Type> {
         self.params.get(at as usize)
     }
 
-    fn output_at<T>(&self, at: u32) -> Option<&Self::Type> {
+    fn output_at(&self, at: u32) -> Option<&Self::Type> {
         self.returns.get(at as usize)
     }
 }
@@ -487,22 +525,33 @@ pub(crate) struct OperatorValidator {
 }
 
 impl OperatorValidator {
-    pub fn new(
-        func_type: &FuncType,
+    pub fn new<F, T>(
+        func_type: &F,
         locals: &[(u32, Type)],
         config: OperatorValidatorConfig,
-    ) -> OperatorValidator {
-        let mut local_types = Vec::new();
-        local_types.extend_from_slice(&*func_type.params);
-        for local in locals {
-            for _ in 0..local.0 {
-                local_types.push(local.1);
+    ) -> OperatorValidator
+    where
+        F: WasmFuncType<Type = T>,
+        T: WasmType,
+    {
+        let local_types = {
+            let mut local_types = Vec::new();
+            let mut n = 0;
+            while let Some(ty) = func_type.input_at(n) {
+                local_types.push(ty.to_parser_type());
+                n += 1;
             }
-        }
-
+            for local in locals {
+                for _ in 0..local.0 {
+                    local_types.push(local.1);
+                }
+            }
+            local_types
+        };
         let mut blocks = Vec::new();
-        let mut last_returns = Vec::new();
-        last_returns.extend_from_slice(&*func_type.returns);
+        let last_returns = wasm_func_type_outputs(func_type)
+            .map(WasmType::to_parser_type)
+            .collect::<Vec<_>>();
         blocks.push(BlockState {
             start_types: vec![],
             return_types: last_returns,
@@ -555,13 +604,35 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_operands(&self, expected_types: &[Type]) -> OperatorValidatorResult<()> {
+    fn check_operands_3(
+        &self,
+        operand1: Type,
+        operand2: Type,
+        operand3: Type,
+    ) -> OperatorValidatorResult<()> {
+        self.check_frame_size(3)?;
+        if !self.func_state.assert_stack_type_at(2, operand1) {
+            return Err("stack operand type mismatch");
+        }
+        if !self.func_state.assert_stack_type_at(1, operand2) {
+            return Err("stack operand type mismatch");
+        }
+        if !self.func_state.assert_stack_type_at(0, operand3) {
+            return Err("stack operand type mismatch");
+        }
+        Ok(())
+    }
+
+    fn check_operands<I>(&self, expected_types: I) -> OperatorValidatorResult<()>
+    where
+        I: ExactSizeIterator<Item = Type>,
+    {
         let len = expected_types.len();
         self.check_frame_size(len)?;
-        for (i, expected_type) in expected_types.iter().enumerate() {
+        for (i, expected_type) in expected_types.enumerate() {
             if !self
                 .func_state
-                .assert_stack_type_at(len - 1 - i, *expected_type)
+                .assert_stack_type_at(len - 1 - i, expected_type)
             {
                 return Err("stack operand type mismatch");
             }
@@ -802,18 +873,16 @@ impl OperatorValidator {
             }
             TypeOrFuncType::Type(Type::V128) => self.check_simd_enabled(),
             TypeOrFuncType::FuncType(idx) => {
-                let idx = idx as usize;
-                let types = resources.types();
-                if idx >= types.len() {
+                if idx as usize >= resources.len_types() {
                     return Err("type index out of bounds");
                 }
-                let ty = &types[idx];
+                let ty = resources.type_at(idx);
                 if !self.config.enable_multi_value {
-                    if ty.returns.len() > 1 {
+                    if ty.len_outputs() > 1 {
                         return Err("blocks, loops, and ifs may only return at most one \
                                     value when multi-value is not enabled");
                     }
-                    if ty.params.len() > 0 {
+                    if ty.len_inputs() > 0 {
                         return Err("blocks, loops, and ifs accept no parameters \
                                     when multi-value is not enabled");
                     }
@@ -841,14 +910,14 @@ impl OperatorValidator {
         skip: usize,
     ) -> OperatorValidatorResult<()> {
         if let TypeOrFuncType::FuncType(idx) = ty {
-            let func_ty = &resources.types()[idx as usize];
-            let len = func_ty.params.len();
+            let func_ty = &resources.type_at(idx);
+            let len = func_ty.len_inputs();
             self.check_frame_size(len + skip)?;
             for i in 0..len {
-                if !self
-                    .func_state
-                    .assert_stack_type_at(len - 1 - i + skip, func_ty.params[i])
-                {
+                if !self.func_state.assert_stack_type_at(
+                    len - 1 - i + skip,
+                    func_ty.input_at(i as u32).unwrap().to_parser_type(),
+                ) {
                     return Err("stack operand type mismatch for block");
                 }
             }
@@ -986,25 +1055,32 @@ impl OperatorValidator {
                     return Err("function index out of bounds");
                 }
                 let type_index = resources.func_type_id_at(function_index);
-                let ty = &resources.types()[type_index as usize];
-                self.check_operands(&ty.params)?;
-                self.func_state
-                    .change_frame_with_types(ty.params.len(), &ty.returns)?;
+                let ty = resources.type_at(type_index);
+                self.check_operands(wasm_func_type_inputs(ty).map(WasmType::to_parser_type))?;
+                self.func_state.change_frame_with_types(
+                    ty.len_inputs(),
+                    wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
+                )?;
             }
             Operator::CallIndirect { index, table_index } => {
                 if table_index as usize >= resources.len_tables() {
                     return Err("table index out of bounds");
                 }
-                if index as usize >= resources.types().len() {
+                if index as usize >= resources.len_types() {
                     return Err("type index out of bounds");
                 }
-                let ty = &resources.types()[index as usize];
-                let mut types = Vec::with_capacity(ty.params.len() + 1);
-                types.extend_from_slice(&ty.params);
-                types.push(Type::I32);
-                self.check_operands(&types)?;
-                self.func_state
-                    .change_frame_with_types(ty.params.len() + 1, &ty.returns)?;
+                let ty = resources.type_at(index);
+                let types = {
+                    let mut types = Vec::with_capacity(ty.len_inputs() + 1);
+                    types.extend(wasm_func_type_inputs(ty).map(WasmType::to_parser_type));
+                    types.push(Type::I32);
+                    types
+                };
+                self.check_operands(types.into_iter())?;
+                self.func_state.change_frame_with_types(
+                    ty.len_inputs() + 1,
+                    wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
+                )?;
             }
             Operator::Drop => {
                 self.check_frame_size(1)?;
@@ -1015,7 +1091,7 @@ impl OperatorValidator {
                 self.func_state.change_frame_after_select(ty)?;
             }
             Operator::TypedSelect { ty } => {
-                self.check_operands(&[Type::I32, ty, ty])?;
+                self.check_operands_3(Type::I32, ty, ty)?;
                 self.func_state.change_frame_after_select(Some(ty))?;
             }
             Operator::LocalGet { local_index } => {
@@ -1046,7 +1122,8 @@ impl OperatorValidator {
                     return Err("global index out of bounds");
                 }
                 let ty = &resources.global_at(global_index);
-                self.func_state.change_frame_with_type(0, ty.content_type().to_parser_type())?;
+                self.func_state
+                    .change_frame_with_type(0, ty.content_type().to_parser_type())?;
             }
             Operator::GlobalSet { global_index } => {
                 if global_index as usize >= resources.len_globals() {
@@ -1533,7 +1610,7 @@ impl OperatorValidator {
             | Operator::I32AtomicRmw8CmpxchgU { ref memarg } => {
                 self.check_threads_enabled()?;
                 self.check_shared_memarg_wo_align(memarg, resources)?;
-                self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
                 self.func_state.change_frame_with_type(3, Type::I32)?;
             }
             Operator::I64AtomicRmwXchg { ref memarg }
@@ -1551,7 +1628,7 @@ impl OperatorValidator {
             | Operator::I64AtomicRmw8CmpxchgU { ref memarg } => {
                 self.check_threads_enabled()?;
                 self.check_shared_memarg_wo_align(memarg, resources)?;
-                self.check_operands(&[Type::I32, Type::I64, Type::I64])?;
+                self.check_operands_3(Type::I32, Type::I64, Type::I64)?;
                 self.func_state.change_frame_with_type(3, Type::I64)?;
             }
             Operator::AtomicNotify { ref memarg } => {
@@ -1563,13 +1640,13 @@ impl OperatorValidator {
             Operator::I32AtomicWait { ref memarg } => {
                 self.check_threads_enabled()?;
                 self.check_shared_memarg_wo_align(memarg, resources)?;
-                self.check_operands(&[Type::I32, Type::I32, Type::I64])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I64)?;
                 self.func_state.change_frame_with_type(3, Type::I32)?;
             }
             Operator::I64AtomicWait { ref memarg } => {
                 self.check_threads_enabled()?;
                 self.check_shared_memarg_wo_align(memarg, resources)?;
-                self.check_operands(&[Type::I32, Type::I64, Type::I64])?;
+                self.check_operands_3(Type::I32, Type::I64, Type::I64)?;
                 self.func_state.change_frame_with_type(3, Type::I32)?;
             }
             Operator::AtomicFence { ref flags } => {
@@ -1584,7 +1661,7 @@ impl OperatorValidator {
             }
             Operator::RefIsNull => {
                 self.check_reference_types_enabled()?;
-                self.check_operands(&[Type::AnyRef])?;
+                self.check_operands_1(Type::AnyRef)?;
                 self.func_state.change_frame_with_type(1, Type::I32)?;
             }
             Operator::RefFunc { function_index } => {
@@ -1839,7 +1916,7 @@ impl OperatorValidator {
             }
             Operator::V128Bitselect => {
                 self.check_simd_enabled()?;
-                self.check_operands(&[Type::V128, Type::V128, Type::V128])?;
+                self.check_operands_3(Type::V128, Type::V128, Type::V128)?;
                 self.func_state.change_frame_with_type(3, Type::V128)?;
             }
             Operator::I8x16AnyTrue
@@ -1920,7 +1997,7 @@ impl OperatorValidator {
                     return Err("segment index out of bounds");
                 }
                 self.check_memory_index(0, resources)?;
-                self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
                 self.func_state.change_frame(3)?;
             }
             Operator::DataDrop { segment } => {
@@ -1932,7 +2009,7 @@ impl OperatorValidator {
             Operator::MemoryCopy | Operator::MemoryFill => {
                 self.check_bulk_memory_enabled()?;
                 self.check_memory_index(0, resources)?;
-                self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
                 self.func_state.change_frame(3)?;
             }
             Operator::TableInit { segment, table } => {
@@ -1946,7 +2023,7 @@ impl OperatorValidator {
                 if table as usize >= resources.len_tables() {
                     return Err("table index out of bounds");
                 }
-                self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
                 self.func_state.change_frame(3)?;
             }
             Operator::ElemDrop { segment } => {
@@ -1968,7 +2045,7 @@ impl OperatorValidator {
                 {
                     return Err("table index out of bounds");
                 }
-                self.check_operands(&[Type::I32, Type::I32, Type::I32])?;
+                self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
                 self.func_state.change_frame(3)?;
             }
             Operator::TableGet { table } => {
@@ -1977,7 +2054,7 @@ impl OperatorValidator {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
-                self.check_operands(&[Type::I32])?;
+                self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, ty)?;
             }
             Operator::TableSet { table } => {
@@ -1986,7 +2063,7 @@ impl OperatorValidator {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
-                self.check_operands(&[Type::I32, ty])?;
+                self.check_operands_2(Type::I32, ty)?;
                 self.func_state.change_frame(2)?;
             }
             Operator::TableGrow { table } => {
@@ -1995,7 +2072,7 @@ impl OperatorValidator {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
-                self.check_operands(&[ty, Type::I32])?;
+                self.check_operands_2(ty, Type::I32)?;
                 self.func_state.change_frame_with_type(2, Type::I32)?;
             }
             Operator::TableSize { table } => {
@@ -2011,7 +2088,7 @@ impl OperatorValidator {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
-                self.check_operands(&[Type::I32, ty, Type::I32])?;
+                self.check_operands_3(Type::I32, ty, Type::I32)?;
                 self.func_state.change_frame(3)?;
             }
         }

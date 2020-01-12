@@ -157,10 +157,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.func_type_indices.len()
     }
 
-    fn types(&self) -> &[FuncType] {
-        &self.types
-    }
-
     fn element_count(&self) -> u32 {
         self.element_count
     }
@@ -896,7 +892,7 @@ pub fn validate_function_body<
     }
     let operators_reader = function_body.get_operators_reader()?;
     let func_type_index = resources.func_type_id_at(func_index);
-    let func_type = &resources.types()[func_type_index as usize];
+    let func_type = resources.type_at(func_type_index);
     let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config);
     let mut eof_found = false;
     let mut last_op = 0;
