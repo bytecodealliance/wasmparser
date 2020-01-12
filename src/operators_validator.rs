@@ -366,7 +366,9 @@ pub trait WasmModuleResources {
 
     fn types(&self) -> &[FuncType];
 
+    /// Returns the number of elements.
     fn element_count(&self) -> u32;
+    /// Returns the number of bytes in the Wasm data section.
     fn data_count(&self) -> u32;
 }
 
