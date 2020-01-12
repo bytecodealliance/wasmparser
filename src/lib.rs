@@ -66,7 +66,6 @@ pub use crate::validator::ValidatingOperatorParser;
 pub use crate::validator::ValidatingParser;
 pub use crate::validator::ValidatingParserConfig;
 
-pub use crate::operators_validator::DefaultWasmModuleResources;
 pub use crate::operators_validator::OperatorValidatorConfig;
 pub use crate::operators_validator::WasmModuleResources;
 

@@ -32,9 +32,9 @@ use crate::primitives::{
 use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
 
 use crate::operators_validator::{
-    is_subtype_supertype, DefaultWasmModuleResources, FunctionEnd, OperatorValidator,
-    OperatorValidatorConfig, WasmFuncType, WasmGlobalType, WasmMemoryType, WasmModuleResources,
-    WasmTableType, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
+    is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig, WasmFuncType,
+    WasmGlobalType, WasmMemoryType, WasmModuleResources, WasmTableType,
+    DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
 use crate::{ElemSectionEntryTable, ElementItem};
 
@@ -104,8 +104,6 @@ struct ValidatingParserResources {
     data_count: Option<u32>,
     func_type_indices: Vec<u32>,
 }
-
-impl DefaultWasmModuleResources for ValidatingParserResources {}
 
 impl<'a> WasmModuleResources for ValidatingParserResources {
     type FuncType = crate::FuncType;
@@ -207,7 +205,14 @@ impl<'a> ValidatingParser<'a> {
         }
     }
 
-    pub fn get_resources(&self) -> &dyn DefaultWasmModuleResources {
+    pub fn get_resources(
+        &self,
+    ) -> &dyn WasmModuleResources<
+        FuncType = crate::FuncType,
+        TableType = crate::TableType,
+        MemoryType = crate::MemoryType,
+        GlobalType = crate::GlobalType,
+    > {
         &self.resources
     }
 

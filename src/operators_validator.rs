@@ -410,16 +410,6 @@ pub trait WasmModuleResources {
     fn data_count(&self) -> u32;
 }
 
-pub trait DefaultWasmModuleResources:
-    WasmModuleResources<
-    FuncType = crate::FuncType,
-    TableType = crate::TableType,
-    MemoryType = crate::MemoryType,
-    GlobalType = crate::GlobalType,
->
-{
-}
-
 impl WasmType for crate::Type {
     fn to_parser_type(&self) -> crate::Type {
         *self
