@@ -262,7 +262,14 @@ enum BlockType {
 ///
 /// Must be comparable with `wasmparser` given Wasm types and
 /// must be comparable to themselves.
-pub trait WasmType: PartialEq<crate::Type> + PartialEq + Eq {}
+pub trait WasmType: PartialEq<crate::Type> + PartialEq + Eq {
+    /// Converts the custom type into a `wasmparser` known type.
+    ///
+    /// # Note
+    ///
+    /// This interface is required as bridge until transitioning is complete.
+    fn to_parser_type(&self) -> crate::Type;
+}
 
 /// Types that qualify as Wasm function types for validation purposes.
 pub trait WasmFuncType {
@@ -373,7 +380,11 @@ pub trait DefaultWasmModuleResources:
 {
 }
 
-impl WasmType for crate::Type {}
+impl WasmType for crate::Type {
+    fn to_parser_type(&self) -> crate::Type {
+        *self
+    }
+}
 
 impl WasmFuncType for crate::FuncType {
     type Type = crate::Type;
