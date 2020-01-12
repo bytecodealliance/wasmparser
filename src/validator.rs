@@ -157,10 +157,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         &self.tables
     }
 
-    fn memories(&self) -> &[MemoryType] {
-        &self.memories
-    }
-
     fn func_type_indices(&self) -> &[u32] {
         &self.func_type_indices
     }

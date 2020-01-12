@@ -362,7 +362,6 @@ pub trait WasmModuleResources {
 
     fn types(&self) -> &[FuncType];
     fn tables(&self) -> &[TableType];
-    fn memories(&self) -> &[MemoryType];
     fn func_type_indices(&self) -> &[u32];
 
     fn element_count(&self) -> u32;
@@ -661,7 +660,7 @@ impl OperatorValidator {
             GlobalType = G,
         >,
     ) -> OperatorValidatorResult<()> {
-        if memory_index as usize >= resources.memories().len() {
+        if memory_index as usize >= resources.len_memories() {
             return Err("no linear memories are present");
         }
         Ok(())
@@ -682,10 +681,10 @@ impl OperatorValidator {
             GlobalType = G,
         >,
     ) -> OperatorValidatorResult<()> {
-        if memory_index as usize >= resources.memories().len() {
+        if memory_index as usize >= resources.len_memories() {
             return Err("no linear memories are present");
         }
-        if !resources.memories()[memory_index as usize].shared {
+        if !resources.memory_at(memory_index).is_shared() {
             return Err("atomic accesses require shared memory");
         }
         Ok(())
