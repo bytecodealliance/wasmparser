@@ -1047,7 +1047,10 @@ impl OperatorValidator {
             let len = func_ty.len_inputs();
             self.check_frame_size(len + skip)?;
             for (i, ty) in wasm_func_type_inputs(func_ty).enumerate() {
-                if !self.func_state.assert_stack_type_at(len - 1 - i + skip, ty.to_parser_type()) {
+                if !self
+                    .func_state
+                    .assert_stack_type_at(len - 1 - i + skip, ty.to_parser_type())
+                {
                     return Err("stack operand type mismatch for block");
                 }
             }
