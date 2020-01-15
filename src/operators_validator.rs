@@ -671,12 +671,9 @@ impl OperatorValidator {
         T: WasmType,
     {
         let local_types = {
-            let mut local_types = Vec::new();
-            let mut n = 0;
-            while let Some(ty) = func_type.input_at(n) {
-                local_types.push(ty.to_parser_type());
-                n += 1;
-            }
+            let mut local_types = wasm_func_type_inputs(func_type)
+                .map(WasmType::to_parser_type)
+                .collect::<Vec<_>>();
             for local in locals {
                 for _ in 0..local.0 {
                     local_types.push(local.1);
@@ -1046,14 +1043,11 @@ impl OperatorValidator {
         skip: usize,
     ) -> OperatorValidatorResult<()> {
         if let TypeOrFuncType::FuncType(idx) = ty {
-            let func_ty = &resources.type_at(idx);
+            let func_ty = resources.type_at(idx);
             let len = func_ty.len_inputs();
             self.check_frame_size(len + skip)?;
-            for i in 0..len {
-                if !self.func_state.assert_stack_type_at(
-                    len - 1 - i + skip,
-                    func_ty.input_at(i as u32).unwrap().to_parser_type(),
-                ) {
+            for (i, ty) in wasm_func_type_inputs(func_ty).enumerate() {
+                if !self.func_state.assert_stack_type_at(len - 1 - i + skip, ty.to_parser_type()) {
                     return Err("stack operand type mismatch for block");
                 }
             }
