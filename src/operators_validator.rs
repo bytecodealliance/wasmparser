@@ -300,40 +300,186 @@ pub trait WasmFuncType {
     fn output_at(&self, at: u32) -> Option<&Self::Type>;
 }
 
-/// Returns an iterator over the input types of a Wasm function type.
-fn wasm_func_type_inputs<'a, F, T>(func_type: &'a F) -> impl ExactSizeIterator<Item = &'a T>
+/// Iterator over the inputs of a Wasm function type.
+struct WasmFuncTypeInputs<'a, F, T>
 where
     F: WasmFuncType<Type = T>,
     T: WasmType + 'a,
 {
-    // Quick'n dirty implementation.
-    // We might create an actual custom iterator
-    // type if performance issues arise.
-    let mut result = Vec::new();
-    let mut n = 0;
-    while let Some(ty) = func_type.input_at(n) {
-        result.push(ty);
-        n += 1;
+    /// The iterated-over function type.
+    func_type: &'a F,
+    /// The current starting index.
+    start: u32,
+    /// The current ending index.
+    end: u32,
+}
+
+impl<'a, F, T> WasmFuncTypeInputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn new(func_type: &'a F) -> Self {
+        Self {
+            func_type,
+            start: 0,
+            end: func_type.len_inputs() as u32,
+        }
     }
-    result.into_iter()
+}
+
+impl<'a, F, T> Iterator for WasmFuncTypeInputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.start == self.end {
+            return None;
+        }
+        let ty = self
+            .func_type
+            .input_at(self.start)
+            // Expected since `self.start != self.end`.
+            .expect("we expect to receive an input type at this point");
+        self.start += 1;
+        Some(ty)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len(), Some(self.len()))
+    }
+}
+
+impl<'a, F, T> DoubleEndedIterator for WasmFuncTypeInputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.start == self.end {
+            return None
+        }
+        let ty = self
+            .func_type
+            .input_at(self.end)
+            // Expected since `self.start != self.end`.
+            .expect("we expect to receive an input type at this point");
+        self.end -= 1;
+        Some(ty)
+    }
+}
+
+impl<'a, F, T> ExactSizeIterator for WasmFuncTypeInputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn len(&self) -> usize {
+        (self.end as usize) - (self.start as usize)
+    }
+}
+
+/// Iterator over the outputs of a Wasm function type.
+struct WasmFuncTypeOutputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    /// The iterated-over function type.
+    func_type: &'a F,
+    /// The current starting index.
+    start: u32,
+    /// The current ending index.
+    end: u32,
+}
+
+impl<'a, F, T> WasmFuncTypeOutputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn new(func_type: &'a F) -> Self {
+        Self {
+            func_type,
+            start: 0,
+            end: func_type.len_outputs() as u32,
+        }
+    }
+}
+
+impl<'a, F, T> Iterator for WasmFuncTypeOutputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.start == self.end {
+            return None;
+        }
+        let ty = self
+            .func_type
+            .output_at(self.start)
+            // Expected since `self.start != self.end`.
+            .expect("we expect to receive an input type at this point");
+        self.start += 1;
+        Some(ty)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len(), Some(self.len()))
+    }
+}
+
+impl<'a, F, T> DoubleEndedIterator for WasmFuncTypeOutputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.start == self.end {
+            return None
+        }
+        let ty = self
+            .func_type
+            .output_at(self.end)
+            // Expected since `self.start != self.end`.
+            .expect("we expect to receive an input type at this point");
+        self.end -= 1;
+        Some(ty)
+    }
+}
+
+impl<'a, F, T> ExactSizeIterator for WasmFuncTypeOutputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    fn len(&self) -> usize {
+        (self.end as usize) - (self.start as usize)
+    }
+}
+
+/// Returns an iterator over the input types of a Wasm function type.
+fn wasm_func_type_inputs<'a, F, T>(func_type: &'a F) -> WasmFuncTypeInputs<'a, F, T>
+where
+    F: WasmFuncType<Type = T>,
+    T: WasmType + 'a,
+{
+    WasmFuncTypeInputs::new(func_type)
 }
 
 /// Returns an iterator over the output types of a Wasm function type.
-fn wasm_func_type_outputs<'a, F, T>(func_type: &'a F) -> impl ExactSizeIterator<Item = &'a T>
+fn wasm_func_type_outputs<'a, F, T>(func_type: &'a F) -> WasmFuncTypeOutputs<'a, F, T>
 where
     F: WasmFuncType<Type = T>,
     T: WasmType + 'a,
 {
-    // Quick'n dirty implementation.
-    // We might create an actual custom iterator
-    // type if performance issues arise.
-    let mut result = Vec::new();
-    let mut n = 0;
-    while let Some(ty) = func_type.output_at(n) {
-        result.push(ty);
-        n += 1;
-    }
-    result.into_iter()
+    WasmFuncTypeOutputs::new(func_type)
 }
 
 /// Types that qualify as Wasm table types for validation purposes.
