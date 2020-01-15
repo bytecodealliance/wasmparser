@@ -360,7 +360,7 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.start == self.end {
-            return None
+            return None;
         }
         let ty = self
             .func_type
@@ -442,7 +442,7 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.start == self.end {
-            return None
+            return None;
         }
         let ty = self
             .func_type
