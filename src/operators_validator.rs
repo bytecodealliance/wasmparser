@@ -539,8 +539,6 @@ pub trait WasmModuleResources {
 
     /// Returns the number of types.
     fn len_types(&self) -> usize;
-    /// Returns the number of tables.
-    fn len_tables(&self) -> usize;
     /// Returns the number of linear memories.
     fn len_memories(&self) -> usize;
     /// Returns the number of function type indices.
@@ -1192,7 +1190,7 @@ impl OperatorValidator {
                 )?;
             }
             Operator::CallIndirect { index, table_index } => {
-                if table_index as usize >= resources.len_tables() {
+                if resources.table_at(table_index).is_none() {
                     return Err("table index out of bounds");
                 }
                 if index as usize >= resources.len_types() {
@@ -2149,7 +2147,7 @@ impl OperatorValidator {
                 if table > 0 {
                     self.check_reference_types_enabled()?;
                 }
-                if table as usize >= resources.len_tables() {
+                if resources.table_at(table).is_none() {
                     return Err("table index out of bounds");
                 }
                 self.check_operands_3(Type::I32, Type::I32, Type::I32)?;
@@ -2169,8 +2167,8 @@ impl OperatorValidator {
                 if src_table > 0 || dst_table > 0 {
                     self.check_reference_types_enabled()?;
                 }
-                if src_table as usize >= resources.len_tables()
-                    || dst_table as usize >= resources.len_tables()
+                if resources.table_at(src_table).is_none()
+                    || resources.table_at(dst_table).is_none()
                 {
                     return Err("table index out of bounds");
                 }
@@ -2206,7 +2204,7 @@ impl OperatorValidator {
             }
             Operator::TableSize { table } => {
                 self.check_reference_types_enabled()?;
-                if table as usize >= resources.len_tables() {
+                if resources.table_at(table).is_none() {
                     return Err("table index out of bounds");
                 }
                 self.func_state.change_frame_with_type(0, Type::I32)?;

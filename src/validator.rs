@@ -135,10 +135,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.types.len()
     }
 
-    fn len_tables(&self) -> usize {
-        self.tables.len()
-    }
-
     fn len_memories(&self) -> usize {
         self.memories.len()
     }
