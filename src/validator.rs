@@ -119,8 +119,8 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.tables.get(at as usize)
     }
 
-    fn memory_at(&self, at: u32) -> &Self::MemoryType {
-        &self.memories[at as usize]
+    fn memory_at(&self, at: u32) -> Option<&Self::MemoryType> {
+        self.memories.get(at as usize)
     }
 
     fn global_at(&self, at: u32) -> Option<&Self::GlobalType> {

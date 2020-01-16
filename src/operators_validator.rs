@@ -531,7 +531,7 @@ pub trait WasmModuleResources {
     /// Returns the table at given index if any.
     fn table_at(&self, at: u32) -> Option<&Self::TableType>;
     /// Returns the linear memory at given index.
-    fn memory_at(&self, at: u32) -> &Self::MemoryType;
+    fn memory_at(&self, at: u32) -> Option<&Self::MemoryType>;
     /// Returns the global variable at given index.
     fn global_at(&self, at: u32) -> Option<&Self::GlobalType>;
     /// Returns the function signature ID at given index.
@@ -883,13 +883,13 @@ impl OperatorValidator {
             GlobalType = G,
         >,
     ) -> OperatorValidatorResult<()> {
-        if memory_index as usize >= resources.len_memories() {
-            return Err("no linear memories are present");
+        match resources.memory_at(memory_index) {
+            Some(memory) if !memory.is_shared() => {
+                return Err("atomic accesses require shared memory")
+            }
+            None => return Err("no linear memories are present"),
+            _ => Ok(())
         }
-        if !resources.memory_at(memory_index).is_shared() {
-            return Err("atomic accesses require shared memory");
-        }
-        Ok(())
     }
 
     fn check_memarg<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
