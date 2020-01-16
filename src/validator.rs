@@ -127,8 +127,8 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.globals.get(at as usize)
     }
 
-    fn func_type_id_at(&self, at: u32) -> u32 {
-        self.func_type_indices[at as usize]
+    fn func_type_id_at(&self, at: u32) -> Option<u32> {
+        self.func_type_indices.get(at as usize).copied()
     }
 
     fn len_types(&self) -> usize {
@@ -880,7 +880,12 @@ pub fn validate_function_body<
         locals.push((count, ty));
     }
     let operators_reader = function_body.get_operators_reader()?;
-    let func_type_index = resources.func_type_id_at(func_index);
+    let func_type_index = resources
+        .func_type_id_at(func_index)
+        // This was an out-of-bounds access before the change to return `Option`
+        // so I assumed it is considered a bug to access a non-existing function
+        // id here and went with panicking instead of returning a proper error.
+        .expect("the validated function id itself is out of bounds");
     let func_type = resources.type_at(func_type_index);
     let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config);
     let mut eof_found = false;

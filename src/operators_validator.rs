@@ -535,7 +535,7 @@ pub trait WasmModuleResources {
     /// Returns the global variable at given index.
     fn global_at(&self, at: u32) -> Option<&Self::GlobalType>;
     /// Returns the function signature ID at given index.
-    fn func_type_id_at(&self, at: u32) -> u32;
+    fn func_type_id_at(&self, at: u32) -> Option<u32>;
 
     /// Returns the number of types.
     fn len_types(&self) -> usize;
@@ -1176,16 +1176,17 @@ impl OperatorValidator {
                 self.func_state.start_dead_code()
             }
             Operator::Call { function_index } => {
-                if function_index as usize >= resources.len_func_type_id() {
-                    return Err("function index out of bounds");
+                match resources.func_type_id_at(function_index) {
+                    Some(type_index) => {
+                        let ty = resources.type_at(type_index);
+                        self.check_operands(wasm_func_type_inputs(ty).map(WasmType::to_parser_type))?;
+                        self.func_state.change_frame_with_types(
+                            ty.len_inputs(),
+                            wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
+                        )?;
+                    }
+                    None => return Err("function index out of bounds"),
                 }
-                let type_index = resources.func_type_id_at(function_index);
-                let ty = resources.type_at(type_index);
-                self.check_operands(wasm_func_type_inputs(ty).map(WasmType::to_parser_type))?;
-                self.func_state.change_frame_with_types(
-                    ty.len_inputs(),
-                    wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
-                )?;
             }
             Operator::CallIndirect { index, table_index } => {
                 if resources.table_at(table_index).is_none() {
