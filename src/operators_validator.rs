@@ -998,23 +998,21 @@ impl OperatorValidator {
                 self.check_reference_types_enabled()
             }
             TypeOrFuncType::Type(Type::V128) => self.check_simd_enabled(),
-            TypeOrFuncType::FuncType(idx) => {
-                match resources.type_at(idx) {
-                    None => Err("type index out of bounds"),
-                    Some(ty) if !self.config.enable_multi_value => {
-                        if ty.len_outputs() > 1 {
-                            return Err("blocks, loops, and ifs may only return at most one \
+            TypeOrFuncType::FuncType(idx) => match resources.type_at(idx) {
+                None => Err("type index out of bounds"),
+                Some(ty) if !self.config.enable_multi_value => {
+                    if ty.len_outputs() > 1 {
+                        return Err("blocks, loops, and ifs may only return at most one \
                                     value when multi-value is not enabled");
-                        }
-                        if ty.len_inputs() > 0 {
-                            return Err("blocks, loops, and ifs accept no parameters \
-                                    when multi-value is not enabled");
-                        }
-                        Ok(())
                     }
-                    Some(_) => Ok(()),
+                    if ty.len_inputs() > 0 {
+                        return Err("blocks, loops, and ifs accept no parameters \
+                                    when multi-value is not enabled");
+                    }
+                    Ok(())
                 }
-            }
+                Some(_) => Ok(()),
+            },
             _ => Err("invalid block return type"),
         }
     }
@@ -1036,7 +1034,8 @@ impl OperatorValidator {
         skip: usize,
     ) -> OperatorValidatorResult<()> {
         if let TypeOrFuncType::FuncType(idx) = ty {
-            let func_ty = resources.type_at(idx)
+            let func_ty = resources
+                .type_at(idx)
                 // Note: This was an out-of-bounds memory access before
                 //       the change to return `Option` at `type_at`. So
                 //       I assumed that invalid indices at this point are
@@ -1183,7 +1182,8 @@ impl OperatorValidator {
             }
             Operator::Call { function_index } => match resources.func_type_id_at(function_index) {
                 Some(type_index) => {
-                    let ty = resources.type_at(type_index)
+                    let ty = resources
+                        .type_at(type_index)
                         // Note: This was an out-of-bounds memory access before
                         //       the change to return `Option` at `type_at`. So
                         //       I assumed that invalid indices at this point are
