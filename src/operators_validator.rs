@@ -543,9 +543,6 @@ pub trait WasmModuleResources {
     /// Returns the function signature ID at given index.
     fn func_type_id_at(&self, at: u32) -> Option<u32>;
 
-    /// Returns the number of types.
-    fn len_types(&self) -> usize;
-
     /// Returns the number of elements.
     fn element_count(&self) -> u32;
     /// Returns the number of bytes in the Wasm data section.

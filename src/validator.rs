@@ -131,10 +131,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.func_type_indices.get(at as usize).copied()
     }
 
-    fn len_types(&self) -> usize {
-        self.types.len()
-    }
-
     fn element_count(&self) -> u32 {
         self.element_count
     }
