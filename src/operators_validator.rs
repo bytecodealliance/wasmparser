@@ -522,7 +522,7 @@ pub trait WasmGlobalType {
     fn content_type(&self) -> &Self::Type;
 }
 
-/// Types  that qualify as Wasm valiation database.
+/// Types that qualify as Wasm valiation database.
 ///
 /// # Note
 ///
