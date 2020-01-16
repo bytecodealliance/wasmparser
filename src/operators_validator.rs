@@ -268,7 +268,7 @@ enum BlockType {
     If,
 }
 
-/// Types that quality as Wasm types for validation purposes.
+/// Types that qualify as Wasm types for validation purposes.
 ///
 /// Must be comparable with `wasmparser` given Wasm types and
 /// must be comparable to themselves.
