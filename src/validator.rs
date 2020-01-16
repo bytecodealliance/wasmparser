@@ -143,10 +143,6 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         self.memories.len()
     }
 
-    fn len_globals(&self) -> usize {
-        self.globals.len()
-    }
-
     fn len_func_type_id(&self) -> usize {
         self.func_type_indices.len()
     }

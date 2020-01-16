@@ -543,8 +543,6 @@ pub trait WasmModuleResources {
     fn len_tables(&self) -> usize;
     /// Returns the number of linear memories.
     fn len_memories(&self) -> usize;
-    /// Returns the number of global variables.
-    fn len_globals(&self) -> usize;
     /// Returns the number of function type indices.
     fn len_func_type_id(&self) -> usize;
 
