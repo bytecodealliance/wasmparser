@@ -539,8 +539,6 @@ pub trait WasmModuleResources {
 
     /// Returns the number of types.
     fn len_types(&self) -> usize;
-    /// Returns the number of function type indices.
-    fn len_func_type_id(&self) -> usize;
 
     /// Returns the number of elements.
     fn element_count(&self) -> u32;
@@ -1792,7 +1790,7 @@ impl OperatorValidator {
             }
             Operator::RefFunc { function_index } => {
                 self.check_reference_types_enabled()?;
-                if function_index as usize >= resources.len_func_type_id() {
+                if resources.func_type_id_at(function_index).is_none() {
                     return Err("function index out of bounds");
                 }
                 self.func_state.change_frame_with_type(0, Type::AnyFunc)?;
