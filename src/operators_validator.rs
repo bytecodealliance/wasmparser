@@ -528,10 +528,8 @@ pub trait WasmModuleResources {
 
     /// Returns the type at given index.
     fn type_at(&self, at: u32) -> &Self::FuncType;
-    /// Returns the table at given index.
-    fn table_at(&self, at: u32) -> &Self::TableType;
     /// Returns the table at given index if any.
-    fn table_at_checked(&self, at: u32) -> Option<&Self::TableType>;
+    fn table_at(&self, at: u32) -> Option<&Self::TableType>;
     /// Returns the linear memory at given index.
     fn memory_at(&self, at: u32) -> &Self::MemoryType;
     /// Returns the global variable at given index.
@@ -2183,7 +2181,7 @@ impl OperatorValidator {
             }
             Operator::TableGet { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.table_at_checked(table) {
+                let ty = match resources.table_at(table) {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
@@ -2192,7 +2190,7 @@ impl OperatorValidator {
             }
             Operator::TableSet { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.table_at_checked(table) {
+                let ty = match resources.table_at(table) {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
@@ -2201,7 +2199,7 @@ impl OperatorValidator {
             }
             Operator::TableGrow { table } => {
                 self.check_reference_types_enabled()?;
-                let ty = match resources.table_at_checked(table) {
+                let ty = match resources.table_at(table) {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
@@ -2217,7 +2215,7 @@ impl OperatorValidator {
             }
             Operator::TableFill { table } => {
                 self.check_bulk_memory_enabled()?;
-                let ty = match resources.table_at_checked(table) {
+                let ty = match resources.table_at(table) {
                     Some(ty) => ty.element_type().to_parser_type(),
                     None => return Err("table index out of bounds"),
                 };
