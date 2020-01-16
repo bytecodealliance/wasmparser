@@ -533,7 +533,7 @@ pub trait WasmModuleResources {
     /// Returns the linear memory at given index.
     fn memory_at(&self, at: u32) -> &Self::MemoryType;
     /// Returns the global variable at given index.
-    fn global_at(&self, at: u32) -> &Self::GlobalType;
+    fn global_at(&self, at: u32) -> Option<&Self::GlobalType>;
     /// Returns the function signature ID at given index.
     fn func_type_id_at(&self, at: u32) -> u32;
 
@@ -1249,23 +1249,23 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, local_type)?;
             }
             Operator::GlobalGet { global_index } => {
-                if global_index as usize >= resources.len_globals() {
+                if let Some(ty) = resources.global_at(global_index) {
+                    self.func_state
+                        .change_frame_with_type(0, ty.content_type().to_parser_type())?;
+                } else {
                     return Err("global index out of bounds");
-                }
-                let ty = &resources.global_at(global_index);
-                self.func_state
-                    .change_frame_with_type(0, ty.content_type().to_parser_type())?;
+                };
             }
             Operator::GlobalSet { global_index } => {
-                if global_index as usize >= resources.len_globals() {
+                if let Some(ty) = resources.global_at(global_index) {
+                    if !ty.is_mutable() {
+                        return Err("global expected to be mutable");
+                    }
+                    self.check_operands_1(ty.content_type().to_parser_type())?;
+                    self.func_state.change_frame(1)?;
+                } else {
                     return Err("global index out of bounds");
-                }
-                let ty = &resources.global_at(global_index);
-                if !ty.is_mutable() {
-                    return Err("global expected to be mutable");
-                }
-                self.check_operands_1(ty.content_type().to_parser_type())?;
-                self.func_state.change_frame(1)?;
+                };
             }
             Operator::I32Load { ref memarg } => {
                 self.check_memarg(memarg, 2, resources)?;

@@ -123,8 +123,8 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
         &self.memories[at as usize]
     }
 
-    fn global_at(&self, at: u32) -> &Self::GlobalType {
-        &self.globals[at as usize]
+    fn global_at(&self, at: u32) -> Option<&Self::GlobalType> {
+        self.globals.get(at as usize)
     }
 
     fn func_type_id_at(&self, at: u32) -> u32 {
