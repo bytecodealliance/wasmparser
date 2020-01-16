@@ -539,8 +539,6 @@ pub trait WasmModuleResources {
 
     /// Returns the number of types.
     fn len_types(&self) -> usize;
-    /// Returns the number of linear memories.
-    fn len_memories(&self) -> usize;
     /// Returns the number of function type indices.
     fn len_func_type_id(&self) -> usize;
 
@@ -862,7 +860,7 @@ impl OperatorValidator {
             GlobalType = G,
         >,
     ) -> OperatorValidatorResult<()> {
-        if memory_index as usize >= resources.len_memories() {
+        if resources.memory_at(memory_index).is_none() {
             return Err("no linear memories are present");
         }
         Ok(())
