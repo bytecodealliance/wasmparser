@@ -111,8 +111,8 @@ impl<'a> WasmModuleResources for ValidatingParserResources {
     type MemoryType = crate::MemoryType;
     type GlobalType = crate::GlobalType;
 
-    fn type_at(&self, at: u32) -> &Self::FuncType {
-        &self.types[at as usize]
+    fn type_at(&self, at: u32) -> Option<&Self::FuncType> {
+        self.types.get(at as usize)
     }
 
     fn table_at(&self, at: u32) -> Option<&Self::TableType> {
@@ -878,11 +878,16 @@ pub fn validate_function_body<
     let operators_reader = function_body.get_operators_reader()?;
     let func_type_index = resources
         .func_type_id_at(func_index)
-        // This was an out-of-bounds access before the change to return `Option`
+        // Note: This was an out-of-bounds access before the change to return `Option`
         // so I assumed it is considered a bug to access a non-existing function
         // id here and went with panicking instead of returning a proper error.
-        .expect("the validated function id itself is out of bounds");
-    let func_type = resources.type_at(func_type_index);
+        .expect("the function index of the validated function itself is out of bounds");
+    let func_type = resources
+        .type_at(func_type_index)
+        // Note: This was an out-of-bounds access before the change to return `Option`
+        // so I assumed it is considered a bug to access a non-existing function
+        // id here and went with panicking instead of returning a proper error.
+        .expect("the function type indexof the validated function itself is out of bounds");
     let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config);
     let mut eof_found = false;
     let mut last_op = 0;

@@ -134,7 +134,13 @@ impl FuncState {
             TypeOrFuncType::Type(Type::EmptyBlockType) => (vec![], vec![]),
             TypeOrFuncType::Type(ty) => (vec![], vec![ty]),
             TypeOrFuncType::FuncType(idx) => {
-                let ty = resources.type_at(idx);
+                let ty = resources
+                    .type_at(idx)
+                    // Note: This was an out-of-bounds memory access before
+                    //       the change to return `Option` at `type_at`. So
+                    //       I assumed that invalid indices at this point are
+                    //       bugs.
+                    .expect("function type index is out of bounds");
                 (
                     wasm_func_type_inputs(ty)
                         .map(WasmType::to_parser_type)
@@ -527,7 +533,7 @@ pub trait WasmModuleResources {
     type GlobalType: WasmGlobalType;
 
     /// Returns the type at given index.
-    fn type_at(&self, at: u32) -> &Self::FuncType;
+    fn type_at(&self, at: u32) -> Option<&Self::FuncType>;
     /// Returns the table at given index if any.
     fn table_at(&self, at: u32) -> Option<&Self::TableType>;
     /// Returns the linear memory at given index.
@@ -884,7 +890,7 @@ impl OperatorValidator {
                 return Err("atomic accesses require shared memory")
             }
             None => return Err("no linear memories are present"),
-            _ => Ok(())
+            _ => Ok(()),
         }
     }
 
@@ -996,21 +1002,21 @@ impl OperatorValidator {
             }
             TypeOrFuncType::Type(Type::V128) => self.check_simd_enabled(),
             TypeOrFuncType::FuncType(idx) => {
-                if idx as usize >= resources.len_types() {
-                    return Err("type index out of bounds");
-                }
-                let ty = resources.type_at(idx);
-                if !self.config.enable_multi_value {
-                    if ty.len_outputs() > 1 {
-                        return Err("blocks, loops, and ifs may only return at most one \
+                match resources.type_at(idx) {
+                    None => Err("type index out of bounds"),
+                    Some(ty) if !self.config.enable_multi_value => {
+                        if ty.len_outputs() > 1 {
+                            return Err("blocks, loops, and ifs may only return at most one \
                                     value when multi-value is not enabled");
-                    }
-                    if ty.len_inputs() > 0 {
-                        return Err("blocks, loops, and ifs accept no parameters \
+                        }
+                        if ty.len_inputs() > 0 {
+                            return Err("blocks, loops, and ifs accept no parameters \
                                     when multi-value is not enabled");
+                        }
+                        Ok(())
                     }
+                    Some(_) => Ok(()),
                 }
-                Ok(())
             }
             _ => Err("invalid block return type"),
         }
@@ -1033,7 +1039,12 @@ impl OperatorValidator {
         skip: usize,
     ) -> OperatorValidatorResult<()> {
         if let TypeOrFuncType::FuncType(idx) = ty {
-            let func_ty = resources.type_at(idx);
+            let func_ty = resources.type_at(idx)
+                // Note: This was an out-of-bounds memory access before
+                //       the change to return `Option` at `type_at`. So
+                //       I assumed that invalid indices at this point are
+                //       bugs.
+                .expect("function type index is out of bounds");
             let len = func_ty.len_inputs();
             self.check_frame_size(len + skip)?;
             for (i, ty) in wasm_func_type_inputs(func_ty).enumerate() {
@@ -1173,38 +1184,42 @@ impl OperatorValidator {
                 self.check_jump_from_block(depth, 0)?;
                 self.func_state.start_dead_code()
             }
-            Operator::Call { function_index } => {
-                match resources.func_type_id_at(function_index) {
-                    Some(type_index) => {
-                        let ty = resources.type_at(type_index);
-                        self.check_operands(wasm_func_type_inputs(ty).map(WasmType::to_parser_type))?;
-                        self.func_state.change_frame_with_types(
-                            ty.len_inputs(),
-                            wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
-                        )?;
-                    }
-                    None => return Err("function index out of bounds"),
+            Operator::Call { function_index } => match resources.func_type_id_at(function_index) {
+                Some(type_index) => {
+                    let ty = resources.type_at(type_index)
+                        // Note: This was an out-of-bounds memory access before
+                        //       the change to return `Option` at `type_at`. So
+                        //       I assumed that invalid indices at this point are
+                        //       bugs.
+                        .expect("function type index is out of bounds");
+                    self.check_operands(wasm_func_type_inputs(ty).map(WasmType::to_parser_type))?;
+                    self.func_state.change_frame_with_types(
+                        ty.len_inputs(),
+                        wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
+                    )?;
                 }
-            }
+                None => return Err("function index out of bounds"),
+            },
             Operator::CallIndirect { index, table_index } => {
                 if resources.table_at(table_index).is_none() {
                     return Err("table index out of bounds");
                 }
-                if index as usize >= resources.len_types() {
-                    return Err("type index out of bounds");
+                match resources.type_at(index) {
+                    None => return Err("type index out of bounds"),
+                    Some(ty) => {
+                        let types = {
+                            let mut types = Vec::with_capacity(ty.len_inputs() + 1);
+                            types.extend(wasm_func_type_inputs(ty).map(WasmType::to_parser_type));
+                            types.push(Type::I32);
+                            types
+                        };
+                        self.check_operands(types.into_iter())?;
+                        self.func_state.change_frame_with_types(
+                            ty.len_inputs() + 1,
+                            wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
+                        )?;
+                    }
                 }
-                let ty = resources.type_at(index);
-                let types = {
-                    let mut types = Vec::with_capacity(ty.len_inputs() + 1);
-                    types.extend(wasm_func_type_inputs(ty).map(WasmType::to_parser_type));
-                    types.push(Type::I32);
-                    types
-                };
-                self.check_operands(types.into_iter())?;
-                self.func_state.change_frame_with_types(
-                    ty.len_inputs() + 1,
-                    wasm_func_type_outputs(ty).map(WasmType::to_parser_type),
-                )?;
             }
             Operator::Drop => {
                 self.check_frame_size(1)?;
