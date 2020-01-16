@@ -67,7 +67,12 @@ pub use crate::validator::ValidatingParser;
 pub use crate::validator::ValidatingParserConfig;
 
 pub use crate::operators_validator::OperatorValidatorConfig;
+pub use crate::operators_validator::WasmFuncType;
+pub use crate::operators_validator::WasmGlobalType;
+pub use crate::operators_validator::WasmMemoryType;
 pub use crate::operators_validator::WasmModuleResources;
+pub use crate::operators_validator::WasmTableType;
+pub use crate::operators_validator::WasmType;
 
 pub use crate::readers::CodeSectionReader;
 pub use crate::readers::CustomSectionContent;
