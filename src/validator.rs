@@ -34,11 +34,8 @@ use crate::operators_validator::{
     DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
 use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
-use crate::{
-    WasmFuncType, WasmGlobalType, WasmMemoryType,
-    WasmModuleResources, WasmTableType,
-};
 use crate::{ElemSectionEntryTable, ElementItem};
+use crate::{WasmFuncType, WasmGlobalType, WasmMemoryType, WasmModuleResources, WasmTableType};
 
 use crate::readers::FunctionBody;
 
