@@ -100,6 +100,7 @@ pub use crate::readers::OperatorsReader;
 pub use crate::readers::ProducersField;
 pub use crate::readers::ProducersFieldValue;
 pub use crate::readers::ProducersSectionReader;
+pub use crate::readers::ProducersFieldValuesReader;
 pub use crate::readers::Reloc;
 pub use crate::readers::RelocSectionReader;
 pub use crate::readers::Section;
