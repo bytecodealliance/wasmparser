@@ -720,7 +720,7 @@ impl OperatorValidator {
             Operator::BrTable { ref table } => {
                 self.check_operands_1(Type::I32)?;
                 let mut depth0: Option<u32> = None;
-                for relative_depth in table {
+                for relative_depth in table.targets_and_default() {
                     if depth0.is_none() {
                         self.check_jump_from_block(relative_depth, 1)?;
                         depth0 = Some(relative_depth);

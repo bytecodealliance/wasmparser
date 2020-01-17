@@ -191,11 +191,15 @@ pub enum RelocType {
     GlobalIndexLEB,
 }
 
-/// A br_table entries representation.
+/// A `br_table` entries representation.
 #[derive(Debug, Clone)]
 pub struct BrTable<'a> {
+    /// The underlying bytes buffer representing the already parsed targets.
     pub(crate) buffer: &'a [u8],
-    pub(crate) cnt: usize,
+    /// The number of non-default targets of the `br_table`.
+    pub(crate) len_targets: usize,
+    /// The default target offset of the `br_table`.
+    pub default_offset: u32,
 }
 
 /// An IEEE binary32 immediate floating point value, represented as a u32

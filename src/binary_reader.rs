@@ -367,21 +367,23 @@ impl<'a> BinaryReader<'a> {
     }
 
     fn read_br_table(&mut self) -> Result<BrTable<'a>> {
-        let targets_len = self.read_var_u32()? as usize;
-        if targets_len > MAX_WASM_BR_TABLE_SIZE {
+        let len_targets = self.read_var_u32()? as usize;
+        if len_targets > MAX_WASM_BR_TABLE_SIZE {
             return Err(BinaryReaderError {
                 message: "br_table size is out of bound",
                 offset: self.original_position() - 1,
             });
         }
         let start = self.position;
-        for _ in 0..targets_len {
+        for _ in 0..len_targets {
             self.skip_var_32()?;
         }
-        self.skip_var_32()?;
+        let default_offset = self.read_var_u32()?;
+        let end = self.position;
         Ok(BrTable {
-            buffer: &self.buffer[start..self.position],
-            cnt: targets_len as usize,
+            buffer: &self.buffer[start..end],
+            default_offset,
+            len_targets,
         })
     }
 
@@ -493,7 +495,7 @@ impl<'a> BinaryReader<'a> {
             if shift >= 25 && (byte >> (32 - shift)) != 0 {
                 // The continuation bit or unused bits are set.
                 return Err(BinaryReaderError {
-                    message: "Invalid var_u32",
+                    message: "encountered invalid var_u32 while reading",
                     offset: self.original_position() - 1,
                 });
             }
@@ -518,7 +520,7 @@ impl<'a> BinaryReader<'a> {
             }
         }
         Err(BinaryReaderError {
-            message: "Invalid var_32",
+            message: "encountered invalid var_32 while skipping",
             offset: self.original_position() - 1,
         })
     }
@@ -1694,20 +1696,24 @@ impl<'a> BinaryReader<'a> {
 }
 
 impl<'a> BrTable<'a> {
-    /// Returns the number of `br_table` entries, not including the default
-    /// label
+    /// Returns the number of `br_table` targets.
+    ///
+    /// # Note
+    ///
+    /// This does *not* include the default target.
     pub fn len(&self) -> usize {
-        self.cnt
+        self.len_targets
     }
 
-    /// Returns whether `BrTable` doesn't have any labels apart from the default one.
+    /// Returns `true` if the `br_table` has no targets apart from the default one.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// Reads br_table entries.
+    /// Returns the `br_table` targets.
     ///
     /// # Examples
+    ///
     /// ```rust
     /// let buf = vec![0x0e, 0x02, 0x01, 0x02, 0x00];
     /// let mut reader = wasmparser::BinaryReader::new(&buf);
@@ -1732,44 +1738,87 @@ impl<'a> BrTable<'a> {
         })?;
         Ok((table.into_boxed_slice(), default_target))
     }
+
+    /// Returns an iterator over the entry offsets of the `br_table`.
+    ///
+    /// # Note
+    ///
+    /// This does *not* yield the default offset.
+    pub fn targets(&self) -> BrTableTargets {
+        BrTableTargets::new(self)
+    }
+
+    /// Returns an iterator over the target offsets and default offset of the `br_table`.
+    pub fn targets_and_default(&'a self) -> impl Iterator<Item = u32> + 'a {
+        self.targets().chain(core::iter::once(self.default_offset))
+    }
 }
 
-/// Iterator for `BrTable`.
+/// Iterator over the entires of a branch table (`br_table`).
 ///
-/// #Examples
+/// # Note
+///
+/// This does NOT yield the default branch offset.
+///
+/// # Examples
+///
 /// ```rust
 /// let buf = vec![0x0e, 0x02, 0x01, 0x02, 0x00];
 /// let mut reader = wasmparser::BinaryReader::new(&buf);
 /// let op = reader.read_operator().unwrap();
 /// if let wasmparser::Operator::BrTable { ref table } = op {
-///     for depth in table {
+///     for depth in table.targets_and_default() {
 ///         println!("BrTable depth: {}", depth);
 ///     }
 /// }
 /// ```
 #[derive(Clone, Debug)]
-pub struct BrTableIterator<'a> {
+pub struct BrTableTargets<'a> {
+    /// The underlying reader yielding the entries bytes.
     reader: BinaryReader<'a>,
+    /// The start byte index.
+    start: usize,
+    /// The end byte index.
+    end: usize,
 }
 
-impl<'a> IntoIterator for &'a BrTable<'a> {
-    type Item = u32;
-    type IntoIter = BrTableIterator<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        BrTableIterator {
-            reader: BinaryReader::new(self.buffer),
+impl<'a> BrTableTargets<'a> {
+    /// Creates a new branch table entries iterator.
+    pub fn new(br_table: &'a BrTable) -> Self {
+        Self {
+            reader: BinaryReader::new(br_table.buffer),
+            start: 0,
+            end: br_table.len_targets,
         }
     }
 }
 
-impl<'a> Iterator for BrTableIterator<'a> {
+impl<'a> Iterator for BrTableTargets<'a> {
     type Item = u32;
 
-    fn next(&mut self) -> Option<u32> {
-        if self.reader.eof() {
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.start == self.end {
             return None;
         }
-        self.reader.read_var_u32().ok()
+        let next = self
+            .reader
+            .read_var_u32()
+            // We can expect this not to fail since we can only contruct a
+            // `BrTableTargets` iterator from a proper `BrTable` instance
+            // which checks the underlying buffer for being a valid `br_table`
+            // entries buffer.
+            .expect("expected a `br_table` target var_u32");
+        self.start += 1;
+        Some(next)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len(), Some(self.len()))
+    }
+}
+
+impl<'a> ExactSizeIterator for BrTableTargets<'a> {
+    fn len(&self) -> usize {
+        self.end - self.start
     }
 }
