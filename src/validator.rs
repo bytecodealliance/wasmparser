@@ -29,12 +29,14 @@ use crate::primitives::{
     Operator, ResizableLimits, Result, SectionCode, TableType, Type,
 };
 
-use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
-
 use crate::operators_validator::{
-    is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig, WasmFuncType,
-    WasmGlobalType, WasmMemoryType, WasmModuleResources, WasmTableType,
+    is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
     DEFAULT_OPERATOR_VALIDATOR_CONFIG,
+};
+use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
+use crate::{
+    WasmFuncType, WasmGlobalType, WasmMemoryType,
+    WasmModuleResources, WasmTableType,
 };
 use crate::{ElemSectionEntryTable, ElementItem};
 
