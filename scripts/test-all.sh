@@ -12,7 +12,8 @@ set -euo pipefail
 # All tests run by this script should be passing at all times.
 
 # Repository top-level directory.
-topdir=$(dirname "$0")
+path_to_script=$(readlink -f "$0")
+topdir=$(dirname "$path_to_script")
 cd "$topdir"
 
 function banner {
