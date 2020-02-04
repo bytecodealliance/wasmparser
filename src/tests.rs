@@ -429,7 +429,6 @@ mod wast_tests {
                 | Invoke { .. }
                 | AssertTrap { .. }
                 | AssertReturn { .. }
-                | AssertReturnFunc { .. }
                 | AssertExhaustion { .. } => {}
             }
         }
@@ -477,6 +476,7 @@ mod wast_tests {
                 ("simd_f32x4.wast", _) => true,
                 ("simd_f64x2.wast", _) => true,
                 ("simd_const.wast", _) => true,
+                ("simd_conversions.wast", _) => true,
                 ("simd_load_splat.wast", _) => true,
                 _ => false,
             },
