@@ -15,6 +15,17 @@ jobs:
     - name: Install Rust
       run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
     - run: ./test-all.sh
+
+  compare_master:
+    name: "Compare Benchmarks to `master`"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Install Rust
+      run: rustup update nightly --no-self-update && rustup default nightly
     - run: ./compare-master.sh
 
   rustfmt:
