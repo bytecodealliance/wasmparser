@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eux
+
 # record current bench results
 cargo bench --bench benchmark -- --noplot --save-baseline after
 
