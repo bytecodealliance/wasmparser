@@ -175,7 +175,7 @@ impl FuncState {
         }
         let (stack_starts_at, polymorphic_values) = {
             // When stack for last block is polymorphic, ensure that
-            // the polymorphic_values matches, and next block informed about that.
+            // the polymorphic_values matches, and next block is informed about that.
             let last_block = self.blocks.last_mut().unwrap();
             if !last_block.is_stack_polymorphic()
                 || last_block.stack_starts_at + start_types.len() <= self.stack_types.len()
