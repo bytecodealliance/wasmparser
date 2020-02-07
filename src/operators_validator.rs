@@ -184,11 +184,6 @@ impl FuncState {
             } else {
                 let unknown_stack_types_len =
                     last_block.stack_starts_at + start_types.len() - self.stack_types.len();
-                let polymorphic_values = last_block
-                    .polymorphic_values
-                    .unwrap()
-                    .max(unknown_stack_types_len);
-                last_block.polymorphic_values = Some(polymorphic_values);
                 (last_block.stack_starts_at, Some(unknown_stack_types_len))
             }
         };
