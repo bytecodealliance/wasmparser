@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod simple_tests {
     use crate::operators_validator::OperatorValidatorConfig;
@@ -22,6 +23,7 @@ mod simple_tests {
     use std::fs::{read_dir, File};
     use std::io::prelude::*;
     use std::path::PathBuf;
+    use std::vec::Vec;
 
     const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {
         operator_config: OperatorValidatorConfig {
@@ -315,6 +317,7 @@ mod simple_tests {
     }
 }
 
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod wast_tests {
     use crate::operators_validator::OperatorValidatorConfig;
