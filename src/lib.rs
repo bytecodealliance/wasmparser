@@ -23,6 +23,8 @@
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
 
+// Always enabled to force devs to add use statements for things like Vec and String, even when
+// working with std.
 #![no_std]
 
 #[cfg(not(feature = "std"))]

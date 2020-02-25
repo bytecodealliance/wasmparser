@@ -18,6 +18,7 @@ use std::boxed::Box;
 #[cfg(feature = "std")]
 use std::error::Error;
 use std::fmt;
+use std::string::String;
 
 #[derive(Debug, Clone)]
 pub struct BinaryReaderError {
