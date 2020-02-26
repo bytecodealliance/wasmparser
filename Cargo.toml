@@ -12,7 +12,7 @@ exclude = ["fuzz/**/*", "tests/**/*", "testsuite/**/*"]
 edition = "2018"
 
 [dependencies]
-hashbrown = { version = "0.6", optional = true }
+no-std-compat = { version = "0.2.0", features = ["alloc", "compat_hash"] }
 
 [dev-dependencies]
 criterion = "0.3"
@@ -27,8 +27,7 @@ default = ["std"]
 # across any hardware. This feature is very critical for many Blockchain infrastructures
 # that rely on deterministic executions of smart contracts across different hardwares.
 deterministic = []
-std = []
-core = ["hashbrown"]
+std = ["no-std-compat/std"]
 
 [[bench]]
 name = "benchmark"

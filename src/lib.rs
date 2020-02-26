@@ -23,16 +23,13 @@
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
 
-// Always enabled to force devs to add use statements for things like Vec and String, even when
-// working with std.
+// Always no_std to force devs to add `use std::prelude::v1::*;` to access types that are only
+// implicitly available when std is enabled
 #![no_std]
 
-#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
 #[macro_use]
-extern crate alloc as std;
-#[cfg(feature = "std")]
-#[macro_use]
-extern crate std;
+extern crate no_std_compat as std;
 
 pub use crate::binary_reader::BinaryReader;
 pub use crate::binary_reader::Range;

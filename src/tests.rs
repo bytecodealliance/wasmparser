@@ -15,6 +15,8 @@
 
 #[cfg(test)]
 mod simple_tests {
+    use std::prelude::v1::*;
+
     use crate::operators_validator::OperatorValidatorConfig;
     use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
     use crate::primitives::{Operator, SectionCode};
@@ -22,7 +24,6 @@ mod simple_tests {
     use std::fs::{read_dir, File};
     use std::io::prelude::*;
     use std::path::PathBuf;
-    use std::vec::Vec;
 
     const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {
         operator_config: OperatorValidatorConfig {
@@ -318,13 +319,14 @@ mod simple_tests {
 
 #[cfg(test)]
 mod wast_tests {
+    use std::prelude::v1::*;
+
     use crate::operators_validator::OperatorValidatorConfig;
     use crate::parser::{ParserState, WasmDecoder};
     use crate::validator::{ValidatingParser, ValidatingParserConfig};
     use crate::BinaryReaderError;
     use std::fs::{read, read_dir};
     use std::str;
-    use std::string::String;
 
     const WAST_TESTS_PATH: &str = "tests/wast";
     const SPEC_TESTS_PATH: &str = "testsuite";

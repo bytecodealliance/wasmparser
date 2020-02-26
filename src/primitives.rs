@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-use core::result;
-use std::boxed::Box;
+use std::prelude::v1::*;
+
 #[cfg(feature = "std")]
 use std::error::Error;
 use std::fmt;
-use std::string::String;
+use std::result;
 
 #[derive(Debug, Clone)]
 pub struct BinaryReaderError {

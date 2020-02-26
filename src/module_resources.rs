@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+use std::prelude::v1::*;
+
 /// Types that qualify as Wasm types for validation purposes.
 ///
 /// Must be comparable with `wasmparser` given Wasm types and

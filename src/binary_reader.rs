@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
-use core::convert::TryInto;
+use std::prelude::v1::*;
+
 use std::boxed::Box;
+use std::convert::TryInto;
 use std::str;
-use std::vec::Vec;
 
 use crate::limits::{
     MAX_WASM_FUNCTION_LOCALS, MAX_WASM_FUNCTION_PARAMS, MAX_WASM_FUNCTION_RETURNS,
@@ -934,7 +935,7 @@ impl<'a> BinaryReader<'a> {
         } else {
             self.position = position;
             let idx = self.read_var_s33()?;
-            if idx < 0 || idx > (core::u32::MAX as i64) {
+            if idx < 0 || idx > (std::u32::MAX as i64) {
                 return Err(BinaryReaderError::new("invalid function type", position));
             }
             Ok(TypeOrFuncType::FuncType(idx as u32))

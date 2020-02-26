@@ -13,14 +13,11 @@
  * limitations under the License.
  */
 
-use core::result;
-#[cfg(not(feature = "std"))]
-use hashbrown::HashSet;
-#[cfg(feature = "std")]
+use std::prelude::v1::*;
+
 use std::collections::HashSet;
+use std::result;
 use std::str;
-use std::string::String;
-use std::vec::Vec;
 
 use crate::limits::{
     MAX_WASM_FUNCTIONS, MAX_WASM_FUNCTION_LOCALS, MAX_WASM_GLOBALS, MAX_WASM_MEMORIES,
