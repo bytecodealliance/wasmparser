@@ -439,16 +439,6 @@ mod wast_tests {
                         );
                     }
                     Err(e) => {
-                        if message.contains("unknown table")
-                            && e.message().contains("unknown element segment")
-                        {
-                            println!(
-                                "{}:{}: skipping until \
-                                 https://github.com/WebAssembly/testsuite/pull/18 is merged",
-                                filename, line,
-                            );
-                            continue;
-                        }
                         assert!(
                             e.message().contains(message),
                             "{file}:{line}: expected \"{spec}\", got \"{actual}\"",

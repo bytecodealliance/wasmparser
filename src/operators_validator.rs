@@ -1992,7 +1992,7 @@ impl OperatorValidator {
                 }
                 if segment >= resources.element_count() {
                     bail_op_err!(
-                        "unknown element segment {}: segment index out of bounds",
+                        "unknown elem segment {}: segment index out of bounds",
                         segment
                     );
                 }
@@ -2003,7 +2003,7 @@ impl OperatorValidator {
                 self.check_bulk_memory_enabled()?;
                 if segment >= resources.element_count() {
                     bail_op_err!(
-                        "unknown element segment {}: segment index out of bounds",
+                        "unknown elem segment {}: segment index out of bounds",
                         segment
                     );
                 }
