@@ -697,7 +697,7 @@ impl OperatorValidator {
         if self.config.deterministic_only {
             return Err(OperatorValidatorError::new(
                 "only deterministic operations are allowed",
-                ));
+            ));
         }
         Ok(())
     }
