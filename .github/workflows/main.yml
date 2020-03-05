@@ -45,3 +45,33 @@ jobs:
       with:
         command: fmt
         args: --all -- --check
+
+  test-all:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all
+
+  test-deterministic:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features "deterministic"
