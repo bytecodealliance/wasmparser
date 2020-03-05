@@ -1395,7 +1395,7 @@ impl OperatorValidator {
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
-            Operator::F32ConvertI32S | Operator::F32ConvertUI32 => {
+            Operator::F32ConvertI32S | Operator::F32ConvertI32U => {
                 self.check_deterministic_only()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
