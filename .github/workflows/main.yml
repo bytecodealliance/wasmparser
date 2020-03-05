@@ -2,7 +2,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,7 +15,9 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
         profile: minimal
-    - run: ./test-all.sh
+    - uses: actions-rs/cargo@v1
+      with:
+        command: check
 
   rustfmt:
     runs-on: ubuntu-latest
