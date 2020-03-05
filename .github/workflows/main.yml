@@ -19,6 +19,20 @@ jobs:
       with:
         command: check
 
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+    - uses: actions-rs/cargo@v1
+      with:
+        command: doc
+
   formatting:
     runs-on: ubuntu-latest
     steps:
