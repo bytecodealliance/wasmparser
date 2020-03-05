@@ -693,10 +693,10 @@ impl OperatorValidator {
     }
 
     #[cfg(feature = "deterministic")]
-    fn check_non_deterministic_enabled(&self) -> OperatorValidatorResult<()> {
-        if !self.config.deterministic_only {
+    fn check_deterministic_only(&self) -> OperatorValidatorResult<()> {
+        if self.config.deterministic_only {
             return Err(OperatorValidatorError::new(
-                "deterministic_only support is not enabled",
+                "only deterministic operations are allowed",
             ));
         }
         Ok(())
@@ -704,7 +704,7 @@ impl OperatorValidator {
 
     #[inline(always)]
     #[cfg(not(feature = "deterministic"))]
-    fn check_non_deterministic_enabled(&self) -> OperatorValidatorResult<()> {
+    fn check_deterministic_only(&self) -> OperatorValidatorResult<()> {
         Ok(())
     }
 
@@ -1098,13 +1098,13 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32Load { memarg } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_memarg(memarg, 2, resources)?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64Load { memarg } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_memarg(memarg, 3, resources)?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
@@ -1170,13 +1170,13 @@ impl OperatorValidator {
                 self.func_state.change_frame(2)?;
             }
             Operator::F32Store { memarg } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_memarg(memarg, 2, resources)?;
                 self.check_operands_2(Type::I32, Type::F32)?;
                 self.func_state.change_frame(2)?;
             }
             Operator::F64Store { memarg } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_memarg(memarg, 3, resources)?;
                 self.check_operands_2(Type::I32, Type::F64)?;
                 self.func_state.change_frame(2)?;
@@ -1222,11 +1222,11 @@ impl OperatorValidator {
             Operator::I32Const { .. } => self.func_state.change_frame_with_type(0, Type::I32)?,
             Operator::I64Const { .. } => self.func_state.change_frame_with_type(0, Type::I64)?,
             Operator::F32Const { .. } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.func_state.change_frame_with_type(0, Type::F32)?;
             }
             Operator::F64Const { .. } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.func_state.change_frame_with_type(0, Type::F64)?;
             }
             Operator::I32Eqz => {
@@ -1269,7 +1269,7 @@ impl OperatorValidator {
             | Operator::F32Gt
             | Operator::F32Le
             | Operator::F32Ge => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_2(Type::F32, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::I32)?;
             }
@@ -1279,7 +1279,7 @@ impl OperatorValidator {
             | Operator::F64Gt
             | Operator::F64Le
             | Operator::F64Ge => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_2(Type::F64, Type::F64)?;
                 self.func_state.change_frame_with_type(2, Type::I32)?;
             }
@@ -1334,7 +1334,7 @@ impl OperatorValidator {
             | Operator::F32Trunc
             | Operator::F32Nearest
             | Operator::F32Sqrt => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
@@ -1345,7 +1345,7 @@ impl OperatorValidator {
             | Operator::F32Min
             | Operator::F32Max
             | Operator::F32Copysign => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_2(Type::F32, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::F32)?;
             }
@@ -1356,7 +1356,7 @@ impl OperatorValidator {
             | Operator::F64Trunc
             | Operator::F64Nearest
             | Operator::F64Sqrt => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1367,7 +1367,7 @@ impl OperatorValidator {
             | Operator::F64Min
             | Operator::F64Max
             | Operator::F64Copysign => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_2(Type::F64, Type::F64)?;
                 self.func_state.change_frame_with_type(2, Type::F64)?;
             }
@@ -1396,32 +1396,32 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32ConvertI32S | Operator::F32ConvertI32U => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32ConvertI64S | Operator::F32ConvertI64U => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32DemoteF64 => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64ConvertI32S | Operator::F64ConvertI32U => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64ConvertI64S | Operator::F64ConvertI64U => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64PromoteF32 => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1434,12 +1434,12 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::I64)?;
             }
             Operator::F32ReinterpretI32 => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I32)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F64ReinterpretI64 => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_operands_1(Type::I64)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
@@ -1653,13 +1653,13 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::F32x4Splat => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::F32)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::F64x2Splat => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::F64)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
@@ -1713,28 +1713,28 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(2, Type::V128)?;
             }
             Operator::F32x4ExtractLane { lane } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 4)?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::F32)?;
             }
             Operator::F32x4ReplaceLane { lane } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 4)?;
                 self.check_operands_2(Type::V128, Type::F32)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
             }
             Operator::F64x2ExtractLane { lane } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 2)?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::F64)?;
             }
             Operator::F64x2ReplaceLane { lane } => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_simd_lane_index(lane, 2)?;
                 self.check_operands_2(Type::V128, Type::F64)?;
@@ -1764,7 +1764,7 @@ impl OperatorValidator {
             | Operator::F64x2Div
             | Operator::F64x2Min
             | Operator::F64x2Max => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_operands_2(Type::V128, Type::V128)?;
                 self.func_state.change_frame_with_type(2, Type::V128)?;
@@ -1855,7 +1855,7 @@ impl OperatorValidator {
             | Operator::F32x4ConvertI32x4U
             | Operator::F64x2ConvertI64x2S
             | Operator::F64x2ConvertI64x2U => {
-                self.check_non_deterministic_enabled()?;
+                self.check_deterministic_only()?;
                 self.check_simd_enabled()?;
                 self.check_operands_1(Type::V128)?;
                 self.func_state.change_frame_with_type(1, Type::V128)?;
