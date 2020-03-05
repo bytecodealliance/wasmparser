@@ -16,7 +16,6 @@ jobs:
         toolchain: ${{ matrix.rust }}
         profile: minimal
     - run: ./test-all.sh
-#    - run: ./compare-master.sh
 
   rustfmt:
     runs-on: ubuntu-latest
