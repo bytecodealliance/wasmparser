@@ -1,9 +1,11 @@
-pub fn read_file_data(path: &PathBuf) -> Vec<u8> {
-    let mut data = Vec::new();
-    let mut f = File::open(path).ok().unwrap();
-    f.read_to_end(&mut data).unwrap();
-    data
-}
+use criterion::{criterion_group, criterion_main, Criterion};
+use std::fs::{read_dir, File};
+use std::io::Read;
+use std::path::PathBuf;
+use wasmparser::{
+    validate, OperatorValidatorConfig, Parser, ParserState, ValidatingParser,
+    ValidatingParserConfig, WasmDecoder,
+};
 
 const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {
     operator_config: OperatorValidatorConfig {
@@ -15,19 +17,12 @@ const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserCo
     },
 });
 
-#[macro_use]
-extern crate criterion;
-extern crate wasmparser;
-
-use criterion::Criterion;
-use wasmparser::{
-    validate, OperatorValidatorConfig, Parser, ParserState, ValidatingParser,
-    ValidatingParserConfig, WasmDecoder,
-};
-
-use std::fs::{read_dir, File};
-use std::io::Read;
-use std::path::PathBuf;
+fn read_file_data(path: &PathBuf) -> Vec<u8> {
+    let mut data = Vec::new();
+    let mut f = File::open(path).ok().unwrap();
+    f.read_to_end(&mut data).unwrap();
+    data
+}
 
 fn read_all_wasm<'a, T>(mut d: T)
 where
