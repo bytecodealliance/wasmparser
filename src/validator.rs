@@ -13,11 +13,9 @@
  * limitations under the License.
  */
 
-use super::HashSet;
-use core::result;
+use std::collections::HashSet;
+use std::result;
 use std::str;
-use std::string::String;
-use std::vec::Vec;
 
 use crate::limits::{
     MAX_WASM_FUNCTIONS, MAX_WASM_FUNCTION_LOCALS, MAX_WASM_GLOBALS, MAX_WASM_MEMORIES,
@@ -31,12 +29,13 @@ use crate::primitives::{
     Operator, ResizableLimits, Result, SectionCode, TableType, Type,
 };
 
-use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
-
 use crate::operators_validator::{
-    is_subtype_supertype, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
-    WasmModuleResources, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
+    check_value_type, is_subtype_supertype, FunctionEnd, OperatorValidator,
+    OperatorValidatorConfig, OperatorValidatorError, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
 };
+use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
+use crate::{ElemSectionEntryTable, ElementItem};
+use crate::{WasmFuncType, WasmGlobalType, WasmMemoryType, WasmModuleResources, WasmTableType};
 
 use crate::readers::FunctionBody;
 
@@ -45,6 +44,7 @@ type ValidatorResult<'a, T> = result::Result<T, ParserState<'a>>;
 struct InitExpressionState {
     ty: Type,
     global_count: usize,
+    function_count: usize,
     validated: bool,
 }
 
@@ -105,24 +105,29 @@ struct ValidatingParserResources {
 }
 
 impl<'a> WasmModuleResources for ValidatingParserResources {
-    fn types(&self) -> &[FuncType] {
-        &self.types
+    type FuncType = crate::FuncType;
+    type TableType = crate::TableType;
+    type MemoryType = crate::MemoryType;
+    type GlobalType = crate::GlobalType;
+
+    fn type_at(&self, at: u32) -> Option<&Self::FuncType> {
+        self.types.get(at as usize)
     }
 
-    fn tables(&self) -> &[TableType] {
-        &self.tables
+    fn table_at(&self, at: u32) -> Option<&Self::TableType> {
+        self.tables.get(at as usize)
     }
 
-    fn memories(&self) -> &[MemoryType] {
-        &self.memories
+    fn memory_at(&self, at: u32) -> Option<&Self::MemoryType> {
+        self.memories.get(at as usize)
     }
 
-    fn globals(&self) -> &[GlobalType] {
-        &self.globals
+    fn global_at(&self, at: u32) -> Option<&Self::GlobalType> {
+        self.globals.get(at as usize)
     }
 
-    fn func_type_indices(&self) -> &[u32] {
-        &self.func_type_indices
+    fn func_type_id_at(&self, at: u32) -> Option<u32> {
+        self.func_type_indices.get(at as usize).copied()
     }
 
     fn element_count(&self) -> u32 {
@@ -175,41 +180,41 @@ impl<'a> ValidatingParser<'a> {
         }
     }
 
-    pub fn get_resources(&self) -> &dyn WasmModuleResources {
+    pub fn get_resources(
+        &self,
+    ) -> &dyn WasmModuleResources<
+        FuncType = crate::FuncType,
+        TableType = crate::TableType,
+        MemoryType = crate::MemoryType,
+        GlobalType = crate::GlobalType,
+    > {
         &self.resources
     }
 
-    fn create_validation_error(&self, message: &'static str) -> Option<ParserState<'a>> {
-        Some(ParserState::Error(BinaryReaderError {
+    fn set_validation_error(&mut self, message: impl Into<String>) {
+        self.validation_error = Some(ParserState::Error(BinaryReaderError::new(
             message,
-            offset: self.read_position.unwrap(),
-        }))
+            self.read_position.unwrap(),
+        )))
     }
 
-    fn create_error<T>(&self, message: &'static str) -> ValidatorResult<'a, T> {
-        Err(ParserState::Error(BinaryReaderError {
+    fn set_operator_validation_error(&mut self, e: OperatorValidatorError) {
+        let offset = self.read_position.unwrap();
+        self.validation_error = Some(ParserState::Error(e.set_offset(offset)));
+    }
+
+    fn create_error<T>(&self, message: impl Into<String>) -> ValidatorResult<'a, T> {
+        Err(ParserState::Error(BinaryReaderError::new(
             message,
-            offset: self.read_position.unwrap(),
-        }))
+            self.read_position.unwrap(),
+        )))
     }
 
     fn check_value_type(&self, ty: Type) -> ValidatorResult<'a, ()> {
-        match ty {
-            Type::I32 | Type::I64 | Type::F32 | Type::F64 => Ok(()),
-            Type::Null | Type::AnyFunc | Type::AnyRef => {
-                if !self.config.operator_config.enable_reference_types {
-                    return self.create_error("reference types support is not enabled");
-                }
-                Ok(())
-            }
-            Type::V128 => {
-                if !self.config.operator_config.enable_simd {
-                    return self.create_error("SIMD support is not enabled");
-                }
-                Ok(())
-            }
-            _ => self.create_error("invalid value type"),
-        }
+        check_value_type(ty, &self.config.operator_config).map_err(|e| {
+            let offset = self.read_position.unwrap();
+            ParserState::Error(e.set_offset(offset))
+        })
     }
 
     fn check_value_types(&self, types: &[Type]) -> ValidatorResult<'a, ()> {
@@ -221,7 +226,7 @@ impl<'a> ValidatingParser<'a> {
 
     fn check_limits(&self, limits: &ResizableLimits) -> ValidatorResult<'a, ()> {
         if limits.maximum.is_some() && limits.initial > limits.maximum.unwrap() {
-            return self.create_error("maximum limits less than initial");
+            return self.create_error("size minimum must not be greater than maximum");
         }
         Ok(())
     }
@@ -231,7 +236,7 @@ impl<'a> ValidatingParser<'a> {
             self.check_value_types(&*func_type.params)?;
             self.check_value_types(&*func_type.returns)?;
             if !self.config.operator_config.enable_multi_value && func_type.returns.len() > 1 {
-                self.create_error("func type returns multiple values")
+                self.create_error("invalid result arity: func type returns multiple values")
             } else {
                 Ok(())
             }
@@ -241,22 +246,26 @@ impl<'a> ValidatingParser<'a> {
     }
 
     fn check_table_type(&self, table_type: &TableType) -> ValidatorResult<'a, ()> {
-        if let Type::AnyFunc = table_type.element_type {
-            self.check_limits(&table_type.limits)
-        } else {
-            self.create_error("element is not anyfunc")
+        match table_type.element_type {
+            Type::AnyFunc => {}
+            _ => {
+                if !self.config.operator_config.enable_reference_types {
+                    return self.create_error("element is not anyfunc");
+                }
+            }
         }
+        self.check_limits(&table_type.limits)
     }
 
     fn check_memory_type(&self, memory_type: &MemoryType) -> ValidatorResult<'a, ()> {
         self.check_limits(&memory_type.limits)?;
         let initial = memory_type.limits.initial;
         if initial as usize > MAX_WASM_MEMORY_PAGES {
-            return self.create_error("memory initial value exceeds limit");
+            return self.create_error("memory size must be at most 65536 pages (4GiB)");
         }
         let maximum = memory_type.limits.maximum;
         if maximum.is_some() && maximum.unwrap() as usize > MAX_WASM_MEMORY_PAGES {
-            return self.create_error("memory maximum value exceeds limit");
+            return self.create_error("memory size must be at most 65536 pages (4GiB)");
         }
         Ok(())
     }
@@ -272,19 +281,21 @@ impl<'a> ValidatingParser<'a> {
                     return self.create_error("functions count out of bounds");
                 }
                 if type_index as usize >= self.resources.types.len() {
-                    return self.create_error("type index out of bounds");
+                    return self.create_error("unknown type: type index out of bounds");
                 }
                 Ok(())
             }
             ImportSectionEntryType::Table(ref table_type) => {
-                if self.resources.tables.len() >= MAX_WASM_TABLES {
-                    return self.create_error("tables count must be at most 1");
+                if !self.config.operator_config.enable_reference_types
+                    && self.resources.tables.len() >= MAX_WASM_TABLES
+                {
+                    return self.create_error("multiple tables: tables count must be at most 1");
                 }
                 self.check_table_type(table_type)
             }
             ImportSectionEntryType::Memory(ref memory_type) => {
                 if self.resources.memories.len() >= MAX_WASM_MEMORIES {
-                    return self.create_error("memory count must be at most 1");
+                    return self.create_error("multiple memories: memory count must be at most 1");
                 }
                 self.check_memory_type(memory_type)
             }
@@ -300,7 +311,9 @@ impl<'a> ValidatingParser<'a> {
     fn check_init_expression_operator(&self, operator: &Operator) -> ValidatorResult<'a, ()> {
         let state = self.init_expression_state.as_ref().unwrap();
         if state.validated {
-            return self.create_error("only one init_expr operator is expected");
+            return self.create_error(
+                "constant expression required: type mismatch: only one init_expr operator is expected",
+            );
         }
         let ty = match *operator {
             Operator::I32Const { .. } => Type::I32,
@@ -311,7 +324,7 @@ impl<'a> ValidatingParser<'a> {
                 if !self.config.operator_config.enable_reference_types {
                     return self.create_error("reference types support is not enabled");
                 }
-                Type::Null
+                Type::NullRef
             }
             Operator::V128Const { .. } => {
                 if !self.config.operator_config.enable_simd {
@@ -319,16 +332,29 @@ impl<'a> ValidatingParser<'a> {
                 }
                 Type::V128
             }
-            Operator::GetGlobal { global_index } => {
+            Operator::GlobalGet { global_index } => {
                 if global_index as usize >= state.global_count {
-                    return self.create_error("init_expr global index out of bounds");
+                    return self
+                        .create_error("unknown global: init_expr global index out of bounds");
                 }
                 self.resources.globals[global_index as usize].content_type
             }
-            _ => return self.create_error("invalid init_expr operator"),
+            Operator::RefFunc { function_index } => {
+                if function_index as usize >= state.function_count {
+                    return self.create_error(format!(
+                        "unknown function {}: init_expr function index out of bounds",
+                        function_index
+                    ));
+                }
+                Type::AnyFunc
+            }
+            _ => {
+                return self
+                    .create_error("constant expression required: invalid init_expr operator")
+            }
         };
         if !is_subtype_supertype(ty, state.ty) {
-            return self.create_error("invalid init_expr type");
+            return self.create_error("type mismatch: invalid init_expr type");
         }
         Ok(())
     }
@@ -340,27 +366,30 @@ impl<'a> ValidatingParser<'a> {
         index: u32,
     ) -> ValidatorResult<'a, ()> {
         if self.exported_names.contains(field) {
-            return self.create_error("non-unique export name");
+            return self.create_error("duplicate export name");
         }
         match kind {
             ExternalKind::Function => {
                 if index as usize >= self.resources.func_type_indices.len() {
-                    return self.create_error("exported function index out of bounds");
+                    return self
+                        .create_error("unknown function: exported function index out of bounds");
                 }
             }
             ExternalKind::Table => {
                 if index as usize >= self.resources.tables.len() {
-                    return self.create_error("exported table index out of bounds");
+                    return self.create_error("unknown table: exported table index out of bounds");
                 }
             }
             ExternalKind::Memory => {
                 if index as usize >= self.resources.memories.len() {
-                    return self.create_error("exported memory index out of bounds");
+                    return self
+                        .create_error("unknown memory: exported memory index out of bounds");
                 }
             }
             ExternalKind::Global => {
                 if index as usize >= self.resources.globals.len() {
-                    return self.create_error("exported global index out of bounds");
+                    return self
+                        .create_error("unknown global: exported global index out of bounds");
                 }
             }
         };
@@ -369,7 +398,7 @@ impl<'a> ValidatingParser<'a> {
 
     fn check_start(&self, func_index: u32) -> ValidatorResult<'a, ()> {
         if func_index as usize >= self.resources.func_type_indices.len() {
-            return self.create_error("start function index out of bounds");
+            return self.create_error("unknown function: start function index out of bounds");
         }
         let type_index = self.resources.func_type_indices[func_index as usize];
         let ty = &self.resources.types[type_index as usize];
@@ -382,13 +411,10 @@ impl<'a> ValidatingParser<'a> {
     fn process_begin_section(&self, code: &SectionCode) -> ValidatorResult<'a, SectionOrderState> {
         let order_state = SectionOrderState::from_section_code(code);
         Ok(match self.section_order_state {
-            SectionOrderState::Initial => {
-                if order_state.is_none() {
-                    SectionOrderState::Initial
-                } else {
-                    order_state.unwrap()
-                }
-            }
+            SectionOrderState::Initial => match order_state {
+                Some(section) => section,
+                _ => SectionOrderState::Initial,
+            },
             previous => {
                 if let Some(order_state_unwraped) = order_state {
                     if previous >= order_state_unwraped {
@@ -406,7 +432,7 @@ impl<'a> ValidatingParser<'a> {
         match *self.parser.last_state() {
             ParserState::BeginWasm { version } => {
                 if version != 1 {
-                    self.validation_error = self.create_validation_error("bad wasm file version");
+                    self.set_validation_error("bad wasm file version");
                 }
             }
             ParserState::BeginSection { ref code, .. } => {
@@ -422,8 +448,7 @@ impl<'a> ValidatingParser<'a> {
                 if check.is_err() {
                     self.validation_error = check.err();
                 } else if self.resources.types.len() > MAX_WASM_TYPES {
-                    self.validation_error =
-                        self.create_validation_error("types count is out of bounds");
+                    self.set_validation_error("types count is out of bounds");
                 } else {
                     self.resources.types.push(func_type.clone());
                 }
@@ -452,19 +477,18 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::FunctionSectionEntry(type_index) => {
                 if type_index as usize >= self.resources.types.len() {
-                    self.validation_error =
-                        self.create_validation_error("func type index out of bounds");
+                    self.set_validation_error("unknown type: func type index out of bounds");
                 } else if self.resources.func_type_indices.len() >= MAX_WASM_FUNCTIONS {
-                    self.validation_error =
-                        self.create_validation_error("functions count out of bounds");
+                    self.set_validation_error("functions count out of bounds");
                 } else {
                     self.resources.func_type_indices.push(type_index);
                 }
             }
             ParserState::TableSectionEntry(ref table_type) => {
-                if self.resources.tables.len() >= MAX_WASM_TABLES {
-                    self.validation_error =
-                        self.create_validation_error("tables count must be at most 1");
+                if !self.config.operator_config.enable_reference_types
+                    && self.resources.tables.len() >= MAX_WASM_TABLES
+                {
+                    self.set_validation_error("multiple tables: tables count must be at most 1");
                 } else {
                     self.validation_error = self.check_table_type(table_type).err();
                     self.resources.tables.push(table_type.clone());
@@ -472,8 +496,9 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::MemorySectionEntry(ref memory_type) => {
                 if self.resources.memories.len() >= MAX_WASM_MEMORIES {
-                    self.validation_error =
-                        self.create_validation_error("memories count must be at most 1");
+                    self.set_validation_error(
+                        "multiple memories: memories count must be at most 1",
+                    );
                 } else {
                     self.validation_error = self.check_memory_type(memory_type).err();
                     self.resources.memories.push(memory_type.clone());
@@ -481,13 +506,13 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::BeginGlobalSectionEntry(global_type) => {
                 if self.resources.globals.len() >= MAX_WASM_GLOBALS {
-                    self.validation_error =
-                        self.create_validation_error("globals count out of bounds");
+                    self.set_validation_error("globals count out of bounds");
                 } else {
                     self.validation_error = self.check_global_type(global_type).err();
                     self.init_expression_state = Some(InitExpressionState {
                         ty: global_type.content_type,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                     self.resources.globals.push(global_type);
@@ -502,7 +527,7 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::EndInitExpressionBody => {
                 if !self.init_expression_state.as_ref().unwrap().validated {
-                    self.validation_error = self.create_validation_error("init_expr is empty");
+                    self.set_validation_error("type mismatch: init_expr is empty");
                 }
                 self.init_expression_state = None;
             }
@@ -516,39 +541,50 @@ impl<'a> ValidatingParser<'a> {
             ParserState::DataCountSectionEntry(count) => {
                 self.resources.data_count = Some(count);
             }
-            ParserState::BeginPassiveElementSectionEntry(_ty) => {
+            ParserState::BeginElementSectionEntry { table, ty } => {
                 self.resources.element_count += 1;
-            }
-            ParserState::BeginActiveElementSectionEntry(table_index) => {
-                self.resources.element_count += 1;
-                if table_index as usize >= self.resources.tables.len() {
-                    self.validation_error =
-                        self.create_validation_error("element section table index out of bounds");
-                } else {
-                    assert!(
-                        self.resources.tables[table_index as usize].element_type == Type::AnyFunc
-                    );
+                if let ElemSectionEntryTable::Active(table_index) = table {
+                    let table = match self.resources.tables.get(table_index as usize) {
+                        Some(t) => t,
+                        None => {
+                            self.set_validation_error(
+                                "unknown table: element section table index out of bounds",
+                            );
+                            return;
+                        }
+                    };
+                    if !is_subtype_supertype(ty, table.element_type) {
+                        self.set_validation_error("element_type != table type");
+                        return;
+                    }
+                    if !self.config.operator_config.enable_reference_types && ty != Type::AnyFunc {
+                        self.set_validation_error("element_type != anyfunc is not supported yet");
+                        return;
+                    }
                     self.init_expression_state = Some(InitExpressionState {
                         ty: Type::I32,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                 }
             }
             ParserState::ElementSectionEntryBody(ref indices) => {
-                for func_index in &**indices {
-                    if *func_index as usize >= self.resources.func_type_indices.len() {
-                        self.validation_error =
-                            self.create_validation_error("element func index out of bounds");
-                        break;
+                for item in &**indices {
+                    if let ElementItem::Func(func_index) = item {
+                        if *func_index as usize >= self.resources.func_type_indices.len() {
+                            self.set_validation_error(
+                                "unknown function: element func index out of bounds",
+                            );
+                            break;
+                        }
                     }
                 }
             }
             ParserState::BeginFunctionBody { .. } => {
                 let index = (self.current_func_index + self.func_imports_count) as usize;
                 if index as usize >= self.resources.func_type_indices.len() {
-                    self.validation_error =
-                        self.create_validation_error("func type is not defined");
+                    self.set_validation_error("func type is not defined");
                 }
             }
             ParserState::FunctionBodyLocals { ref locals } => {
@@ -556,8 +592,14 @@ impl<'a> ValidatingParser<'a> {
                 let func_type =
                     &self.resources.types[self.resources.func_type_indices[index] as usize];
                 let operator_config = self.config.operator_config;
-                self.current_operator_validator =
-                    Some(OperatorValidator::new(func_type, locals, operator_config));
+                match OperatorValidator::new(func_type, locals, operator_config) {
+                    Ok(validator) => self.current_operator_validator = Some(validator),
+                    Err(err) => {
+                        self.validation_error = Some(ParserState::Error(
+                            err.set_offset(self.read_position.unwrap()),
+                        ));
+                    }
+                }
             }
             ParserState::CodeOperator(ref operator) => {
                 let check = self
@@ -565,11 +607,9 @@ impl<'a> ValidatingParser<'a> {
                     .as_mut()
                     .unwrap()
                     .process_operator(operator, &self.resources);
-                match check {
-                    Ok(_) => (),
-                    Err(err) => {
-                        self.validation_error = self.create_validation_error(err);
-                    }
+
+                if let Err(err) = check {
+                    self.set_operator_validation_error(err);
                 }
             }
             ParserState::EndFunctionBody => {
@@ -578,8 +618,8 @@ impl<'a> ValidatingParser<'a> {
                     .as_ref()
                     .unwrap()
                     .process_end_function();
-                if check.is_err() {
-                    self.validation_error = self.create_validation_error(check.err().unwrap());
+                if let Err(err) = check {
+                    self.set_operator_validation_error(err);
                 }
                 self.current_func_index += 1;
                 self.current_operator_validator = None;
@@ -589,12 +629,14 @@ impl<'a> ValidatingParser<'a> {
             }
             ParserState::BeginActiveDataSectionEntry(memory_index) => {
                 if memory_index as usize >= self.resources.memories.len() {
-                    self.validation_error =
-                        self.create_validation_error("data section memory index out of bounds");
+                    self.set_validation_error(
+                        "unknown memory: data section memory index out of bounds",
+                    );
                 } else {
                     self.init_expression_state = Some(InitExpressionState {
                         ty: Type::I32,
                         global_count: self.resources.globals.len(),
+                        function_count: self.resources.func_type_indices.len(),
                         validated: false,
                     });
                 }
@@ -603,15 +645,13 @@ impl<'a> ValidatingParser<'a> {
                 if self.resources.func_type_indices.len()
                     != self.current_func_index as usize + self.func_imports_count as usize
                 {
-                    self.validation_error = self.create_validation_error(
+                    self.set_validation_error(
                         "function and code section have inconsistent lengths",
                     );
                 }
                 if let Some(data_count) = self.resources.data_count {
                     if data_count != self.data_found {
-                        self.validation_error = self.create_validation_error(
-                            "data count section and passive data mismatch",
-                        );
+                        self.set_validation_error("data count section and passive data mismatch");
                     }
                 }
             }
@@ -619,7 +659,9 @@ impl<'a> ValidatingParser<'a> {
         };
     }
 
-    pub fn create_validating_operator_parser<'b>(&mut self) -> ValidatingOperatorParser<'b>
+    pub fn create_validating_operator_parser<'b>(
+        &mut self,
+    ) -> ValidatorResult<ValidatingOperatorParser<'b>>
     where
         'a: 'b,
     {
@@ -635,11 +677,20 @@ impl<'a> ValidatingParser<'a> {
                     &self.resources.types[self.resources.func_type_indices[index] as usize];
                 let operator_config = self.config.operator_config;
                 OperatorValidator::new(func_type, locals, operator_config)
+                    .map_err(|e| ParserState::Error(e.set_offset(self.read_position.unwrap())))?
             }
             _ => panic!("Invalid reader state"),
         };
         let reader = self.create_binary_reader();
-        ValidatingOperatorParser::new(operator_validator, reader, func_body_offset)
+        Ok(ValidatingOperatorParser::new(
+            operator_validator,
+            reader,
+            func_body_offset,
+        ))
+    }
+
+    pub fn current_position(&self) -> usize {
+        self.parser.current_position()
     }
 }
 
@@ -749,7 +800,9 @@ impl<'b> ValidatingOperatorParser<'b> {
     ///             _ => continue
     ///         }
     ///     }
-    ///     let mut reader = parser.create_validating_operator_parser();
+    ///     let mut reader = parser
+    ///         .create_validating_operator_parser()
+    ///         .expect("validating parser");
     ///     println!("Function {}", i);
     ///     i += 1;
     ///     while !reader.eof() {
@@ -762,25 +815,31 @@ impl<'b> ValidatingOperatorParser<'b> {
     ///     }
     /// }
     /// ```
-    pub fn next<'c>(&mut self, resources: &dyn WasmModuleResources) -> Result<Operator<'c>>
+    pub fn next<'c, F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>(
+        &mut self,
+        resources: &dyn WasmModuleResources<
+            FuncType = F,
+            TableType = T,
+            MemoryType = M,
+            GlobalType = G,
+        >,
+    ) -> Result<Operator<'c>>
     where
         'b: 'c,
     {
         let op = self.reader.read_operator()?;
         match self.operator_validator.process_operator(&op, resources) {
             Err(err) => {
-                return Err(BinaryReaderError {
-                    message: err,
-                    offset: self.func_body_offset + self.reader.current_position(),
-                });
+                let offset = self.func_body_offset + self.reader.current_position();
+                return Err(err.set_offset(offset));
             }
             Ok(FunctionEnd::Yes) => {
                 self.end_function = true;
                 if !self.reader.eof() {
-                    return Err(BinaryReaderError {
-                        message: "unexpected end of function",
-                        offset: self.func_body_offset + self.reader.current_position(),
-                    });
+                    return Err(BinaryReaderError::new(
+                        "unexpected end of function",
+                        self.func_body_offset + self.reader.current_position(),
+                    ));
                 }
             }
             _ => (),
@@ -791,11 +850,21 @@ impl<'b> ValidatingOperatorParser<'b> {
 
 /// Test whether the given buffer contains a valid WebAssembly function.
 /// The resources parameter contains all needed data to validate the operators.
-pub fn validate_function_body(
+pub fn validate_function_body<
+    F: WasmFuncType,
+    T: WasmTableType,
+    M: WasmMemoryType,
+    G: WasmGlobalType,
+>(
     bytes: &[u8],
     offset: usize,
     func_index: u32,
-    resources: &dyn WasmModuleResources,
+    resources: &dyn WasmModuleResources<
+        FuncType = F,
+        TableType = T,
+        MemoryType = M,
+        GlobalType = G,
+    >,
     operator_config: Option<OperatorValidatorConfig>,
 ) -> Result<()> {
     let operator_config = operator_config.unwrap_or(DEFAULT_OPERATOR_VALIDATOR_CONFIG);
@@ -803,41 +872,48 @@ pub fn validate_function_body(
     let mut locals_reader = function_body.get_locals_reader()?;
     let local_count = locals_reader.get_count() as usize;
     if local_count > MAX_WASM_FUNCTION_LOCALS {
-        Err(BinaryReaderError {
-            message: "locals exceed maximum",
-            offset: locals_reader.original_position(),
-        })?;
+        return Err(BinaryReaderError::new(
+            "locals exceed maximum",
+            locals_reader.original_position(),
+        ));
     }
     let mut locals: Vec<(u32, Type)> = Vec::with_capacity(local_count);
     let mut locals_total: usize = 0;
     for _ in 0..local_count {
         let (count, ty) = locals_reader.read()?;
-        locals_total =
-            locals_total
-                .checked_add(count as usize)
-                .ok_or_else(|| BinaryReaderError {
-                    message: "locals overflow",
-                    offset: locals_reader.original_position(),
-                })?;
+        locals_total = locals_total.checked_add(count as usize).ok_or_else(|| {
+            BinaryReaderError::new("locals overflow", locals_reader.original_position())
+        })?;
         if locals_total > MAX_WASM_FUNCTION_LOCALS {
-            Err(BinaryReaderError {
-                message: "locals exceed maximum",
-                offset: locals_reader.original_position(),
-            })?;
+            return Err(BinaryReaderError::new(
+                "locals exceed maximum",
+                locals_reader.original_position(),
+            ));
         }
         locals.push((count, ty));
     }
     let operators_reader = function_body.get_operators_reader()?;
-    let func_type_index = resources.func_type_indices()[func_index as usize];
-    let func_type = &resources.types()[func_type_index as usize];
-    let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config);
+    let func_type_index = resources
+        .func_type_id_at(func_index)
+        // Note: This was an out-of-bounds access before the change to return `Option`
+        // so I assumed it is considered a bug to access a non-existing function
+        // id here and went with panicking instead of returning a proper error.
+        .expect("the function index of the validated function itself is out of bounds");
+    let func_type = resources
+        .type_at(func_type_index)
+        // Note: This was an out-of-bounds access before the change to return `Option`
+        // so I assumed it is considered a bug to access a non-existing function
+        // id here and went with panicking instead of returning a proper error.
+        .expect("the function type indexof the validated function itself is out of bounds");
+    let mut operator_validator = OperatorValidator::new(func_type, &locals, operator_config)
+        .map_err(|e| e.set_offset(offset))?;
     let mut eof_found = false;
     let mut last_op = 0;
     for item in operators_reader.into_iter_with_offsets() {
         let (ref op, offset) = item?;
         match operator_validator
             .process_operator(op, resources)
-            .map_err(|message| BinaryReaderError { message, offset })?
+            .map_err(|e| e.set_offset(offset))?
         {
             FunctionEnd::Yes => {
                 eof_found = true;
@@ -848,10 +924,7 @@ pub fn validate_function_body(
         }
     }
     if !eof_found {
-        Err(BinaryReaderError {
-            message: "end of function not found",
-            offset: last_op,
-        })?;
+        return Err(BinaryReaderError::new("end of function not found", last_op));
     }
     Ok(())
 }
@@ -867,7 +940,7 @@ pub fn validate(bytes: &[u8], config: Option<ValidatingParserConfig>) -> Result<
         let state = parser.read_with_input(next_input);
         match *state {
             ParserState::EndWasm => break,
-            ParserState::Error(e) => Err(e)?,
+            ParserState::Error(ref e) => return Err(e.clone()),
             ParserState::BeginFunctionBody { range } => {
                 parser_input = Some(ParserInput::SkipFunctionBody);
                 func_ranges.push(range);

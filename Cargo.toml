@@ -1,9 +1,9 @@
 [package]
 name = "wasmparser"
-version = "0.39.2"
+version = "0.51.4"
 authors = ["Yury Delendik <ydelendik@mozilla.com>"]
 license = "Apache-2.0 WITH LLVM-exception"
-repository = "https://github.com/yurydelendik/wasmparser.rs"
+repository = "https://github.com/bytecodealliance/wasmparser.rs"
 keywords = ["parser", "WebAssembly", "wasm"]
 description = """
 A simple event-driven library for parsing WebAssembly binary files.
@@ -11,28 +11,15 @@ A simple event-driven library for parsing WebAssembly binary files.
 exclude = ["fuzz/**/*", "tests/**/*", "testsuite/**/*"]
 edition = "2018"
 
-[dependencies]
-
 [dev-dependencies]
-criterion = "0.2"
-wabt = "0.9.2"
-
-[dependencies.hashbrown]
-version = "0.5.0"
-optional = true
+criterion = "0.3"
+wast = "7.0.0"
 
 [badges]
-travis-ci = { repository = "yurydelendik/wasmparser.rs" }
+travis-ci = { repository = "bytecodealliance/wasmparser.rs" }
 
 [features]
-# The "std" feature enables use of libstd. The "core" feature enables use
-# of some minimal std-like replacement libraries. At least one of these two
-# features needs to be enabled.
-default = ["std"]
-std = []
-core = ["hashbrown"]
-
-# The "deterministic" feature supports only wasm code with "deterministic" execution
+# The "deterministic" feature supports only Wasm code with "deterministic" execution
 # across any hardware. This feature is very critical for many Blockchain infrastructures
 # that rely on deterministic executions of smart contracts across different hardwares.
 deterministic = []

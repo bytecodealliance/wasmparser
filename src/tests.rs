@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#[cfg(feature = "std")]
 #[cfg(test)]
 mod simple_tests {
     use crate::operators_validator::OperatorValidatorConfig;
@@ -80,7 +79,7 @@ mod simple_tests {
                 let state = parser.read();
                 match *state {
                     ParserState::EndWasm => break,
-                    ParserState::Error(err) => panic!("Error: {:?}", err),
+                    ParserState::Error(ref err) => panic!("Error: {:?}", err),
                     _ => (),
                 }
                 max_iteration -= 1;
@@ -105,7 +104,7 @@ mod simple_tests {
                 let state = parser.read();
                 match *state {
                     ParserState::EndWasm => break,
-                    ParserState::Error(err) => panic!("Error: {:?}", err),
+                    ParserState::Error(ref err) => panic!("Error: {:?}", err),
                     _ => (),
                 }
                 max_iteration -= 1;
@@ -316,7 +315,6 @@ mod simple_tests {
     }
 }
 
-#[cfg(feature = "std")]
 #[cfg(test)]
 mod wast_tests {
     use crate::operators_validator::OperatorValidatorConfig;
@@ -324,9 +322,9 @@ mod wast_tests {
     use crate::validator::{ValidatingParser, ValidatingParserConfig};
     use crate::BinaryReaderError;
     use std::fs::{read, read_dir};
-    use wabt::script::{Command, CommandKind, ModuleBinary, ScriptParser};
-    use wabt::Features;
+    use std::str;
 
+    const WAST_TESTS_PATH: &str = "tests/wast";
     const SPEC_TESTS_PATH: &str = "testsuite";
 
     fn default_config() -> ValidatingParserConfig {
@@ -344,18 +342,38 @@ mod wast_tests {
         }
     }
 
+    fn extract_config(wast: &str) -> ValidatingParserConfig {
+        let first = wast.split('\n').next();
+        if first.is_none() || !first.unwrap().starts_with(";;; ") {
+            return default_config();
+        }
+        let first = first.unwrap();
+        ValidatingParserConfig {
+            operator_config: OperatorValidatorConfig {
+                enable_threads: first.contains("--enable-threads"),
+                enable_reference_types: first.contains("--enable-reference-types"),
+                enable_simd: first.contains("--enable-simd"),
+                enable_bulk_memory: first.contains("--enable-bulk-memory"),
+                enable_multi_value: first.contains("--enable-multi-value"),
+
+                #[cfg(feature = "deterministic")]
+                deterministic_only: true,
+            },
+        }
+    }
+
     fn validate_module(
-        module: ModuleBinary,
+        mut module: wast::Module,
         config: ValidatingParserConfig,
     ) -> Result<(), BinaryReaderError> {
-        let data = &module.into_vec();
+        let data = module.encode().unwrap();
         let mut parser = ValidatingParser::new(data.as_slice(), Some(config));
         let mut max_iteration = 100000000;
         loop {
             let state = parser.read();
             match *state {
                 ParserState::EndWasm => break,
-                ParserState::Error(err) => return Err(err),
+                ParserState::Error(ref err) => return Err(err.clone()),
                 _ => (),
             }
             max_iteration -= 1;
@@ -364,20 +382,6 @@ mod wast_tests {
             }
         }
         Ok(())
-    }
-
-    fn to_features(config: &ValidatingParserConfig) -> Features {
-        let mut features = Features::new();
-        if config.operator_config.enable_simd {
-            features.enable_simd();
-        }
-        if config.operator_config.enable_multi_value {
-            features.enable_multi_value();
-        }
-        if config.operator_config.enable_reference_types {
-            features.enable_reference_types();
-        }
-        features
     }
 
     fn run_wabt_scripts<F>(
@@ -395,43 +399,88 @@ mod wast_tests {
             return;
         }
 
-        let features = to_features(&config);
-        let mut parser: ScriptParser<f32, f64> =
-            ScriptParser::from_source_and_name_with_features(wast, filename, features)
-                .expect("script parser");
+        let contents = str::from_utf8(wast).unwrap();
+        let buf = wast::parser::ParseBuffer::new(&contents)
+            .map_err(|mut e| {
+                e.set_path(filename.as_ref());
+                e
+            })
+            .unwrap();
+        let wast = wast::parser::parse::<wast::Wast>(&buf)
+            .map_err(|mut e| {
+                e.set_path(filename.as_ref());
+                e
+            })
+            .unwrap();
 
-        while let Some(Command { kind, line }) = parser.next().expect("parser") {
-            if skip_test(filename, line) {
+        for directive in wast.directives {
+            use wast::WastDirective::*;
+            let (line, _col) = directive.span().linecol_in(&contents);
+            let line = line + 1;
+            if skip_test(filename, line as u64) {
                 println!("{}:{}: skipping", filename, line);
                 continue;
             }
-
-            match kind {
-                CommandKind::Module { module, .. }
-                | CommandKind::AssertUninstantiable { module, .. }
-                | CommandKind::AssertUnlinkable { module, .. } => {
+            match directive {
+                Module(module) | AssertUnlinkable { module, .. } => {
                     if let Err(err) = validate_module(module, config.clone()) {
-                        panic!("{}:{}: invalid module: {}", filename, line, err.message);
+                        panic!("{}:{}: invalid module: {}", filename, line, err.message());
                     }
                 }
-                CommandKind::AssertInvalid { module, .. }
-                | CommandKind::AssertMalformed { module, .. } => {
-                    // TODO diffentiate between assert_invalid and assert_malformed
+                AssertInvalid {
+                    module,
+                    message,
+                    span: _,
+                } => match validate_module(module, config.clone()) {
+                    Ok(_) => {
+                        panic!(
+                            "{}:{}: invalid module was successfully parsed",
+                            filename, line
+                        );
+                    }
+                    Err(e) => {
+                        if message.contains("unknown table")
+                            && e.message().contains("unknown element segment")
+                        {
+                            println!(
+                                "{}:{}: skipping until \
+                                 https://github.com/WebAssembly/testsuite/pull/18 is merged",
+                                filename, line,
+                            );
+                            continue;
+                        }
+                        assert!(
+                            e.message().contains(message),
+                            "{file}:{line}: expected \"{spec}\", got \"{actual}\"",
+                            file = filename,
+                            line = line,
+                            spec = message,
+                            actual = e.message(),
+                        );
+                    }
+                },
+                AssertMalformed {
+                    module: wast::QuoteModule::Module(module),
+                    ..
+                } => {
                     if let Ok(_) = validate_module(module, config.clone()) {
                         panic!(
                             "{}:{}: invalid module was successfully parsed",
                             filename, line
                         );
                     }
-                    // TODO: Check the assert_invalid or assert_malformed message
+                    // TODO: Check the assert_malformed message
                 }
-                CommandKind::Register { .. }
-                | CommandKind::PerformAction(_)
-                | CommandKind::AssertReturn { .. }
-                | CommandKind::AssertTrap { .. }
-                | CommandKind::AssertExhaustion { .. }
-                | CommandKind::AssertReturnCanonicalNan { .. }
-                | CommandKind::AssertReturnArithmeticNan { .. } => (),
+
+                AssertMalformed {
+                    module: wast::QuoteModule::Quote(_),
+                    ..
+                }
+                | Register { .. }
+                | Invoke { .. }
+                | AssertTrap { .. }
+                | AssertReturn { .. }
+                | AssertExhaustion { .. } => {}
             }
         }
     }
@@ -465,16 +514,16 @@ mod wast_tests {
             "simd",
             {
                 let mut config: ValidatingParserConfig = default_config();
+                config.operator_config.enable_reference_types = true;
                 config.operator_config.enable_simd = true;
                 config
             },
             |name, line| match (name, line) {
-                ("simd_address.wast", _)
-                | ("simd_const.wast", _)
-                | ("simd_f32x4_cmp.wast", _)
-                | ("simd_store.wast", _)
-                | ("simd_lane.wast", _)
-                | ("simd_load.wast", _) => true,
+                // FIXME(WebAssembly/simd#140) needs a few updates to the
+                // `*.wast` file to successfully parse it (or so I think)
+                ("simd_lane.wast", _) => true, // due to ";; Test operation with empty argument"
+                ("simd_conversions.wast", _) => true, // unknown `i64x2.trunc_sat_f64x2_s`
+                ("simd_load.wast", _) => true, // due to ";; Test operation with empty argument"
                 _ => false,
             },
         );
@@ -494,26 +543,40 @@ mod wast_tests {
             {
                 let mut config: ValidatingParserConfig = default_config();
                 config.operator_config.enable_reference_types = true;
+                config.operator_config.enable_bulk_memory = true;
                 config
             },
             |name, line| match (name, line) {
-                ("ref_null.wast", _)
-                | ("ref_is_null.wast", _)
-                | ("ref_func.wast", _)
-                | ("linking.wast", _)
-                | ("globals.wast", _)
-                | ("imports.wast", _)
-                | ("br_table.wast", _)
-                | ("select.wast", _)
-                | ("table_get.wast", _)
-                | ("table_set.wast", _)
-                | ("table_size.wast", _)
-                | ("table_fill.wast", _)
-                | ("table_grow.wast", _)
-                | ("exports.wast", _) => true,
+                ("br_table.wast", _) | ("select.wast", _) => true,
+                ("binary.wast", 1057) => true,
+                ("elem.wast", _) => true,
+                ("ref_func.wast", _) => true,
+                ("table-sub.wast", _) => true,
+                ("table_grow.wast", _) => true,
                 _ => false,
             },
         );
+    }
+
+    #[test]
+    fn run_wast_tests() {
+        for entry in read_dir(WAST_TESTS_PATH).unwrap() {
+            let dir = entry.unwrap();
+            if !dir.file_type().unwrap().is_file()
+                || dir.path().extension().map(|s| s.to_str().unwrap()) != Some("wast")
+            {
+                continue;
+            }
+
+            let data = read(&dir.path()).expect("wast data");
+            let config = extract_config(&String::from_utf8_lossy(&data));
+            run_wabt_scripts(
+                dir.file_name().to_str().expect("name"),
+                &data,
+                config,
+                |_, _| false,
+            );
+        }
     }
 
     #[test]

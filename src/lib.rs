@@ -23,24 +23,11 @@
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
 
-#![cfg_attr(not(feature = "std"), no_std)]
-
-#[cfg(not(feature = "std"))]
-#[macro_use]
-extern crate alloc as std;
-#[cfg(feature = "std")]
-#[macro_use]
-extern crate std;
-
-#[cfg(not(feature = "std"))]
-use hashbrown::HashSet;
-#[cfg(feature = "std")]
-use std::collections::HashSet;
-
 pub use crate::binary_reader::BinaryReader;
 pub use crate::binary_reader::Range;
 use crate::binary_reader::SectionHeader;
 
+pub use crate::parser::ElemSectionEntryTable;
 pub use crate::parser::LocalName;
 pub use crate::parser::NameEntry;
 pub use crate::parser::Parser;
@@ -79,8 +66,16 @@ pub use crate::validator::ValidatingOperatorParser;
 pub use crate::validator::ValidatingParser;
 pub use crate::validator::ValidatingParserConfig;
 
+pub use crate::module_resources::WasmFuncType;
+pub use crate::module_resources::WasmGlobalType;
+pub use crate::module_resources::WasmMemoryType;
+pub use crate::module_resources::WasmModuleResources;
+pub use crate::module_resources::WasmTableType;
+pub use crate::module_resources::WasmType;
+
+pub(crate) use crate::module_resources::{wasm_func_type_inputs, wasm_func_type_outputs};
+
 pub use crate::operators_validator::OperatorValidatorConfig;
-pub use crate::operators_validator::WasmModuleResources;
 
 pub use crate::readers::CodeSectionReader;
 pub use crate::readers::CustomSectionContent;
@@ -88,6 +83,7 @@ pub use crate::readers::Data;
 pub use crate::readers::DataKind;
 pub use crate::readers::DataSectionReader;
 pub use crate::readers::Element;
+pub use crate::readers::ElementItem;
 pub use crate::readers::ElementItems;
 pub use crate::readers::ElementItemsReader;
 pub use crate::readers::ElementKind;
@@ -111,6 +107,7 @@ pub use crate::readers::NamingReader;
 pub use crate::readers::OperatorsReader;
 pub use crate::readers::ProducersField;
 pub use crate::readers::ProducersFieldValue;
+pub use crate::readers::ProducersFieldValuesReader;
 pub use crate::readers::ProducersSectionReader;
 pub use crate::readers::Reloc;
 pub use crate::readers::RelocSectionReader;
@@ -125,6 +122,7 @@ pub use crate::readers::TypeSectionReader;
 
 mod binary_reader;
 mod limits;
+mod module_resources;
 mod operators_validator;
 mod parser;
 mod primitives;
