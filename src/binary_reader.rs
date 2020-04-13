@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
+use std::prelude::v1::*;
+
 use std::boxed::Box;
 use std::convert::TryInto;
 use std::str;
-use std::vec::Vec;
 
 use crate::limits::{
     MAX_WASM_FUNCTION_LOCALS, MAX_WASM_FUNCTION_PARAMS, MAX_WASM_FUNCTION_RETURNS,

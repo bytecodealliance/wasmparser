@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+use std::prelude::v1::*;
+
 use std::cmp::min;
 
 use crate::primitives::{MemoryImmediate, Operator, SIMDLaneIndex, Type, TypeOrFuncType};

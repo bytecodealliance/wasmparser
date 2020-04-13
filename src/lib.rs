@@ -23,6 +23,14 @@
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
 
+// Always no_std to force devs to add `use std::prelude::v1::*;` to access types that are only
+// implicitly available when std is enabled
+#![no_std]
+
+#[allow(unused_imports)]
+#[macro_use]
+extern crate no_std_compat as std;
+
 pub use crate::binary_reader::BinaryReader;
 pub use crate::binary_reader::Range;
 use crate::binary_reader::SectionHeader;

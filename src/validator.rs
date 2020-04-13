@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+use std::prelude::v1::*;
+
 use std::collections::HashSet;
 use std::result;
 use std::str;

@@ -15,6 +15,8 @@
 
 #[cfg(test)]
 mod simple_tests {
+    use std::prelude::v1::*;
+
     use crate::operators_validator::OperatorValidatorConfig;
     use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
     use crate::primitives::{Operator, SectionCode};
@@ -317,6 +319,8 @@ mod simple_tests {
 
 #[cfg(test)]
 mod wast_tests {
+    use std::prelude::v1::*;
+
     use crate::operators_validator::OperatorValidatorConfig;
     use crate::parser::{ParserState, WasmDecoder};
     use crate::validator::{ValidatingParser, ValidatingParserConfig};
