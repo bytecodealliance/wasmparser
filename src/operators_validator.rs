@@ -1837,6 +1837,7 @@ impl OperatorValidator {
             | Operator::I64x2Mul
             | Operator::I8x16RoundingAverageU
             | Operator::I16x8RoundingAverageU
+            | Operator::I32x4DotI16x8S
             | Operator::I8x16NarrowI16x8S
             | Operator::I8x16NarrowI16x8U
             | Operator::I16x8NarrowI32x4S
@@ -1861,6 +1862,9 @@ impl OperatorValidator {
                 self.func_state.change_frame_with_type(1, Type::V128)?;
             }
             Operator::V128Not
+            | Operator::I8x16Abs
+            | Operator::I16x8Abs
+            | Operator::I32x4Abs
             | Operator::I8x16Neg
             | Operator::I16x8Neg
             | Operator::I32x4Neg

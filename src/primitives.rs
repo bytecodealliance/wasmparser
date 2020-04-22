@@ -730,4 +730,8 @@ pub enum Operator<'a> {
     I64x2Load32x2U { memarg: MemoryImmediate },
     I8x16RoundingAverageU,
     I16x8RoundingAverageU,
+    I8x16Abs,
+    I16x8Abs,
+    I32x4Abs,
+    I32x4DotI16x8S,
 }
