@@ -1362,7 +1362,7 @@ impl<'a> BinaryReader<'a> {
     }
 
     fn read_0xfd_operator(&mut self) -> Result<Operator<'a>> {
-        let code = self.read_var_u32()? as u32;
+        let code = self.read_var_u8()? as u8;
         Ok(match code {
             0x00 => Operator::V128Load {
                 memarg: self.read_memarg()?,
@@ -1468,7 +1468,6 @@ impl<'a> BinaryReader<'a> {
             0x50 => Operator::V128Or,
             0x51 => Operator::V128Xor,
             0x52 => Operator::V128Bitselect,
-            0x60 => Operator::I8x16Abs,
             0x61 => Operator::I8x16Neg,
             0x62 => Operator::I8x16AnyTrue,
             0x63 => Operator::I8x16AllTrue,
@@ -1481,11 +1480,11 @@ impl<'a> BinaryReader<'a> {
             0x71 => Operator::I8x16Sub,
             0x72 => Operator::I8x16SubSaturateS,
             0x73 => Operator::I8x16SubSaturateU,
+            0x75 => Operator::I8x16Mul,
             0x76 => Operator::I8x16MinS,
             0x77 => Operator::I8x16MinU,
             0x78 => Operator::I8x16MaxS,
             0x79 => Operator::I8x16MaxU,
-            0x80 => Operator::I16x8Abs,
             0x81 => Operator::I16x8Neg,
             0x82 => Operator::I16x8AnyTrue,
             0x83 => Operator::I16x8AllTrue,
@@ -1503,7 +1502,6 @@ impl<'a> BinaryReader<'a> {
             0x97 => Operator::I16x8MinU,
             0x98 => Operator::I16x8MaxS,
             0x99 => Operator::I16x8MaxU,
-            0xa0 => Operator::I32x4Abs,
             0xa1 => Operator::I32x4Neg,
             0xa2 => Operator::I32x4AnyTrue,
             0xa3 => Operator::I32x4AllTrue,
@@ -1518,6 +1516,8 @@ impl<'a> BinaryReader<'a> {
             0xb8 => Operator::I32x4MaxS,
             0xb9 => Operator::I32x4MaxU,
             0xc1 => Operator::I64x2Neg,
+            0xc2 => Operator::I64x2AnyTrue,
+            0xc3 => Operator::I64x2AllTrue,
             0xcb => Operator::I64x2Shl,
             0xcc => Operator::I64x2ShrS,
             0xcd => Operator::I64x2ShrU,
@@ -1533,19 +1533,19 @@ impl<'a> BinaryReader<'a> {
             0xe7 => Operator::F32x4Div,
             0xe8 => Operator::F32x4Min,
             0xe9 => Operator::F32x4Max,
-            0xf0 => Operator::F64x2Abs,
-            0xf1 => Operator::F64x2Neg,
-            0xf3 => Operator::F64x2Sqrt,
-            0xf4 => Operator::F64x2Add,
-            0xf5 => Operator::F64x2Sub,
-            0xf6 => Operator::F64x2Mul,
-            0xf7 => Operator::F64x2Div,
-            0xf8 => Operator::F64x2Min,
-            0xf9 => Operator::F64x2Max,
-            0x0100 => Operator::I32x4TruncSatF32x4S,
-            0x0101 => Operator::I32x4TruncSatF32x4U,
-            0x0102 => Operator::F32x4ConvertI32x4S,
-            0x0103 => Operator::F32x4ConvertI32x4U,
+            0xec => Operator::F64x2Abs,
+            0xed => Operator::F64x2Neg,
+            0xef => Operator::F64x2Sqrt,
+            0xf0 => Operator::F64x2Add,
+            0xf1 => Operator::F64x2Sub,
+            0xf2 => Operator::F64x2Mul,
+            0xf3 => Operator::F64x2Div,
+            0xf4 => Operator::F64x2Min,
+            0xf5 => Operator::F64x2Max,
+            0xf8 => Operator::I32x4TruncSatF32x4S,
+            0xf9 => Operator::I32x4TruncSatF32x4U,
+            0xfa => Operator::F32x4ConvertI32x4S,
+            0xfb => Operator::F32x4ConvertI32x4U,
             0x0e => Operator::V8x16Swizzle,
             0x0d => {
                 let mut lanes = [0 as SIMDLaneIndex; 16];
@@ -1599,15 +1599,6 @@ impl<'a> BinaryReader<'a> {
             0x4f => Operator::V128AndNot,
             0x7b => Operator::I8x16RoundingAverageU,
             0x9b => Operator::I16x8RoundingAverageU,
-            0xb4 => Operator::I32x4DotI16x8S,
-            // TODO what to do with the rest of ops
-            0xff_5d => Operator::I8x16Mul,
-            0xff_85 => Operator::I64x2AnyTrue,
-            0xff_86 => Operator::I64x2AllTrue,
-            0xff_ad => Operator::I64x2TruncSatF64x2S,
-            0xff_ae => Operator::I64x2TruncSatF64x2U,
-            0xff_b1 => Operator::F64x2ConvertI64x2S,
-            0xff_b2 => Operator::F64x2ConvertI64x2U,
             _ => {
                 return Err(BinaryReaderError::new(
                     "Unknown 0xfd opcode",
