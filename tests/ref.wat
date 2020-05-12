@@ -14,4 +14,49 @@
     local.get 0
     ref.is_null func
     drop)
-  (global (;0;) externref (ref.null extern)))
+  (global (;0;) externref (ref.null extern))
+
+  (func $select-join
+    ref.null func
+    ref.null func
+    i32.const 0
+    select (result funcref)
+    drop
+
+    ref.null extern
+    ref.null extern
+    i32.const 0
+    select (result externref)
+    drop
+
+    block
+      unreachable
+      select (result externref)
+      drop
+    end
+
+    block
+      unreachable
+      i32.const 0
+      select (result externref)
+      drop
+    end
+
+    block
+      unreachable
+      ref.null extern
+      i32.const 0
+      select (result externref)
+      drop
+    end
+
+    block
+      unreachable
+      ref.null extern
+      ref.null extern
+      i32.const 0
+      select (result externref)
+      drop
+    end
+  )
+)

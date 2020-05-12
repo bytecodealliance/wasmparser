@@ -837,7 +837,7 @@ impl OperatorValidator {
         Ok(())
     }
 
-    fn check_select(&self) -> OperatorValidatorResult<Option<Type>> {
+    fn check_select(&self, expected_ty: Option<Type>) -> OperatorValidatorResult<Option<Type>> {
         self.check_frame_size(3)?;
         let func_state = &self.func_state;
         let last_block = func_state.last_block();
@@ -854,13 +854,15 @@ impl OperatorValidator {
                     func_state.stack_types[func_state.stack_types.len() - 2]
                 }
                 _ => {
-                    let ty = func_state.stack_types[func_state.stack_types.len() - 3];
+                    let ty = expected_ty
+                        .unwrap_or(func_state.stack_types[func_state.stack_types.len() - 3]);
                     self.check_operands_2(ty, Type::I32)?;
                     ty
                 }
             }
         } else {
-            let ty = func_state.stack_types[func_state.stack_types.len() - 3];
+            let ty =
+                expected_ty.unwrap_or(func_state.stack_types[func_state.stack_types.len() - 3]);
             self.check_operands_2(ty, Type::I32)?;
             ty
         };
@@ -1014,7 +1016,7 @@ impl OperatorValidator {
                 self.func_state.change_frame(1)?;
             }
             Operator::Select => {
-                let ty = self.check_select()?;
+                let ty = self.check_select(None)?;
                 match ty {
                     Some(Type::I32) | Some(Type::I64) | Some(Type::F32) | Some(Type::F64) => {}
                     Some(_) => {
@@ -1025,7 +1027,7 @@ impl OperatorValidator {
                 self.func_state.change_frame_after_select(ty)?;
             }
             Operator::TypedSelect { ty } => {
-                self.check_operands_3(ty, ty, Type::I32)?;
+                self.check_select(Some(ty))?;
                 self.func_state.change_frame_after_select(Some(ty))?;
             }
             Operator::LocalGet { local_index } => {
