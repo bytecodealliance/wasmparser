@@ -184,7 +184,7 @@ fn run_wast(filename: &Path, wast: &[u8]) -> Result<()> {
             enable_reference_types: false,
             enable_simd: false,
             enable_bulk_memory: false,
-            enable_multi_value: false,
+            enable_multi_value: true,
 
             #[cfg(feature = "deterministic")]
             deterministic_only: true,
@@ -192,7 +192,6 @@ fn run_wast(filename: &Path, wast: &[u8]) -> Result<()> {
     };
     for part in filename {
         match part.to_str().unwrap() {
-            "multi-value" => config.operator_config.enable_multi_value = true,
             "bulk-memory-operations" => config.operator_config.enable_bulk_memory = true,
             "threads" => config.operator_config.enable_threads = true,
             "simd" => {
@@ -260,7 +259,7 @@ fn skip_wast_test(filename: &Path, line: usize) -> bool {
 
     // Waiting for WebAssembly/reference-types#76 to get resolved
     if filename.ends_with("ref_func.wast") {
-        return line == 77 || line == 81;
+        return line == 108 || line == 112;
     }
 
     false
@@ -349,7 +348,6 @@ fn find_tests() -> Vec<(Test, PathBuf)> {
         }
     };
     push_wast("tests/wast");
-    push_wast("tests/wast/reference-types");
     push_wast("testsuite");
     push_wast("testsuite/proposals/multi-value");
     push_wast("testsuite/proposals/bulk-memory-operations");
@@ -358,6 +356,7 @@ fn find_tests() -> Vec<(Test, PathBuf)> {
     push_wast("testsuite/proposals/nontrapping-float-to-int-conversions");
     push_wast("testsuite/proposals/threads");
     push_wast("testsuite/proposals/simd");
+    push_wast("testsuite/proposals/reference-types");
 
     return tests;
 }
