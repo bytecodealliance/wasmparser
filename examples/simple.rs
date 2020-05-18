@@ -1,13 +1,7 @@
 extern crate wasmparser;
 
-use std::env;
-use std::fs::File;
-use std::io;
-use std::io::prelude::*;
-use std::str;
-use wasmparser::Parser;
-use wasmparser::ParserState;
-use wasmparser::WasmDecoder;
+use std::{env, fs::File, io, io::prelude::*, str};
+use wasmparser::{Parser, ParserState, WasmDecoder};
 
 fn main() {
     let args = env::args().collect::<Vec<_>>();

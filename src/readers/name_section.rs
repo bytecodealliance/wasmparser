@@ -14,7 +14,13 @@
  */
 
 use super::{
-    BinaryReader, BinaryReaderError, NameType, Naming, Result, SectionIterator, SectionReader,
+    BinaryReader,
+    BinaryReaderError,
+    NameType,
+    Naming,
+    Result,
+    SectionIterator,
+    SectionReader,
 };
 
 #[derive(Debug, Copy, Clone)]

@@ -20,14 +20,20 @@ extern crate criterion;
 extern crate wasmparser;
 
 use criterion::Criterion;
-use wasmparser::{
-    validate, OperatorValidatorConfig, Parser, ParserState, ValidatingParser,
-    ValidatingParserConfig, WasmDecoder,
+use std::{
+    fs::{read_dir, File},
+    io::Read,
+    path::PathBuf,
 };
-
-use std::fs::{read_dir, File};
-use std::io::Read;
-use std::path::PathBuf;
+use wasmparser::{
+    validate,
+    OperatorValidatorConfig,
+    Parser,
+    ParserState,
+    ValidatingParser,
+    ValidatingParserConfig,
+    WasmDecoder,
+};
 
 fn read_all_wasm<'a, T>(mut d: T)
 where

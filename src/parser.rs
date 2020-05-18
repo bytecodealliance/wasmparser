@@ -14,29 +14,66 @@
  */
 // See https://github.com/WebAssembly/design/blob/master/BinaryEncoding.md
 
-use std::boxed::Box;
-use std::vec::Vec;
+use std::{boxed::Box, vec::Vec};
 
-use crate::limits::{
-    MAX_WASM_FUNCTIONS, MAX_WASM_FUNCTION_LOCALS, MAX_WASM_STRING_SIZE, MAX_WASM_TABLE_ENTRIES,
+use crate::{
+    binary_reader::{BinaryReader, Range},
+    limits::{
+        MAX_WASM_FUNCTIONS,
+        MAX_WASM_FUNCTION_LOCALS,
+        MAX_WASM_STRING_SIZE,
+        MAX_WASM_TABLE_ENTRIES,
+    },
+    primitives::{
+        BinaryReaderError,
+        CustomSectionKind,
+        ExternalKind,
+        FuncType,
+        GlobalType,
+        ImportSectionEntryType,
+        LinkingType,
+        MemoryType,
+        Naming,
+        Operator,
+        RelocType,
+        Result,
+        SectionCode,
+        TableType,
+        Type,
+    },
+    readers::{
+        CodeSectionReader,
+        Data,
+        DataKind,
+        DataSectionReader,
+        Element,
+        ElementItem,
+        ElementItems,
+        ElementKind,
+        ElementSectionReader,
+        Export,
+        ExportSectionReader,
+        FunctionBody,
+        FunctionSectionReader,
+        Global,
+        GlobalSectionReader,
+        Import,
+        ImportSectionReader,
+        LinkingSectionReader,
+        MemorySectionReader,
+        ModuleReader,
+        Name,
+        NameSectionReader,
+        NamingReader,
+        OperatorsReader,
+        Reloc,
+        RelocSectionReader,
+        Section,
+        SectionReader,
+        TableSectionReader,
+        TypeSectionReader,
+    },
 };
-
-use crate::primitives::{
-    BinaryReaderError, CustomSectionKind, ExternalKind, FuncType, GlobalType,
-    ImportSectionEntryType, LinkingType, MemoryType, Naming, Operator, RelocType, Result,
-    SectionCode, TableType, Type,
-};
-
-use crate::readers::{
-    CodeSectionReader, Data, DataKind, DataSectionReader, Element, ElementItem, ElementItems,
-    ElementKind, ElementSectionReader, Export, ExportSectionReader, FunctionBody,
-    FunctionSectionReader, Global, GlobalSectionReader, Import, ImportSectionReader,
-    LinkingSectionReader, MemorySectionReader, ModuleReader, Name, NameSectionReader, NamingReader,
-    OperatorsReader, Reloc, RelocSectionReader, Section, SectionReader, TableSectionReader,
-    TypeSectionReader,
-};
-
-use crate::binary_reader::{BinaryReader, Range};
 
 const MAX_DATA_CHUNK_SIZE: usize = MAX_WASM_STRING_SIZE;
 

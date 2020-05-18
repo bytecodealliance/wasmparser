@@ -15,10 +15,17 @@
 
 use std::cmp::min;
 
-use crate::primitives::{MemoryImmediate, Operator, SIMDLaneIndex, Type, TypeOrFuncType};
 use crate::{
-    wasm_func_type_inputs, wasm_func_type_outputs, BinaryReaderError, WasmFuncType, WasmGlobalType,
-    WasmMemoryType, WasmModuleResources, WasmTableType, WasmType,
+    primitives::{MemoryImmediate, Operator, SIMDLaneIndex, Type, TypeOrFuncType},
+    wasm_func_type_inputs,
+    wasm_func_type_outputs,
+    BinaryReaderError,
+    WasmFuncType,
+    WasmGlobalType,
+    WasmMemoryType,
+    WasmModuleResources,
+    WasmTableType,
+    WasmType,
 };
 
 #[derive(Debug)]

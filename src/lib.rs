@@ -23,102 +23,106 @@
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
 
-pub use crate::binary_reader::BinaryReader;
-pub use crate::binary_reader::Range;
 use crate::binary_reader::SectionHeader;
-
-pub use crate::parser::ElemSectionEntryTable;
-pub use crate::parser::LocalName;
-pub use crate::parser::NameEntry;
-pub use crate::parser::Parser;
-pub use crate::parser::ParserInput;
-pub use crate::parser::ParserState;
-pub use crate::parser::RelocEntry;
-pub use crate::parser::WasmDecoder;
-
-pub use crate::primitives::BinaryReaderError;
-pub use crate::primitives::BrTable;
-pub use crate::primitives::CustomSectionKind;
-pub use crate::primitives::ExternalKind;
-pub use crate::primitives::FuncType;
-pub use crate::primitives::GlobalType;
-pub use crate::primitives::Ieee32;
-pub use crate::primitives::Ieee64;
-pub use crate::primitives::ImportSectionEntryType;
-pub use crate::primitives::LinkingType;
-pub use crate::primitives::MemoryImmediate;
-pub use crate::primitives::MemoryType;
-pub use crate::primitives::NameType;
-pub use crate::primitives::Naming;
-pub use crate::primitives::Operator;
-pub use crate::primitives::RelocType;
-pub use crate::primitives::ResizableLimits;
-pub use crate::primitives::Result;
-pub use crate::primitives::SectionCode;
-pub use crate::primitives::TableType;
-pub use crate::primitives::Type;
-pub use crate::primitives::TypeOrFuncType;
-pub use crate::primitives::V128;
-
-pub use crate::validator::validate;
-pub use crate::validator::validate_function_body;
-pub use crate::validator::ValidatingOperatorParser;
-pub use crate::validator::ValidatingParser;
-pub use crate::validator::ValidatingParserConfig;
-
-pub use crate::module_resources::WasmFuncType;
-pub use crate::module_resources::WasmGlobalType;
-pub use crate::module_resources::WasmMemoryType;
-pub use crate::module_resources::WasmModuleResources;
-pub use crate::module_resources::WasmTableType;
-pub use crate::module_resources::WasmType;
-
 pub(crate) use crate::module_resources::{wasm_func_type_inputs, wasm_func_type_outputs};
-
-pub use crate::operators_validator::OperatorValidatorConfig;
-
-pub use crate::readers::CodeSectionReader;
-pub use crate::readers::CustomSectionContent;
-pub use crate::readers::Data;
-pub use crate::readers::DataKind;
-pub use crate::readers::DataSectionReader;
-pub use crate::readers::Element;
-pub use crate::readers::ElementItem;
-pub use crate::readers::ElementItems;
-pub use crate::readers::ElementItemsReader;
-pub use crate::readers::ElementKind;
-pub use crate::readers::ElementSectionReader;
-pub use crate::readers::Export;
-pub use crate::readers::ExportSectionReader;
-pub use crate::readers::FunctionBody;
-pub use crate::readers::FunctionSectionReader;
-pub use crate::readers::Global;
-pub use crate::readers::GlobalSectionReader;
-pub use crate::readers::Import;
-pub use crate::readers::ImportSectionReader;
-pub use crate::readers::InitExpr;
-pub use crate::readers::LinkingSectionReader;
-pub use crate::readers::LocalsReader;
-pub use crate::readers::MemorySectionReader;
-pub use crate::readers::ModuleReader;
-pub use crate::readers::Name;
-pub use crate::readers::NameSectionReader;
-pub use crate::readers::NamingReader;
-pub use crate::readers::OperatorsReader;
-pub use crate::readers::ProducersField;
-pub use crate::readers::ProducersFieldValue;
-pub use crate::readers::ProducersFieldValuesReader;
-pub use crate::readers::ProducersSectionReader;
-pub use crate::readers::Reloc;
-pub use crate::readers::RelocSectionReader;
-pub use crate::readers::Section;
-pub use crate::readers::SectionContent;
-pub use crate::readers::SectionIterator;
-pub use crate::readers::SectionIteratorLimited;
-pub use crate::readers::SectionReader;
-pub use crate::readers::SectionWithLimitedItems;
-pub use crate::readers::TableSectionReader;
-pub use crate::readers::TypeSectionReader;
+pub use crate::{
+    binary_reader::{BinaryReader, Range},
+    module_resources::{
+        WasmFuncType,
+        WasmGlobalType,
+        WasmMemoryType,
+        WasmModuleResources,
+        WasmTableType,
+        WasmType,
+    },
+    operators_validator::OperatorValidatorConfig,
+    parser::{
+        ElemSectionEntryTable,
+        LocalName,
+        NameEntry,
+        Parser,
+        ParserInput,
+        ParserState,
+        RelocEntry,
+        WasmDecoder,
+    },
+    primitives::{
+        BinaryReaderError,
+        BrTable,
+        CustomSectionKind,
+        ExternalKind,
+        FuncType,
+        GlobalType,
+        Ieee32,
+        Ieee64,
+        ImportSectionEntryType,
+        LinkingType,
+        MemoryImmediate,
+        MemoryType,
+        NameType,
+        Naming,
+        Operator,
+        RelocType,
+        ResizableLimits,
+        Result,
+        SectionCode,
+        TableType,
+        Type,
+        TypeOrFuncType,
+        V128,
+    },
+    readers::{
+        CodeSectionReader,
+        CustomSectionContent,
+        Data,
+        DataKind,
+        DataSectionReader,
+        Element,
+        ElementItem,
+        ElementItems,
+        ElementItemsReader,
+        ElementKind,
+        ElementSectionReader,
+        Export,
+        ExportSectionReader,
+        FunctionBody,
+        FunctionSectionReader,
+        Global,
+        GlobalSectionReader,
+        Import,
+        ImportSectionReader,
+        InitExpr,
+        LinkingSectionReader,
+        LocalsReader,
+        MemorySectionReader,
+        ModuleReader,
+        Name,
+        NameSectionReader,
+        NamingReader,
+        OperatorsReader,
+        ProducersField,
+        ProducersFieldValue,
+        ProducersFieldValuesReader,
+        ProducersSectionReader,
+        Reloc,
+        RelocSectionReader,
+        Section,
+        SectionContent,
+        SectionIterator,
+        SectionIteratorLimited,
+        SectionReader,
+        SectionWithLimitedItems,
+        TableSectionReader,
+        TypeSectionReader,
+    },
+    validator::{
+        validate,
+        validate_function_body,
+        ValidatingOperatorParser,
+        ValidatingParser,
+        ValidatingParserConfig,
+    },
+};
 
 mod binary_reader;
 mod limits;

@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-use std::error::Error;
-use std::fmt;
-use std::result;
+use std::{error::Error, fmt, result};
 
 #[derive(Debug, Clone)]
 pub struct BinaryReaderError {

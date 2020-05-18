@@ -14,8 +14,13 @@
  */
 
 use super::{
-    BinaryReader, ExternalKind, ImportSectionEntryType, Result, SectionIteratorLimited,
-    SectionReader, SectionWithLimitedItems,
+    BinaryReader,
+    ExternalKind,
+    ImportSectionEntryType,
+    Result,
+    SectionIteratorLimited,
+    SectionReader,
+    SectionWithLimitedItems,
 };
 
 #[derive(Debug, Copy, Clone)]

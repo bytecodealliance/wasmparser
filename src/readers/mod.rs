@@ -13,69 +13,69 @@
  * limitations under the License.
  */
 
-use super::{
-    BinaryReader, BinaryReaderError, CustomSectionKind, ExternalKind, FuncType, GlobalType,
-    ImportSectionEntryType, LinkingType, MemoryType, NameType, Naming, Operator, Range, RelocType,
-    Result, SectionCode, TableType, Type,
+pub use self::{
+    code_section::{CodeSectionReader, FunctionBody, LocalsReader},
+    data_section::{Data, DataKind, DataSectionReader},
+    element_section::{
+        Element,
+        ElementItem,
+        ElementItems,
+        ElementItemsReader,
+        ElementKind,
+        ElementSectionReader,
+    },
+    export_section::{Export, ExportSectionReader},
+    function_section::FunctionSectionReader,
+    global_section::{Global, GlobalSectionReader},
+    import_section::{Import, ImportSectionReader},
+    init_expr::InitExpr,
+    linking_section::LinkingSectionReader,
+    memory_section::MemorySectionReader,
+    module::{CustomSectionContent, ModuleReader, Section, SectionContent},
+    name_section::{FunctionName, LocalName, ModuleName, Name, NameSectionReader, NamingReader},
+    operators::OperatorsReader,
+    producers_section::{
+        ProducersField,
+        ProducersFieldValue,
+        ProducersFieldValuesReader,
+        ProducersSectionReader,
+    },
+    reloc_section::{Reloc, RelocSectionReader},
+    section_reader::{
+        SectionIterator,
+        SectionIteratorLimited,
+        SectionReader,
+        SectionWithLimitedItems,
+    },
+    table_section::TableSectionReader,
+    type_section::TypeSectionReader,
 };
-
-use super::SectionHeader;
-
-pub use self::code_section::CodeSectionReader;
-pub use self::code_section::FunctionBody;
-pub use self::code_section::LocalsReader;
-use self::data_count_section::read_data_count_section_content;
-pub use self::data_section::Data;
-pub use self::data_section::DataKind;
-pub use self::data_section::DataSectionReader;
-pub use self::element_section::Element;
-pub use self::element_section::ElementItem;
-pub use self::element_section::ElementItems;
-pub use self::element_section::ElementItemsReader;
-pub use self::element_section::ElementKind;
-pub use self::element_section::ElementSectionReader;
-pub use self::export_section::Export;
-pub use self::export_section::ExportSectionReader;
-pub use self::function_section::FunctionSectionReader;
-pub use self::global_section::Global;
-pub use self::global_section::GlobalSectionReader;
-pub use self::import_section::Import;
-pub use self::import_section::ImportSectionReader;
-pub use self::init_expr::InitExpr;
-pub use self::memory_section::MemorySectionReader;
-pub use self::module::CustomSectionContent;
-pub use self::module::ModuleReader;
-pub use self::module::Section;
-pub use self::module::SectionContent;
-use self::start_section::read_start_section_content;
-pub use self::table_section::TableSectionReader;
-pub use self::type_section::TypeSectionReader;
-
-pub use self::section_reader::SectionIterator;
-pub use self::section_reader::SectionIteratorLimited;
-pub use self::section_reader::SectionReader;
-pub use self::section_reader::SectionWithLimitedItems;
-
-pub use self::name_section::FunctionName;
-pub use self::name_section::LocalName;
-pub use self::name_section::ModuleName;
-pub use self::name_section::Name;
-pub use self::name_section::NameSectionReader;
-pub use self::name_section::NamingReader;
-
-pub use self::producers_section::ProducersField;
-pub use self::producers_section::ProducersFieldValue;
-pub use self::producers_section::ProducersFieldValuesReader;
-pub use self::producers_section::ProducersSectionReader;
-
-pub use self::linking_section::LinkingSectionReader;
-
-pub use self::reloc_section::Reloc;
-pub use self::reloc_section::RelocSectionReader;
-
-use self::sourcemappingurl_section::read_sourcemappingurl_section_content;
-
-pub use self::operators::OperatorsReader;
+use self::{
+    data_count_section::read_data_count_section_content,
+    sourcemappingurl_section::read_sourcemappingurl_section_content,
+    start_section::read_start_section_content,
+};
+use super::{
+    BinaryReader,
+    BinaryReaderError,
+    CustomSectionKind,
+    ExternalKind,
+    FuncType,
+    GlobalType,
+    ImportSectionEntryType,
+    LinkingType,
+    MemoryType,
+    NameType,
+    Naming,
+    Operator,
+    Range,
+    RelocType,
+    Result,
+    SectionCode,
+    SectionHeader,
+    TableType,
+    Type,
+};
 
 mod code_section;
 mod data_count_section;

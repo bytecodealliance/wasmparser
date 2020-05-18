@@ -14,15 +14,30 @@
  */
 
 use super::{
-    BinaryReader, BinaryReaderError, CustomSectionKind, Range, Result, SectionCode, SectionHeader,
-};
-
-use super::{
-    read_data_count_section_content, read_sourcemappingurl_section_content,
-    read_start_section_content, CodeSectionReader, DataSectionReader, ElementSectionReader,
-    ExportSectionReader, FunctionSectionReader, GlobalSectionReader, ImportSectionReader,
-    LinkingSectionReader, MemorySectionReader, NameSectionReader, ProducersSectionReader,
-    RelocSectionReader, TableSectionReader, TypeSectionReader,
+    read_data_count_section_content,
+    read_sourcemappingurl_section_content,
+    read_start_section_content,
+    BinaryReader,
+    BinaryReaderError,
+    CodeSectionReader,
+    CustomSectionKind,
+    DataSectionReader,
+    ElementSectionReader,
+    ExportSectionReader,
+    FunctionSectionReader,
+    GlobalSectionReader,
+    ImportSectionReader,
+    LinkingSectionReader,
+    MemorySectionReader,
+    NameSectionReader,
+    ProducersSectionReader,
+    Range,
+    RelocSectionReader,
+    Result,
+    SectionCode,
+    SectionHeader,
+    TableSectionReader,
+    TypeSectionReader,
 };
 
 #[derive(Debug)]

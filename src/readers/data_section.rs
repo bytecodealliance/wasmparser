@@ -14,7 +14,12 @@
  */
 
 use super::{
-    BinaryReader, BinaryReaderError, InitExpr, Result, SectionIteratorLimited, SectionReader,
+    BinaryReader,
+    BinaryReaderError,
+    InitExpr,
+    Result,
+    SectionIteratorLimited,
+    SectionReader,
     SectionWithLimitedItems,
 };
 

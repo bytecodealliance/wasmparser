@@ -10,12 +10,20 @@
 
 use anyhow::{bail, Context, Result};
 use rayon::prelude::*;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::str;
-use wasmparser::{BinaryReaderError, OperatorValidatorConfig};
-use wasmparser::{Parser, ParserState, WasmDecoder};
-use wasmparser::{ValidatingParser, ValidatingParserConfig};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    str,
+};
+use wasmparser::{
+    BinaryReaderError,
+    OperatorValidatorConfig,
+    Parser,
+    ParserState,
+    ValidatingParser,
+    ValidatingParserConfig,
+    WasmDecoder,
+};
 
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
 enum Test {

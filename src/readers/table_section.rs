@@ -14,7 +14,12 @@
  */
 
 use super::{
-    BinaryReader, Result, SectionIteratorLimited, SectionReader, SectionWithLimitedItems, TableType,
+    BinaryReader,
+    Result,
+    SectionIteratorLimited,
+    SectionReader,
+    SectionWithLimitedItems,
+    TableType,
 };
 
 pub struct TableSectionReader<'a> {

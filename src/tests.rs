@@ -15,11 +15,11 @@
 
 #[cfg(test)]
 mod simple_tests {
-    use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
-    use crate::primitives::{Operator, SectionCode};
-    use std::fs::File;
-    use std::io::prelude::*;
-    use std::path::PathBuf;
+    use crate::{
+        parser::{Parser, ParserInput, ParserState, WasmDecoder},
+        primitives::{Operator, SectionCode},
+    };
+    use std::{fs::File, io::prelude::*, path::PathBuf};
 
     fn read_file_data(path: &PathBuf) -> Vec<u8> {
         println!("Parsing {:?}", path);

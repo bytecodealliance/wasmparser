@@ -13,29 +13,49 @@
  * limitations under the License.
  */
 
-use std::collections::HashSet;
-use std::result;
-use std::str;
-
-use crate::limits::{
-    MAX_WASM_FUNCTIONS, MAX_WASM_FUNCTION_LOCALS, MAX_WASM_GLOBALS, MAX_WASM_MEMORIES,
-    MAX_WASM_MEMORY_PAGES, MAX_WASM_TABLES, MAX_WASM_TYPES,
+use crate::{
+    binary_reader::BinaryReader,
+    limits::{
+        MAX_WASM_FUNCTIONS,
+        MAX_WASM_FUNCTION_LOCALS,
+        MAX_WASM_GLOBALS,
+        MAX_WASM_MEMORIES,
+        MAX_WASM_MEMORY_PAGES,
+        MAX_WASM_TABLES,
+        MAX_WASM_TYPES,
+    },
+    operators_validator::{
+        check_value_type,
+        FunctionEnd,
+        OperatorValidator,
+        OperatorValidatorConfig,
+        OperatorValidatorError,
+        DEFAULT_OPERATOR_VALIDATOR_CONFIG,
+    },
+    parser::{Parser, ParserInput, ParserState, WasmDecoder},
+    primitives::{
+        BinaryReaderError,
+        ExternalKind,
+        FuncType,
+        GlobalType,
+        ImportSectionEntryType,
+        MemoryType,
+        Operator,
+        ResizableLimits,
+        Result,
+        SectionCode,
+        TableType,
+        Type,
+    },
+    ElemSectionEntryTable,
+    ElementItem,
+    WasmFuncType,
+    WasmGlobalType,
+    WasmMemoryType,
+    WasmModuleResources,
+    WasmTableType,
 };
-
-use crate::binary_reader::BinaryReader;
-
-use crate::primitives::{
-    BinaryReaderError, ExternalKind, FuncType, GlobalType, ImportSectionEntryType, MemoryType,
-    Operator, ResizableLimits, Result, SectionCode, TableType, Type,
-};
-
-use crate::operators_validator::{
-    check_value_type, FunctionEnd, OperatorValidator, OperatorValidatorConfig,
-    OperatorValidatorError, DEFAULT_OPERATOR_VALIDATOR_CONFIG,
-};
-use crate::parser::{Parser, ParserInput, ParserState, WasmDecoder};
-use crate::{ElemSectionEntryTable, ElementItem};
-use crate::{WasmFuncType, WasmGlobalType, WasmMemoryType, WasmModuleResources, WasmTableType};
+use std::{collections::HashSet, result, str};
 
 use crate::readers::FunctionBody;
 

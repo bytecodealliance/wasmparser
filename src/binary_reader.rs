@@ -13,20 +13,40 @@
  * limitations under the License.
  */
 
-use std::boxed::Box;
-use std::convert::TryInto;
-use std::str;
-use std::vec::Vec;
+use std::{boxed::Box, convert::TryInto, str, vec::Vec};
 
-use crate::limits::{
-    MAX_WASM_FUNCTION_LOCALS, MAX_WASM_FUNCTION_PARAMS, MAX_WASM_FUNCTION_RETURNS,
-    MAX_WASM_FUNCTION_SIZE, MAX_WASM_STRING_SIZE,
-};
-
-use crate::primitives::{
-    BinaryReaderError, BrTable, CustomSectionKind, ExternalKind, FuncType, GlobalType, Ieee32,
-    Ieee64, LinkingType, MemoryImmediate, MemoryType, NameType, Operator, RelocType,
-    ResizableLimits, Result, SIMDLaneIndex, SectionCode, TableType, Type, TypeOrFuncType, V128,
+use crate::{
+    limits::{
+        MAX_WASM_FUNCTION_LOCALS,
+        MAX_WASM_FUNCTION_PARAMS,
+        MAX_WASM_FUNCTION_RETURNS,
+        MAX_WASM_FUNCTION_SIZE,
+        MAX_WASM_STRING_SIZE,
+    },
+    primitives::{
+        BinaryReaderError,
+        BrTable,
+        CustomSectionKind,
+        ExternalKind,
+        FuncType,
+        GlobalType,
+        Ieee32,
+        Ieee64,
+        LinkingType,
+        MemoryImmediate,
+        MemoryType,
+        NameType,
+        Operator,
+        RelocType,
+        ResizableLimits,
+        Result,
+        SIMDLaneIndex,
+        SectionCode,
+        TableType,
+        Type,
+        TypeOrFuncType,
+        V128,
+    },
 };
 
 const MAX_WASM_BR_TABLE_SIZE: usize = MAX_WASM_FUNCTION_SIZE;
