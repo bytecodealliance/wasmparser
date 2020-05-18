@@ -1,1 +1,6 @@
 # This file tells tools we use rustfmt. We use the default settings.
+
+merge_imports = true
+reorder_imports = true
+imports_layout = "HorizontalVertical"
+max_width = 100
