@@ -1,0 +1,883 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+# Security Policy	SECURITY.md	/^# Security Policy$/;"	h
+## Scope	SECURITY.md	/^## Scope$/;"	h
+## How to Submit a Report	SECURITY.md	/^## How to Submit a Report$/;"	h
+## Safe Harbor	SECURITY.md	/^## Safe Harbor$/;"	h
+## Preferences	SECURITY.md	/^## Preferences$/;"	h
+read_file_data	benches/benchmark.rs	/^pub fn read_file_data(path: &PathBuf) -> Vec<u8> {$/;"	f
+VALIDATOR_CONFIG	benches/benchmark.rs	/^const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {$/;"	c
+read_all_wasm	benches/benchmark.rs	/^fn read_all_wasm<'a, T>(mut d: T)$/;"	f
+it_works_benchmark	benches/benchmark.rs	/^fn it_works_benchmark(c: &mut Criterion) {$/;"	f
+validator_not_fails_benchmark	benches/benchmark.rs	/^fn validator_not_fails_benchmark(c: &mut Criterion) {$/;"	f
+validate_benchmark	benches/benchmark.rs	/^fn validate_benchmark(c: &mut Criterion) {$/;"	f
+# The WebAssembly binary file decoder in Rust	README.md	/^# The WebAssembly binary file decoder in Rust$/;"	h
+## Documentation	README.md	/^## Documentation$/;"	h
+## Example	README.md	/^## Example$/;"	h
+## Fuzzing	README.md	/^## Fuzzing$/;"	h
+# Contributor Covenant Code of Conduct	CODE_OF_CONDUCT.md	/^# Contributor Covenant Code of Conduct$/;"	h
+## Our Pledge	CODE_OF_CONDUCT.md	/^## Our Pledge$/;"	h
+## Our Standards	CODE_OF_CONDUCT.md	/^## Our Standards$/;"	h
+## Our Responsibilities	CODE_OF_CONDUCT.md	/^## Our Responsibilities$/;"	h
+## Scope	CODE_OF_CONDUCT.md	/^## Scope$/;"	h
+## Enforcement	CODE_OF_CONDUCT.md	/^## Enforcement$/;"	h
+## Attribution	CODE_OF_CONDUCT.md	/^## Attribution$/;"	h
+banner	test-all.sh	/^function banner {$/;"	f
+binary_reader	src/lib.rs	/^mod binary_reader;$/;"	m
+limits	src/lib.rs	/^mod limits;$/;"	m
+module_resources	src/lib.rs	/^mod module_resources;$/;"	m
+operators_validator	src/lib.rs	/^mod operators_validator;$/;"	m
+parser	src/lib.rs	/^mod parser;$/;"	m
+primitives	src/lib.rs	/^mod primitives;$/;"	m
+readers	src/lib.rs	/^mod readers;$/;"	m
+tests	src/lib.rs	/^mod tests;$/;"	m
+validator	src/lib.rs	/^mod validator;$/;"	m
+MAX_WASM_BR_TABLE_SIZE	src/binary_reader.rs	/^const MAX_WASM_BR_TABLE_SIZE: usize = MAX_WASM_FUNCTION_SIZE;$/;"	c
+is_name	src/binary_reader.rs	/^fn is_name(name: &str, expected: &'static str) -> bool {$/;"	f
+is_name_prefix	src/binary_reader.rs	/^fn is_name_prefix(name: &str, prefix: &'static str) -> bool {$/;"	f
+WASM_MAGIC_NUMBER	src/binary_reader.rs	/^const WASM_MAGIC_NUMBER: &[u8; 4] = b"\\0asm";$/;"	c
+WASM_EXPERIMENTAL_VERSION	src/binary_reader.rs	/^const WASM_EXPERIMENTAL_VERSION: u32 = 0xd;$/;"	c
+WASM_SUPPORTED_VERSION	src/binary_reader.rs	/^const WASM_SUPPORTED_VERSION: u32 = 0x1;$/;"	c
+Range	src/binary_reader.rs	/^pub struct Range {$/;"	s
+Range	src/binary_reader.rs	/^impl Range {$/;"	i
+new	src/binary_reader.rs	/^    pub fn new(start: usize, end: usize) -> Range {$/;"	f
+slice	src/binary_reader.rs	/^    pub fn slice<'a>(&self, data: &'a [u8]) -> &'a [u8] {$/;"	f
+BinaryReader	src/binary_reader.rs	/^pub struct BinaryReader<'a> {$/;"	s
+BinaryReader	src/binary_reader.rs	/^impl<'a> BinaryReader<'a> {$/;"	i
+new	src/binary_reader.rs	/^    pub fn new(data: &[u8]) -> BinaryReader {$/;"	f
+new_with_offset	src/binary_reader.rs	/^    pub fn new_with_offset(data: &[u8], original_offset: usize) -> BinaryReader {$/;"	f
+original_position	src/binary_reader.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+range	src/binary_reader.rs	/^    pub fn range(&self) -> Range {$/;"	f
+ensure_has_byte	src/binary_reader.rs	/^    fn ensure_has_byte(&self) -> Result<()> {$/;"	f
+ensure_has_bytes	src/binary_reader.rs	/^    fn ensure_has_bytes(&self, len: usize) -> Result<()> {$/;"	f
+read_var_u1	src/binary_reader.rs	/^    fn read_var_u1(&mut self) -> Result<u32> {$/;"	f
+read_var_i7	src/binary_reader.rs	/^    fn read_var_i7(&mut self) -> Result<i32> {$/;"	f
+read_type	src/binary_reader.rs	/^    pub fn read_type(&mut self) -> Result<Type> {$/;"	f
+read_local_count	src/binary_reader.rs	/^    pub fn read_local_count(&mut self) -> Result<usize> {$/;"	f
+read_local_decl	src/binary_reader.rs	/^    pub fn read_local_decl(&mut self, locals_total: &mut usize) -> Result<(u32, Type)> {$/;"	f
+read_resizable_limits	src/binary_reader.rs	/^    fn read_resizable_limits(&mut self, max_present: bool) -> Result<ResizableLimits> {$/;"	f
+read_memarg	src/binary_reader.rs	/^    fn read_memarg(&mut self) -> Result<MemoryImmediate> {$/;"	f
+read_br_table	src/binary_reader.rs	/^    fn read_br_table(&mut self) -> Result<BrTable<'a>> {$/;"	f
+eof	src/binary_reader.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+current_position	src/binary_reader.rs	/^    pub fn current_position(&self) -> usize {$/;"	f
+bytes_remaining	src/binary_reader.rs	/^    pub fn bytes_remaining(&self) -> usize {$/;"	f
+read_bytes	src/binary_reader.rs	/^    pub fn read_bytes(&mut self, size: usize) -> Result<&'a [u8]> {$/;"	f
+read_u32	src/binary_reader.rs	/^    pub fn read_u32(&mut self) -> Result<u32> {$/;"	f
+read_u64	src/binary_reader.rs	/^    pub fn read_u64(&mut self) -> Result<u64> {$/;"	f
+read_u8	src/binary_reader.rs	/^    pub fn read_u8(&mut self) -> Result<u32> {$/;"	f
+read_var_u8	src/binary_reader.rs	/^    pub fn read_var_u8(&mut self) -> Result<u32> {$/;"	f
+read_var_u32	src/binary_reader.rs	/^    pub fn read_var_u32(&mut self) -> Result<u32> {$/;"	f
+skip_var_32	src/binary_reader.rs	/^    pub fn skip_var_32(&mut self) -> Result<()> {$/;"	f
+skip_type	src/binary_reader.rs	/^    pub fn skip_type(&mut self) -> Result<()> {$/;"	f
+skip_bytes	src/binary_reader.rs	/^    pub fn skip_bytes(&mut self, len: usize) -> Result<()> {$/;"	f
+skip_string	src/binary_reader.rs	/^    pub fn skip_string(&mut self) -> Result<()> {$/;"	f
+read_var_i32	src/binary_reader.rs	/^    pub fn read_var_i32(&mut self) -> Result<i32> {$/;"	f
+read_var_s33	src/binary_reader.rs	/^    pub fn read_var_s33(&mut self) -> Result<i64> {$/;"	f
+read_var_i64	src/binary_reader.rs	/^    pub fn read_var_i64(&mut self) -> Result<i64> {$/;"	f
+read_f32	src/binary_reader.rs	/^    pub fn read_f32(&mut self) -> Result<Ieee32> {$/;"	f
+read_f64	src/binary_reader.rs	/^    pub fn read_f64(&mut self) -> Result<Ieee64> {$/;"	f
+read_string	src/binary_reader.rs	/^    pub fn read_string(&mut self) -> Result<&'a str> {$/;"	f
+read_memarg_of_align	src/binary_reader.rs	/^    fn read_memarg_of_align(&mut self, max_align: u32) -> Result<MemoryImmediate> {$/;"	f
+read_0xfe_operator	src/binary_reader.rs	/^    fn read_0xfe_operator(&mut self) -> Result<Operator<'a>> {$/;"	f
+read_blocktype	src/binary_reader.rs	/^    fn read_blocktype(&mut self) -> Result<TypeOrFuncType> {$/;"	f
+read_operator	src/binary_reader.rs	/^    pub fn read_operator(&mut self) -> Result<Operator<'a>> {$/;"	f
+read_0xfc_operator	src/binary_reader.rs	/^    fn read_0xfc_operator(&mut self) -> Result<Operator<'a>> {$/;"	f
+read_lane_index	src/binary_reader.rs	/^    fn read_lane_index(&mut self, max: u32) -> Result<SIMDLaneIndex> {$/;"	f
+read_v128	src/binary_reader.rs	/^    fn read_v128(&mut self) -> Result<V128> {$/;"	f
+read_0xfd_operator	src/binary_reader.rs	/^    fn read_0xfd_operator(&mut self) -> Result<Operator<'a>> {$/;"	f
+BrTable	src/binary_reader.rs	/^impl<'a> BrTable<'a> {$/;"	i
+len	src/binary_reader.rs	/^    pub fn len(&self) -> usize {$/;"	f
+is_empty	src/binary_reader.rs	/^    pub fn is_empty(&self) -> bool {$/;"	f
+read_table	src/binary_reader.rs	/^    pub fn read_table(&self) -> Result<(Box<[u32]>, u32)> {$/;"	f
+BrTableIterator	src/binary_reader.rs	/^pub struct BrTableIterator<'a> {$/;"	s
+IntoIterator	src/binary_reader.rs	/^impl<'a> IntoIterator for &'a BrTable<'a> {$/;"	i
+Item	src/binary_reader.rs	/^    type Item = u32;$/;"	T
+IntoIter	src/binary_reader.rs	/^    type IntoIter = BrTableIterator<'a>;$/;"	T
+into_iter	src/binary_reader.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Iterator for BrTableIterator	src/binary_reader.rs	/^impl<'a> Iterator for BrTableIterator<'a> {$/;"	i
+Item	src/binary_reader.rs	/^    type Item = u32;$/;"	T
+next	src/binary_reader.rs	/^    fn next(&mut self) -> Option<u32> {$/;"	f
+ValidatorResult	src/validator.rs	/^type ValidatorResult<'a, T> = result::Result<T, ParserState<'a>>;$/;"	T
+InitExpressionState	src/validator.rs	/^struct InitExpressionState {$/;"	s
+SectionOrderState	src/validator.rs	/^enum SectionOrderState {$/;"	g
+SectionOrderState	src/validator.rs	/^impl SectionOrderState {$/;"	i
+from_section_code	src/validator.rs	/^    pub fn from_section_code(code: &SectionCode) -> Option<SectionOrderState> {$/;"	f
+ValidatingParserConfig	src/validator.rs	/^pub struct ValidatingParserConfig {$/;"	s
+DEFAULT_VALIDATING_PARSER_CONFIG	src/validator.rs	/^const DEFAULT_VALIDATING_PARSER_CONFIG: ValidatingParserConfig = ValidatingParserConfig {$/;"	c
+ValidatingParserResources	src/validator.rs	/^struct ValidatingParserResources {$/;"	s
+WasmModuleResources for ValidatingParserResources	src/validator.rs	/^impl<'a> WasmModuleResources for ValidatingParserResources {$/;"	i
+FuncType	src/validator.rs	/^    type FuncType = crate::FuncType;$/;"	T
+TableType	src/validator.rs	/^    type TableType = crate::TableType;$/;"	T
+MemoryType	src/validator.rs	/^    type MemoryType = crate::MemoryType;$/;"	T
+GlobalType	src/validator.rs	/^    type GlobalType = crate::GlobalType;$/;"	T
+type_at	src/validator.rs	/^    fn type_at(&self, at: u32) -> Option<&Self::FuncType> {$/;"	f
+table_at	src/validator.rs	/^    fn table_at(&self, at: u32) -> Option<&Self::TableType> {$/;"	f
+memory_at	src/validator.rs	/^    fn memory_at(&self, at: u32) -> Option<&Self::MemoryType> {$/;"	f
+global_at	src/validator.rs	/^    fn global_at(&self, at: u32) -> Option<&Self::GlobalType> {$/;"	f
+func_type_id_at	src/validator.rs	/^    fn func_type_id_at(&self, at: u32) -> Option<u32> {$/;"	f
+element_count	src/validator.rs	/^    fn element_count(&self) -> u32 {$/;"	f
+data_count	src/validator.rs	/^    fn data_count(&self) -> u32 {$/;"	f
+ValidatingParser	src/validator.rs	/^pub struct ValidatingParser<'a> {$/;"	s
+ValidatingParser	src/validator.rs	/^impl<'a> ValidatingParser<'a> {$/;"	i
+new	src/validator.rs	/^    pub fn new(bytes: &[u8], config: Option<ValidatingParserConfig>) -> ValidatingParser {$/;"	f
+get_resources	src/validator.rs	/^    pub fn get_resources($/;"	f
+set_validation_error	src/validator.rs	/^    fn set_validation_error(&mut self, message: impl Into<String>) {$/;"	f
+set_operator_validation_error	src/validator.rs	/^    fn set_operator_validation_error(&mut self, e: OperatorValidatorError) {$/;"	f
+create_error	src/validator.rs	/^    fn create_error<T>(&self, message: impl Into<String>) -> ValidatorResult<'a, T> {$/;"	f
+check_value_type	src/validator.rs	/^    fn check_value_type(&self, ty: Type) -> ValidatorResult<'a, ()> {$/;"	f
+check_value_types	src/validator.rs	/^    fn check_value_types(&self, types: &[Type]) -> ValidatorResult<'a, ()> {$/;"	f
+check_limits	src/validator.rs	/^    fn check_limits(&self, limits: &ResizableLimits) -> ValidatorResult<'a, ()> {$/;"	f
+check_func_type	src/validator.rs	/^    fn check_func_type(&self, func_type: &FuncType) -> ValidatorResult<'a, ()> {$/;"	f
+check_table_type	src/validator.rs	/^    fn check_table_type(&self, table_type: &TableType) -> ValidatorResult<'a, ()> {$/;"	f
+check_memory_type	src/validator.rs	/^    fn check_memory_type(&self, memory_type: &MemoryType) -> ValidatorResult<'a, ()> {$/;"	f
+check_global_type	src/validator.rs	/^    fn check_global_type(&self, global_type: GlobalType) -> ValidatorResult<'a, ()> {$/;"	f
+check_import_entry	src/validator.rs	/^    fn check_import_entry(&self, import_type: &ImportSectionEntryType) -> ValidatorResult<'a, ()> {$/;"	f
+check_init_expression_operator	src/validator.rs	/^    fn check_init_expression_operator(&self, operator: &Operator) -> ValidatorResult<'a, ()> {$/;"	f
+check_export_entry	src/validator.rs	/^    fn check_export_entry($/;"	f
+check_start	src/validator.rs	/^    fn check_start(&self, func_index: u32) -> ValidatorResult<'a, ()> {$/;"	f
+process_begin_section	src/validator.rs	/^    fn process_begin_section(&self, code: &SectionCode) -> ValidatorResult<'a, SectionOrderState> {$/;"	f
+process_state	src/validator.rs	/^    fn process_state(&mut self) {$/;"	f
+create_validating_operator_parser	src/validator.rs	/^    pub fn create_validating_operator_parser<'b>($/;"	f
+current_position	src/validator.rs	/^    pub fn current_position(&self) -> usize {$/;"	f
+WasmDecoder for ValidatingParser	src/validator.rs	/^impl<'a> WasmDecoder<'a> for ValidatingParser<'a> {$/;"	i
+read	src/validator.rs	/^    fn read(&mut self) -> &ParserState<'a> {$/;"	f
+push_input	src/validator.rs	/^    fn push_input(&mut self, input: ParserInput) {$/;"	f
+read_with_input	src/validator.rs	/^    fn read_with_input(&mut self, input: ParserInput) -> &ParserState<'a> {$/;"	f
+create_binary_reader	src/validator.rs	/^    fn create_binary_reader<'b>(&mut self) -> BinaryReader<'b>$/;"	f
+last_state	src/validator.rs	/^    fn last_state(&self) -> &ParserState<'a> {$/;"	f
+ValidatingOperatorParser	src/validator.rs	/^pub struct ValidatingOperatorParser<'b> {$/;"	s
+ValidatingOperatorParser	src/validator.rs	/^impl<'b> ValidatingOperatorParser<'b> {$/;"	i
+eof	src/validator.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+current_position	src/validator.rs	/^    pub fn current_position(&self) -> usize {$/;"	f
+is_dead_code	src/validator.rs	/^    pub fn is_dead_code(&self) -> bool {$/;"	f
+next	src/validator.rs	/^    pub fn next<'c, F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>($/;"	f
+validate_function_body	src/validator.rs	/^pub fn validate_function_body<$/;"	f
+validate	src/validator.rs	/^pub fn validate(bytes: &[u8], config: Option<ValidatingParserConfig>) -> Result<()> {$/;"	f
+test_validate	src/validator.rs	/^fn test_validate() {$/;"	f
+FunctionSectionReader	src/readers/function_section.rs	/^pub struct FunctionSectionReader<'a> {$/;"	s
+FunctionSectionReader	src/readers/function_section.rs	/^impl<'a> FunctionSectionReader<'a> {$/;"	i
+new	src/readers/function_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<FunctionSectionReader<'a>> {$/;"	f
+original_position	src/readers/function_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/function_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/function_section.rs	/^    pub fn read(&mut self) -> Result<u32> {$/;"	f
+SectionReader for FunctionSectionReader	src/readers/function_section.rs	/^impl<'a> SectionReader for FunctionSectionReader<'a> {$/;"	i
+Item	src/readers/function_section.rs	/^    type Item = u32;$/;"	T
+read	src/readers/function_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/function_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/function_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for FunctionSectionReader	src/readers/function_section.rs	/^impl<'a> SectionWithLimitedItems for FunctionSectionReader<'a> {$/;"	i
+get_count	src/readers/function_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for FunctionSectionReader	src/readers/function_section.rs	/^impl<'a> IntoIterator for FunctionSectionReader<'a> {$/;"	i
+Item	src/readers/function_section.rs	/^    type Item = Result<u32>;$/;"	T
+IntoIter	src/readers/function_section.rs	/^    type IntoIter = SectionIteratorLimited<FunctionSectionReader<'a>>;$/;"	T
+into_iter	src/readers/function_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+code_section	src/readers/mod.rs	/^mod code_section;$/;"	m
+data_count_section	src/readers/mod.rs	/^mod data_count_section;$/;"	m
+data_section	src/readers/mod.rs	/^mod data_section;$/;"	m
+element_section	src/readers/mod.rs	/^mod element_section;$/;"	m
+export_section	src/readers/mod.rs	/^mod export_section;$/;"	m
+function_section	src/readers/mod.rs	/^mod function_section;$/;"	m
+global_section	src/readers/mod.rs	/^mod global_section;$/;"	m
+import_section	src/readers/mod.rs	/^mod import_section;$/;"	m
+init_expr	src/readers/mod.rs	/^mod init_expr;$/;"	m
+linking_section	src/readers/mod.rs	/^mod linking_section;$/;"	m
+memory_section	src/readers/mod.rs	/^mod memory_section;$/;"	m
+module	src/readers/mod.rs	/^mod module;$/;"	m
+name_section	src/readers/mod.rs	/^mod name_section;$/;"	m
+operators	src/readers/mod.rs	/^mod operators;$/;"	m
+producers_section	src/readers/mod.rs	/^mod producers_section;$/;"	m
+reloc_section	src/readers/mod.rs	/^mod reloc_section;$/;"	m
+section_reader	src/readers/mod.rs	/^mod section_reader;$/;"	m
+sourcemappingurl_section	src/readers/mod.rs	/^mod sourcemappingurl_section;$/;"	m
+start_section	src/readers/mod.rs	/^mod start_section;$/;"	m
+table_section	src/readers/mod.rs	/^mod table_section;$/;"	m
+type_section	src/readers/mod.rs	/^mod type_section;$/;"	m
+FunctionBody	src/readers/code_section.rs	/^pub struct FunctionBody<'a> {$/;"	s
+FunctionBody	src/readers/code_section.rs	/^impl<'a> FunctionBody<'a> {$/;"	i
+new	src/readers/code_section.rs	/^    pub fn new(offset: usize, data: &'a [u8]) -> Self {$/;"	f
+get_binary_reader	src/readers/code_section.rs	/^    pub fn get_binary_reader<'b>(&self) -> BinaryReader<'b>$/;"	f
+skip_locals	src/readers/code_section.rs	/^    fn skip_locals(reader: &mut BinaryReader) -> Result<()> {$/;"	f
+get_locals_reader	src/readers/code_section.rs	/^    pub fn get_locals_reader<'b>(&self) -> Result<LocalsReader<'b>>$/;"	f
+get_operators_reader	src/readers/code_section.rs	/^    pub fn get_operators_reader<'b>(&self) -> Result<OperatorsReader<'b>>$/;"	f
+range	src/readers/code_section.rs	/^    pub fn range(&self) -> Range {$/;"	f
+LocalsReader	src/readers/code_section.rs	/^pub struct LocalsReader<'a> {$/;"	s
+LocalsReader	src/readers/code_section.rs	/^impl<'a> LocalsReader<'a> {$/;"	i
+get_count	src/readers/code_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+original_position	src/readers/code_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+read	src/readers/code_section.rs	/^    pub fn read(&mut self) -> Result<(u32, Type)> {$/;"	f
+CodeSectionReader	src/readers/code_section.rs	/^pub struct CodeSectionReader<'a> {$/;"	s
+IntoIterator for LocalsReader	src/readers/code_section.rs	/^impl<'a> IntoIterator for LocalsReader<'a> {$/;"	i
+Item	src/readers/code_section.rs	/^    type Item = Result<(u32, Type)>;$/;"	T
+IntoIter	src/readers/code_section.rs	/^    type IntoIter = LocalsIterator<'a>;$/;"	T
+into_iter	src/readers/code_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+LocalsIterator	src/readers/code_section.rs	/^pub struct LocalsIterator<'a> {$/;"	s
+Iterator for LocalsIterator	src/readers/code_section.rs	/^impl<'a> Iterator for LocalsIterator<'a> {$/;"	i
+Item	src/readers/code_section.rs	/^    type Item = Result<(u32, Type)>;$/;"	T
+next	src/readers/code_section.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/readers/code_section.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+CodeSectionReader	src/readers/code_section.rs	/^impl<'a> CodeSectionReader<'a> {$/;"	i
+new	src/readers/code_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<CodeSectionReader<'a>> {$/;"	f
+original_position	src/readers/code_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/code_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+verify_body_end	src/readers/code_section.rs	/^    fn verify_body_end(&self, end: usize) -> Result<()> {$/;"	f
+read	src/readers/code_section.rs	/^    pub fn read<'b>(&mut self) -> Result<FunctionBody<'b>>$/;"	f
+SectionReader for CodeSectionReader	src/readers/code_section.rs	/^impl<'a> SectionReader for CodeSectionReader<'a> {$/;"	i
+Item	src/readers/code_section.rs	/^    type Item = FunctionBody<'a>;$/;"	T
+read	src/readers/code_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/code_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/code_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for CodeSectionReader	src/readers/code_section.rs	/^impl<'a> SectionWithLimitedItems for CodeSectionReader<'a> {$/;"	i
+get_count	src/readers/code_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for CodeSectionReader	src/readers/code_section.rs	/^impl<'a> IntoIterator for CodeSectionReader<'a> {$/;"	i
+Item	src/readers/code_section.rs	/^    type Item = Result<FunctionBody<'a>>;$/;"	T
+IntoIter	src/readers/code_section.rs	/^    type IntoIter = SectionIteratorLimited<CodeSectionReader<'a>>;$/;"	T
+into_iter	src/readers/code_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Export	src/readers/export_section.rs	/^pub struct Export<'a> {$/;"	s
+ExportSectionReader	src/readers/export_section.rs	/^pub struct ExportSectionReader<'a> {$/;"	s
+ExportSectionReader	src/readers/export_section.rs	/^impl<'a> ExportSectionReader<'a> {$/;"	i
+new	src/readers/export_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<ExportSectionReader<'a>> {$/;"	f
+original_position	src/readers/export_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/export_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/export_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Export<'b>>$/;"	f
+SectionReader for ExportSectionReader	src/readers/export_section.rs	/^impl<'a> SectionReader for ExportSectionReader<'a> {$/;"	i
+Item	src/readers/export_section.rs	/^    type Item = Export<'a>;$/;"	T
+read	src/readers/export_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/export_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/export_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for ExportSectionReader	src/readers/export_section.rs	/^impl<'a> SectionWithLimitedItems for ExportSectionReader<'a> {$/;"	i
+get_count	src/readers/export_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for ExportSectionReader	src/readers/export_section.rs	/^impl<'a> IntoIterator for ExportSectionReader<'a> {$/;"	i
+Item	src/readers/export_section.rs	/^    type Item = Result<Export<'a>>;$/;"	T
+IntoIter	src/readers/export_section.rs	/^    type IntoIter = SectionIteratorLimited<ExportSectionReader<'a>>;$/;"	T
+into_iter	src/readers/export_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+ModuleName	src/readers/name_section.rs	/^pub struct ModuleName<'a> {$/;"	s
+ModuleName	src/readers/name_section.rs	/^impl<'a> ModuleName<'a> {$/;"	i
+get_name	src/readers/name_section.rs	/^    pub fn get_name<'b>(&self) -> Result<&'b str>$/;"	f
+NamingReader	src/readers/name_section.rs	/^pub struct NamingReader<'a> {$/;"	s
+NamingReader	src/readers/name_section.rs	/^impl<'a> NamingReader<'a> {$/;"	i
+new	src/readers/name_section.rs	/^    fn new(data: &'a [u8], offset: usize) -> Result<NamingReader<'a>> {$/;"	f
+skip	src/readers/name_section.rs	/^    fn skip(reader: &mut BinaryReader) -> Result<()> {$/;"	f
+original_position	src/readers/name_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/name_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/name_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Naming<'b>>$/;"	f
+FunctionName	src/readers/name_section.rs	/^pub struct FunctionName<'a> {$/;"	s
+FunctionName	src/readers/name_section.rs	/^impl<'a> FunctionName<'a> {$/;"	i
+get_map	src/readers/name_section.rs	/^    pub fn get_map<'b>(&self) -> Result<NamingReader<'b>>$/;"	f
+FunctionLocalName	src/readers/name_section.rs	/^pub struct FunctionLocalName<'a> {$/;"	s
+FunctionLocalName	src/readers/name_section.rs	/^impl<'a> FunctionLocalName<'a> {$/;"	i
+get_map	src/readers/name_section.rs	/^    pub fn get_map<'b>(&self) -> Result<NamingReader<'b>>$/;"	f
+FunctionLocalReader	src/readers/name_section.rs	/^pub struct FunctionLocalReader<'a> {$/;"	s
+FunctionLocalReader	src/readers/name_section.rs	/^impl<'a> FunctionLocalReader<'a> {$/;"	i
+new	src/readers/name_section.rs	/^    fn new(data: &'a [u8], offset: usize) -> Result<FunctionLocalReader<'a>> {$/;"	f
+get_count	src/readers/name_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+original_position	src/readers/name_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+read	src/readers/name_section.rs	/^    pub fn read<'b>(&mut self) -> Result<FunctionLocalName<'b>>$/;"	f
+LocalName	src/readers/name_section.rs	/^pub struct LocalName<'a> {$/;"	s
+LocalName	src/readers/name_section.rs	/^impl<'a> LocalName<'a> {$/;"	i
+get_function_local_reader	src/readers/name_section.rs	/^    pub fn get_function_local_reader<'b>(&self) -> Result<FunctionLocalReader<'b>>$/;"	f
+Name	src/readers/name_section.rs	/^pub enum Name<'a> {$/;"	g
+NameSectionReader	src/readers/name_section.rs	/^pub struct NameSectionReader<'a> {$/;"	s
+NameSectionReader	src/readers/name_section.rs	/^impl<'a> NameSectionReader<'a> {$/;"	i
+new	src/readers/name_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<NameSectionReader<'a>> {$/;"	f
+verify_section_end	src/readers/name_section.rs	/^    fn verify_section_end(&self, end: usize) -> Result<()> {$/;"	f
+eof	src/readers/name_section.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/name_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+read	src/readers/name_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Name<'b>>$/;"	f
+SectionReader for NameSectionReader	src/readers/name_section.rs	/^impl<'a> SectionReader for NameSectionReader<'a> {$/;"	i
+Item	src/readers/name_section.rs	/^    type Item = Name<'a>;$/;"	T
+read	src/readers/name_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/name_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/name_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+IntoIterator for NameSectionReader	src/readers/name_section.rs	/^impl<'a> IntoIterator for NameSectionReader<'a> {$/;"	i
+Item	src/readers/name_section.rs	/^    type Item = Result<Name<'a>>;$/;"	T
+IntoIter	src/readers/name_section.rs	/^    type IntoIter = SectionIterator<NameSectionReader<'a>>;$/;"	T
+into_iter	src/readers/name_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+LinkingSectionReader	src/readers/linking_section.rs	/^pub struct LinkingSectionReader<'a> {$/;"	s
+LinkingSectionReader	src/readers/linking_section.rs	/^impl<'a> LinkingSectionReader<'a> {$/;"	i
+new	src/readers/linking_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<LinkingSectionReader<'a>> {$/;"	f
+get_count	src/readers/linking_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+original_position	src/readers/linking_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+read	src/readers/linking_section.rs	/^    pub fn read<'b>(&mut self) -> Result<LinkingType>$/;"	f
+SectionReader for LinkingSectionReader	src/readers/linking_section.rs	/^impl<'a> SectionReader for LinkingSectionReader<'a> {$/;"	i
+Item	src/readers/linking_section.rs	/^    type Item = LinkingType;$/;"	T
+read	src/readers/linking_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/linking_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/linking_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for LinkingSectionReader	src/readers/linking_section.rs	/^impl<'a> SectionWithLimitedItems for LinkingSectionReader<'a> {$/;"	i
+get_count	src/readers/linking_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for LinkingSectionReader	src/readers/linking_section.rs	/^impl<'a> IntoIterator for LinkingSectionReader<'a> {$/;"	i
+Item	src/readers/linking_section.rs	/^    type Item = Result<LinkingType>;$/;"	T
+IntoIter	src/readers/linking_section.rs	/^    type IntoIter = SectionIteratorLimited<LinkingSectionReader<'a>>;$/;"	T
+into_iter	src/readers/linking_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+SectionReader	src/readers/section_reader.rs	/^pub trait SectionReader {$/;"	t
+Item	src/readers/section_reader.rs	/^    type Item;$/;"	T
+read	src/readers/section_reader.rs	/^    fn read(&mut self) -> Result<Self::Item>;$/;"	f
+eof	src/readers/section_reader.rs	/^    fn eof(&self) -> bool;$/;"	f
+original_position	src/readers/section_reader.rs	/^    fn original_position(&self) -> usize;$/;"	f
+ensure_end	src/readers/section_reader.rs	/^    fn ensure_end(&self) -> Result<()> {$/;"	f
+SectionWithLimitedItems	src/readers/section_reader.rs	/^pub trait SectionWithLimitedItems {$/;"	t
+get_count	src/readers/section_reader.rs	/^    fn get_count(&self) -> u32;$/;"	f
+SectionIterator	src/readers/section_reader.rs	/^pub struct SectionIterator<R>$/;"	s
+SectionIterator	src/readers/section_reader.rs	/^impl<R> SectionIterator<R>$/;"	i
+new	src/readers/section_reader.rs	/^    pub fn new(reader: R) -> SectionIterator<R> {$/;"	f
+Iterator for SectionIterator	src/readers/section_reader.rs	/^impl<R> Iterator for SectionIterator<R>$/;"	i
+Item	src/readers/section_reader.rs	/^    type Item = Result<R::Item>;$/;"	T
+next	src/readers/section_reader.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+SectionIteratorLimited	src/readers/section_reader.rs	/^pub struct SectionIteratorLimited<R>$/;"	s
+SectionIteratorLimited	src/readers/section_reader.rs	/^impl<R> SectionIteratorLimited<R>$/;"	i
+new	src/readers/section_reader.rs	/^    pub fn new(reader: R) -> SectionIteratorLimited<R> {$/;"	f
+Iterator for SectionIteratorLimited	src/readers/section_reader.rs	/^impl<R> Iterator for SectionIteratorLimited<R>$/;"	i
+Item	src/readers/section_reader.rs	/^    type Item = Result<R::Item>;$/;"	T
+next	src/readers/section_reader.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/readers/section_reader.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+InitExpr	src/readers/init_expr.rs	/^pub struct InitExpr<'a> {$/;"	s
+InitExpr	src/readers/init_expr.rs	/^impl<'a> InitExpr<'a> {$/;"	i
+new	src/readers/init_expr.rs	/^    pub fn new(data: &[u8], offset: usize) -> InitExpr {$/;"	f
+get_binary_reader	src/readers/init_expr.rs	/^    pub fn get_binary_reader<'b>(&self) -> BinaryReader<'b>$/;"	f
+get_operators_reader	src/readers/init_expr.rs	/^    pub fn get_operators_reader<'b>(&self) -> OperatorsReader<'b>$/;"	f
+Data	src/readers/data_section.rs	/^pub struct Data<'a> {$/;"	s
+DataKind	src/readers/data_section.rs	/^pub enum DataKind<'a> {$/;"	g
+DataSectionReader	src/readers/data_section.rs	/^pub struct DataSectionReader<'a> {$/;"	s
+DataSectionReader	src/readers/data_section.rs	/^impl<'a> DataSectionReader<'a> {$/;"	i
+new	src/readers/data_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<DataSectionReader<'a>> {$/;"	f
+original_position	src/readers/data_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/data_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+verify_data_end	src/readers/data_section.rs	/^    fn verify_data_end(&self, end: usize) -> Result<()> {$/;"	f
+read	src/readers/data_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Data<'b>>$/;"	f
+SectionReader for DataSectionReader	src/readers/data_section.rs	/^impl<'a> SectionReader for DataSectionReader<'a> {$/;"	i
+Item	src/readers/data_section.rs	/^    type Item = Data<'a>;$/;"	T
+read	src/readers/data_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/data_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/data_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for DataSectionReader	src/readers/data_section.rs	/^impl<'a> SectionWithLimitedItems for DataSectionReader<'a> {$/;"	i
+get_count	src/readers/data_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for DataSectionReader	src/readers/data_section.rs	/^impl<'a> IntoIterator for DataSectionReader<'a> {$/;"	i
+Item	src/readers/data_section.rs	/^    type Item = Result<Data<'a>>;$/;"	T
+IntoIter	src/readers/data_section.rs	/^    type IntoIter = SectionIteratorLimited<DataSectionReader<'a>>;$/;"	T
+into_iter	src/readers/data_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Element	src/readers/element_section.rs	/^pub struct Element<'a> {$/;"	s
+ElementKind	src/readers/element_section.rs	/^pub enum ElementKind<'a> {$/;"	g
+ElementItems	src/readers/element_section.rs	/^pub struct ElementItems<'a> {$/;"	s
+ElementItem	src/readers/element_section.rs	/^pub enum ElementItem {$/;"	g
+ElementItems	src/readers/element_section.rs	/^impl<'a> ElementItems<'a> {$/;"	i
+get_items_reader	src/readers/element_section.rs	/^    pub fn get_items_reader<'b>(&self) -> Result<ElementItemsReader<'b>>$/;"	f
+ElementItemsReader	src/readers/element_section.rs	/^pub struct ElementItemsReader<'a> {$/;"	s
+ElementItemsReader	src/readers/element_section.rs	/^impl<'a> ElementItemsReader<'a> {$/;"	i
+new	src/readers/element_section.rs	/^    pub fn new(data: &[u8], offset: usize, exprs: bool) -> Result<ElementItemsReader> {$/;"	f
+original_position	src/readers/element_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/element_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+uses_exprs	src/readers/element_section.rs	/^    pub fn uses_exprs(&self) -> bool {$/;"	f
+read	src/readers/element_section.rs	/^    pub fn read(&mut self) -> Result<ElementItem> {$/;"	f
+IntoIterator for ElementItemsReader	src/readers/element_section.rs	/^impl<'a> IntoIterator for ElementItemsReader<'a> {$/;"	i
+Item	src/readers/element_section.rs	/^    type Item = Result<ElementItem>;$/;"	T
+IntoIter	src/readers/element_section.rs	/^    type IntoIter = ElementItemsIterator<'a>;$/;"	T
+into_iter	src/readers/element_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+ElementItemsIterator	src/readers/element_section.rs	/^pub struct ElementItemsIterator<'a> {$/;"	s
+Iterator for ElementItemsIterator	src/readers/element_section.rs	/^impl<'a> Iterator for ElementItemsIterator<'a> {$/;"	i
+Item	src/readers/element_section.rs	/^    type Item = Result<ElementItem>;$/;"	T
+next	src/readers/element_section.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/readers/element_section.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+ElementSectionReader	src/readers/element_section.rs	/^pub struct ElementSectionReader<'a> {$/;"	s
+ElementSectionReader	src/readers/element_section.rs	/^impl<'a> ElementSectionReader<'a> {$/;"	i
+new	src/readers/element_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<ElementSectionReader<'a>> {$/;"	f
+original_position	src/readers/element_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/element_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/element_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Element<'b>>$/;"	f
+SectionReader for ElementSectionReader	src/readers/element_section.rs	/^impl<'a> SectionReader for ElementSectionReader<'a> {$/;"	i
+Item	src/readers/element_section.rs	/^    type Item = Element<'a>;$/;"	T
+read	src/readers/element_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/element_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/element_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for ElementSectionReader	src/readers/element_section.rs	/^impl<'a> SectionWithLimitedItems for ElementSectionReader<'a> {$/;"	i
+get_count	src/readers/element_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for ElementSectionReader	src/readers/element_section.rs	/^impl<'a> IntoIterator for ElementSectionReader<'a> {$/;"	i
+Item	src/readers/element_section.rs	/^    type Item = Result<Element<'a>>;$/;"	T
+IntoIter	src/readers/element_section.rs	/^    type IntoIter = SectionIteratorLimited<ElementSectionReader<'a>>;$/;"	T
+into_iter	src/readers/element_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Reloc	src/readers/reloc_section.rs	/^pub struct Reloc {$/;"	s
+RelocSectionReader	src/readers/reloc_section.rs	/^pub struct RelocSectionReader<'a> {$/;"	s
+RelocSectionReader	src/readers/reloc_section.rs	/^impl<'a> RelocSectionReader<'a> {$/;"	i
+new	src/readers/reloc_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<RelocSectionReader<'a>> {$/;"	f
+get_count	src/readers/reloc_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+get_section_code	src/readers/reloc_section.rs	/^    pub fn get_section_code<'b>(&self) -> SectionCode<'b>$/;"	f
+original_position	src/readers/reloc_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+read	src/readers/reloc_section.rs	/^    pub fn read(&mut self) -> Result<Reloc> {$/;"	f
+SectionReader for RelocSectionReader	src/readers/reloc_section.rs	/^impl<'a> SectionReader for RelocSectionReader<'a> {$/;"	i
+Item	src/readers/reloc_section.rs	/^    type Item = Reloc;$/;"	T
+read	src/readers/reloc_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/reloc_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/reloc_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for RelocSectionReader	src/readers/reloc_section.rs	/^impl<'a> SectionWithLimitedItems for RelocSectionReader<'a> {$/;"	i
+get_count	src/readers/reloc_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for RelocSectionReader	src/readers/reloc_section.rs	/^impl<'a> IntoIterator for RelocSectionReader<'a> {$/;"	i
+Item	src/readers/reloc_section.rs	/^    type Item = Result<Reloc>;$/;"	T
+IntoIter	src/readers/reloc_section.rs	/^    type IntoIter = SectionIteratorLimited<RelocSectionReader<'a>>;$/;"	T
+into_iter	src/readers/reloc_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+TableSectionReader	src/readers/table_section.rs	/^pub struct TableSectionReader<'a> {$/;"	s
+TableSectionReader	src/readers/table_section.rs	/^impl<'a> TableSectionReader<'a> {$/;"	i
+new	src/readers/table_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<TableSectionReader<'a>> {$/;"	f
+original_position	src/readers/table_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/table_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/table_section.rs	/^    pub fn read(&mut self) -> Result<TableType> {$/;"	f
+SectionReader for TableSectionReader	src/readers/table_section.rs	/^impl<'a> SectionReader for TableSectionReader<'a> {$/;"	i
+Item	src/readers/table_section.rs	/^    type Item = TableType;$/;"	T
+read	src/readers/table_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/table_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/table_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for TableSectionReader	src/readers/table_section.rs	/^impl<'a> SectionWithLimitedItems for TableSectionReader<'a> {$/;"	i
+get_count	src/readers/table_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for TableSectionReader	src/readers/table_section.rs	/^impl<'a> IntoIterator for TableSectionReader<'a> {$/;"	i
+Item	src/readers/table_section.rs	/^    type Item = Result<TableType>;$/;"	T
+IntoIter	src/readers/table_section.rs	/^    type IntoIter = SectionIteratorLimited<TableSectionReader<'a>>;$/;"	T
+into_iter	src/readers/table_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Import	src/readers/import_section.rs	/^pub struct Import<'a> {$/;"	s
+ImportSectionReader	src/readers/import_section.rs	/^pub struct ImportSectionReader<'a> {$/;"	s
+ImportSectionReader	src/readers/import_section.rs	/^impl<'a> ImportSectionReader<'a> {$/;"	i
+new	src/readers/import_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<ImportSectionReader<'a>> {$/;"	f
+original_position	src/readers/import_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/import_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/import_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Import<'b>>$/;"	f
+SectionReader for ImportSectionReader	src/readers/import_section.rs	/^impl<'a> SectionReader for ImportSectionReader<'a> {$/;"	i
+Item	src/readers/import_section.rs	/^    type Item = Import<'a>;$/;"	T
+read	src/readers/import_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/import_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/import_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for ImportSectionReader	src/readers/import_section.rs	/^impl<'a> SectionWithLimitedItems for ImportSectionReader<'a> {$/;"	i
+get_count	src/readers/import_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for ImportSectionReader	src/readers/import_section.rs	/^impl<'a> IntoIterator for ImportSectionReader<'a> {$/;"	i
+Item	src/readers/import_section.rs	/^    type Item = Result<Import<'a>>;$/;"	T
+IntoIter	src/readers/import_section.rs	/^    type IntoIter = SectionIteratorLimited<ImportSectionReader<'a>>;$/;"	T
+into_iter	src/readers/import_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+TypeSectionReader	src/readers/type_section.rs	/^pub struct TypeSectionReader<'a> {$/;"	s
+TypeSectionReader	src/readers/type_section.rs	/^impl<'a> TypeSectionReader<'a> {$/;"	i
+new	src/readers/type_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<TypeSectionReader<'a>> {$/;"	f
+original_position	src/readers/type_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/type_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/type_section.rs	/^    pub fn read(&mut self) -> Result<FuncType> {$/;"	f
+SectionReader for TypeSectionReader	src/readers/type_section.rs	/^impl<'a> SectionReader for TypeSectionReader<'a> {$/;"	i
+Item	src/readers/type_section.rs	/^    type Item = FuncType;$/;"	T
+read	src/readers/type_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/type_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/type_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for TypeSectionReader	src/readers/type_section.rs	/^impl<'a> SectionWithLimitedItems for TypeSectionReader<'a> {$/;"	i
+get_count	src/readers/type_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for TypeSectionReader	src/readers/type_section.rs	/^impl<'a> IntoIterator for TypeSectionReader<'a> {$/;"	i
+Item	src/readers/type_section.rs	/^    type Item = Result<FuncType>;$/;"	T
+IntoIter	src/readers/type_section.rs	/^    type IntoIter = SectionIteratorLimited<TypeSectionReader<'a>>;$/;"	T
+into_iter	src/readers/type_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+ProducersFieldValue	src/readers/producers_section.rs	/^pub struct ProducersFieldValue<'a> {$/;"	s
+ProducersFieldValuesReader	src/readers/producers_section.rs	/^pub struct ProducersFieldValuesReader<'a> {$/;"	s
+ProducersFieldValuesReader	src/readers/producers_section.rs	/^impl<'a> ProducersFieldValuesReader<'a> {$/;"	i
+get_count	src/readers/producers_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+original_position	src/readers/producers_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+skip	src/readers/producers_section.rs	/^    fn skip(reader: &mut BinaryReader, values_count: u32) -> Result<()> {$/;"	f
+read	src/readers/producers_section.rs	/^    pub fn read<'b>(&mut self) -> Result<ProducersFieldValue<'b>>$/;"	f
+IntoIterator for ProducersFieldValuesReader	src/readers/producers_section.rs	/^impl<'a> IntoIterator for ProducersFieldValuesReader<'a> {$/;"	i
+Item	src/readers/producers_section.rs	/^    type Item = Result<ProducersFieldValue<'a>>;$/;"	T
+IntoIter	src/readers/producers_section.rs	/^    type IntoIter = ProducersFieldValuesIterator<'a>;$/;"	T
+into_iter	src/readers/producers_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+ProducersFieldValuesIterator	src/readers/producers_section.rs	/^pub struct ProducersFieldValuesIterator<'a> {$/;"	s
+Iterator for ProducersFieldValuesIterator	src/readers/producers_section.rs	/^impl<'a> Iterator for ProducersFieldValuesIterator<'a> {$/;"	i
+Item	src/readers/producers_section.rs	/^    type Item = Result<ProducersFieldValue<'a>>;$/;"	T
+next	src/readers/producers_section.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/readers/producers_section.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+ProducersField	src/readers/producers_section.rs	/^pub struct ProducersField<'a> {$/;"	s
+ProducersField	src/readers/producers_section.rs	/^impl<'a> ProducersField<'a> {$/;"	i
+get_producer_field_values_reader	src/readers/producers_section.rs	/^    pub fn get_producer_field_values_reader<'b>(&self) -> Result<ProducersFieldValuesReader<'b>>$/;"	f
+ProducersSectionReader	src/readers/producers_section.rs	/^pub struct ProducersSectionReader<'a> {$/;"	s
+ProducersSectionReader	src/readers/producers_section.rs	/^impl<'a> ProducersSectionReader<'a> {$/;"	i
+new	src/readers/producers_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<ProducersSectionReader<'a>> {$/;"	f
+original_position	src/readers/producers_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/producers_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/producers_section.rs	/^    pub fn read<'b>(&mut self) -> Result<ProducersField<'b>>$/;"	f
+SectionReader for ProducersSectionReader	src/readers/producers_section.rs	/^impl<'a> SectionReader for ProducersSectionReader<'a> {$/;"	i
+Item	src/readers/producers_section.rs	/^    type Item = ProducersField<'a>;$/;"	T
+read	src/readers/producers_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/producers_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/producers_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for ProducersSectionReader	src/readers/producers_section.rs	/^impl<'a> SectionWithLimitedItems for ProducersSectionReader<'a> {$/;"	i
+get_count	src/readers/producers_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for ProducersSectionReader	src/readers/producers_section.rs	/^impl<'a> IntoIterator for ProducersSectionReader<'a> {$/;"	i
+Item	src/readers/producers_section.rs	/^    type Item = Result<ProducersField<'a>>;$/;"	T
+IntoIter	src/readers/producers_section.rs	/^    type IntoIter = SectionIteratorLimited<ProducersSectionReader<'a>>;$/;"	T
+into_iter	src/readers/producers_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Global	src/readers/global_section.rs	/^pub struct Global<'a> {$/;"	s
+GlobalSectionReader	src/readers/global_section.rs	/^pub struct GlobalSectionReader<'a> {$/;"	s
+GlobalSectionReader	src/readers/global_section.rs	/^impl<'a> GlobalSectionReader<'a> {$/;"	i
+new	src/readers/global_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<GlobalSectionReader<'a>> {$/;"	f
+original_position	src/readers/global_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/global_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/global_section.rs	/^    pub fn read<'b>(&mut self) -> Result<Global<'b>>$/;"	f
+SectionReader for GlobalSectionReader	src/readers/global_section.rs	/^impl<'a> SectionReader for GlobalSectionReader<'a> {$/;"	i
+Item	src/readers/global_section.rs	/^    type Item = Global<'a>;$/;"	T
+read	src/readers/global_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/global_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/global_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for GlobalSectionReader	src/readers/global_section.rs	/^impl<'a> SectionWithLimitedItems for GlobalSectionReader<'a> {$/;"	i
+get_count	src/readers/global_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for GlobalSectionReader	src/readers/global_section.rs	/^impl<'a> IntoIterator for GlobalSectionReader<'a> {$/;"	i
+Item	src/readers/global_section.rs	/^    type Item = Result<Global<'a>>;$/;"	T
+IntoIter	src/readers/global_section.rs	/^    type IntoIter = SectionIteratorLimited<GlobalSectionReader<'a>>;$/;"	T
+into_iter	src/readers/global_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+Section	src/readers/module.rs	/^pub struct Section<'a> {$/;"	s
+Section	src/readers/module.rs	/^impl<'a> Section<'a> {$/;"	i
+get_type_section_reader	src/readers/module.rs	/^    pub fn get_type_section_reader<'b>(&self) -> Result<TypeSectionReader<'b>>$/;"	f
+get_function_section_reader	src/readers/module.rs	/^    pub fn get_function_section_reader<'b>(&self) -> Result<FunctionSectionReader<'b>>$/;"	f
+get_code_section_reader	src/readers/module.rs	/^    pub fn get_code_section_reader<'b>(&self) -> Result<CodeSectionReader<'b>>$/;"	f
+get_export_section_reader	src/readers/module.rs	/^    pub fn get_export_section_reader<'b>(&self) -> Result<ExportSectionReader<'b>>$/;"	f
+get_import_section_reader	src/readers/module.rs	/^    pub fn get_import_section_reader<'b>(&self) -> Result<ImportSectionReader<'b>>$/;"	f
+get_global_section_reader	src/readers/module.rs	/^    pub fn get_global_section_reader<'b>(&self) -> Result<GlobalSectionReader<'b>>$/;"	f
+get_memory_section_reader	src/readers/module.rs	/^    pub fn get_memory_section_reader<'b>(&self) -> Result<MemorySectionReader<'b>>$/;"	f
+get_data_section_reader	src/readers/module.rs	/^    pub fn get_data_section_reader<'b>(&self) -> Result<DataSectionReader<'b>>$/;"	f
+get_table_section_reader	src/readers/module.rs	/^    pub fn get_table_section_reader<'b>(&self) -> Result<TableSectionReader<'b>>$/;"	f
+get_element_section_reader	src/readers/module.rs	/^    pub fn get_element_section_reader<'b>(&self) -> Result<ElementSectionReader<'b>>$/;"	f
+get_name_section_reader	src/readers/module.rs	/^    pub fn get_name_section_reader<'b>(&self) -> Result<NameSectionReader<'b>>$/;"	f
+get_producers_section_reader	src/readers/module.rs	/^    pub fn get_producers_section_reader<'b>(&self) -> Result<ProducersSectionReader<'b>>$/;"	f
+get_linking_section_reader	src/readers/module.rs	/^    pub fn get_linking_section_reader<'b>(&self) -> Result<LinkingSectionReader<'b>>$/;"	f
+get_reloc_section_reader	src/readers/module.rs	/^    pub fn get_reloc_section_reader<'b>(&self) -> Result<RelocSectionReader<'b>>$/;"	f
+get_start_section_content	src/readers/module.rs	/^    pub fn get_start_section_content(&self) -> Result<u32> {$/;"	f
+get_data_count_section_content	src/readers/module.rs	/^    pub fn get_data_count_section_content(&self) -> Result<u32> {$/;"	f
+get_sourcemappingurl_section_content	src/readers/module.rs	/^    pub fn get_sourcemappingurl_section_content<'b>(&self) -> Result<&'b str>$/;"	f
+get_binary_reader	src/readers/module.rs	/^    pub fn get_binary_reader<'b>(&self) -> BinaryReader<'b>$/;"	f
+range	src/readers/module.rs	/^    pub fn range(&self) -> Range {$/;"	f
+content	src/readers/module.rs	/^    pub fn content<'b>(&self) -> Result<SectionContent<'b>>$/;"	f
+SectionContent	src/readers/module.rs	/^pub enum SectionContent<'a> {$/;"	g
+CustomSectionContent	src/readers/module.rs	/^pub enum CustomSectionContent<'a> {$/;"	g
+ModuleReader	src/readers/module.rs	/^pub struct ModuleReader<'a> {$/;"	s
+ModuleReader	src/readers/module.rs	/^impl<'a> ModuleReader<'a> {$/;"	i
+new	src/readers/module.rs	/^    pub fn new(data: &[u8]) -> Result<ModuleReader> {$/;"	f
+get_version	src/readers/module.rs	/^    pub fn get_version(&self) -> u32 {$/;"	f
+current_position	src/readers/module.rs	/^    pub fn current_position(&self) -> usize {$/;"	f
+eof	src/readers/module.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+verify_section_end	src/readers/module.rs	/^    fn verify_section_end(&self, end: usize) -> Result<()> {$/;"	f
+read	src/readers/module.rs	/^    pub fn read<'b>(&mut self) -> Result<Section<'b>>$/;"	f
+ensure_read_ahead	src/readers/module.rs	/^    fn ensure_read_ahead(&mut self) -> Result<()> {$/;"	f
+skip_custom_sections	src/readers/module.rs	/^    pub fn skip_custom_sections(&mut self) -> Result<()> {$/;"	f
+IntoIterator for ModuleReader	src/readers/module.rs	/^impl<'a> IntoIterator for ModuleReader<'a> {$/;"	i
+Item	src/readers/module.rs	/^    type Item = Result<Section<'a>>;$/;"	T
+IntoIter	src/readers/module.rs	/^    type IntoIter = ModuleIterator<'a>;$/;"	T
+into_iter	src/readers/module.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+ModuleIterator	src/readers/module.rs	/^pub struct ModuleIterator<'a> {$/;"	s
+Iterator for ModuleIterator	src/readers/module.rs	/^impl<'a> Iterator for ModuleIterator<'a> {$/;"	i
+Item	src/readers/module.rs	/^    type Item = Result<Section<'a>>;$/;"	T
+next	src/readers/module.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+MemorySectionReader	src/readers/memory_section.rs	/^pub struct MemorySectionReader<'a> {$/;"	s
+MemorySectionReader	src/readers/memory_section.rs	/^impl<'a> MemorySectionReader<'a> {$/;"	i
+new	src/readers/memory_section.rs	/^    pub fn new(data: &'a [u8], offset: usize) -> Result<MemorySectionReader<'a>> {$/;"	f
+original_position	src/readers/memory_section.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+get_count	src/readers/memory_section.rs	/^    pub fn get_count(&self) -> u32 {$/;"	f
+read	src/readers/memory_section.rs	/^    pub fn read(&mut self) -> Result<MemoryType> {$/;"	f
+SectionReader for MemorySectionReader	src/readers/memory_section.rs	/^impl<'a> SectionReader for MemorySectionReader<'a> {$/;"	i
+Item	src/readers/memory_section.rs	/^    type Item = MemoryType;$/;"	T
+read	src/readers/memory_section.rs	/^    fn read(&mut self) -> Result<Self::Item> {$/;"	f
+eof	src/readers/memory_section.rs	/^    fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/memory_section.rs	/^    fn original_position(&self) -> usize {$/;"	f
+SectionWithLimitedItems for MemorySectionReader	src/readers/memory_section.rs	/^impl<'a> SectionWithLimitedItems for MemorySectionReader<'a> {$/;"	i
+get_count	src/readers/memory_section.rs	/^    fn get_count(&self) -> u32 {$/;"	f
+IntoIterator for MemorySectionReader	src/readers/memory_section.rs	/^impl<'a> IntoIterator for MemorySectionReader<'a> {$/;"	i
+Item	src/readers/memory_section.rs	/^    type Item = Result<MemoryType>;$/;"	T
+IntoIter	src/readers/memory_section.rs	/^    type IntoIter = SectionIteratorLimited<MemorySectionReader<'a>>;$/;"	T
+into_iter	src/readers/memory_section.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+OperatorsReader	src/readers/operators.rs	/^pub struct OperatorsReader<'a> {$/;"	s
+OperatorsReader	src/readers/operators.rs	/^impl<'a> OperatorsReader<'a> {$/;"	i
+eof	src/readers/operators.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+original_position	src/readers/operators.rs	/^    pub fn original_position(&self) -> usize {$/;"	f
+ensure_end	src/readers/operators.rs	/^    pub fn ensure_end(&self) -> Result<()> {$/;"	f
+read	src/readers/operators.rs	/^    pub fn read<'b>(&mut self) -> Result<Operator<'b>>$/;"	f
+into_iter_with_offsets	src/readers/operators.rs	/^    pub fn into_iter_with_offsets<'b>(self) -> OperatorsIteratorWithOffsets<'b>$/;"	f
+read_with_offset	src/readers/operators.rs	/^    pub fn read_with_offset<'b>(&mut self) -> Result<(Operator<'b>, usize)>$/;"	f
+IntoIterator for OperatorsReader	src/readers/operators.rs	/^impl<'a> IntoIterator for OperatorsReader<'a> {$/;"	i
+Item	src/readers/operators.rs	/^    type Item = Result<Operator<'a>>;$/;"	T
+IntoIter	src/readers/operators.rs	/^    type IntoIter = OperatorsIterator<'a>;$/;"	T
+into_iter	src/readers/operators.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+OperatorsIterator	src/readers/operators.rs	/^pub struct OperatorsIterator<'a> {$/;"	s
+Iterator for OperatorsIterator	src/readers/operators.rs	/^impl<'a> Iterator for OperatorsIterator<'a> {$/;"	i
+Item	src/readers/operators.rs	/^    type Item = Result<Operator<'a>>;$/;"	T
+next	src/readers/operators.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+OperatorsIteratorWithOffsets	src/readers/operators.rs	/^pub struct OperatorsIteratorWithOffsets<'a> {$/;"	s
+Iterator for OperatorsIteratorWithOffsets	src/readers/operators.rs	/^impl<'a> Iterator for OperatorsIteratorWithOffsets<'a> {$/;"	i
+Item	src/readers/operators.rs	/^    type Item = Result<(Operator<'a>, usize)>;$/;"	T
+next	src/readers/operators.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+BlockState	src/operators_validator.rs	/^struct BlockState {$/;"	s
+BlockState	src/operators_validator.rs	/^impl BlockState {$/;"	i
+is_stack_polymorphic	src/operators_validator.rs	/^    fn is_stack_polymorphic(&self) -> bool {$/;"	f
+FuncState	src/operators_validator.rs	/^struct FuncState {$/;"	s
+FuncState	src/operators_validator.rs	/^impl FuncState {$/;"	i
+block_at	src/operators_validator.rs	/^    fn block_at(&self, depth: usize) -> &BlockState {$/;"	f
+last_block	src/operators_validator.rs	/^    fn last_block(&self) -> &BlockState {$/;"	f
+assert_stack_type_at	src/operators_validator.rs	/^    fn assert_stack_type_at(&self, index: usize, expected: Type) -> bool {$/;"	f
+assert_block_stack_len	src/operators_validator.rs	/^    fn assert_block_stack_len(&self, depth: usize, minimal_len: usize) -> bool {$/;"	f
+assert_last_block_stack_len_exact	src/operators_validator.rs	/^    fn assert_last_block_stack_len_exact(&self, len: usize) -> bool {$/;"	f
+remove_frame_stack_types	src/operators_validator.rs	/^    fn remove_frame_stack_types(&mut self, remove_count: usize) -> OperatorValidatorResult<()> {$/;"	f
+push_block	src/operators_validator.rs	/^    fn push_block<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>($/;"	f
+pop_block	src/operators_validator.rs	/^    fn pop_block(&mut self) {$/;"	f
+reset_block	src/operators_validator.rs	/^    fn reset_block(&mut self) {$/;"	f
+change_frame	src/operators_validator.rs	/^    fn change_frame(&mut self, remove_count: usize) -> OperatorValidatorResult<()> {$/;"	f
+change_frame_with_type	src/operators_validator.rs	/^    fn change_frame_with_type($/;"	f
+change_frame_with_types	src/operators_validator.rs	/^    fn change_frame_with_types<I>($/;"	f
+change_frame_to_exact_types_from	src/operators_validator.rs	/^    fn change_frame_to_exact_types_from(&mut self, depth: usize) -> OperatorValidatorResult<()> {$/;"	f
+change_frame_after_select	src/operators_validator.rs	/^    fn change_frame_after_select(&mut self, ty: Option<Type>) -> OperatorValidatorResult<()> {$/;"	f
+start_dead_code	src/operators_validator.rs	/^    fn start_dead_code(&mut self) {$/;"	f
+end_function	src/operators_validator.rs	/^    fn end_function(&mut self) {$/;"	f
+BlockType	src/operators_validator.rs	/^enum BlockType {$/;"	g
+FunctionEnd	src/operators_validator.rs	/^pub enum FunctionEnd {$/;"	g
+format_op_err	src/operators_validator.rs	/^macro_rules! format_op_err {$/;"	d
+bail_op_err	src/operators_validator.rs	/^macro_rules! bail_op_err {$/;"	d
+OperatorValidatorError	src/operators_validator.rs	/^impl OperatorValidatorError {$/;"	i
+OperatorValidatorResult	src/operators_validator.rs	/^type OperatorValidatorResult<T> = std::result::Result<T, OperatorValidatorError>;$/;"	T
+OperatorValidatorConfig	src/operators_validator.rs	/^pub struct OperatorValidatorConfig {$/;"	s
+OperatorValidator	src/operators_validator.rs	/^impl OperatorValidator {$/;"	i
+new	src/operators_validator.rs	/^    pub fn new<F, T>($/;"	f
+is_dead_code	src/operators_validator.rs	/^    pub fn is_dead_code(&self) -> bool {$/;"	f
+check_frame_size	src/operators_validator.rs	/^    fn check_frame_size(&self, require_count: usize) -> OperatorValidatorResult<()> {$/;"	f
+check_operands_1	src/operators_validator.rs	/^    fn check_operands_1(&self, operand: Type) -> OperatorValidatorResult<()> {$/;"	f
+check_operands_2	src/operators_validator.rs	/^    fn check_operands_2(&self, operand1: Type, operand2: Type) -> OperatorValidatorResult<()> {$/;"	f
+check_operands_3	src/operators_validator.rs	/^    fn check_operands_3($/;"	f
+check_operands	src/operators_validator.rs	/^    fn check_operands<I>(&self, expected_types: I) -> OperatorValidatorResult<()>$/;"	f
+check_block_return_types	src/operators_validator.rs	/^    fn check_block_return_types($/;"	f
+check_block_return	src/operators_validator.rs	/^    fn check_block_return(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_jump_from_block	src/operators_validator.rs	/^    fn check_jump_from_block($/;"	f
+match_block_return	src/operators_validator.rs	/^    fn match_block_return(&self, depth1: u32, depth2: u32) -> OperatorValidatorResult<()> {$/;"	f
+check_memory_index	src/operators_validator.rs	/^    fn check_memory_index<$/;"	f
+check_shared_memory_index	src/operators_validator.rs	/^    fn check_shared_memory_index<$/;"	f
+check_memarg	src/operators_validator.rs	/^    fn check_memarg<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>($/;"	f
+check_deterministic_only	src/operators_validator.rs	/^    fn check_deterministic_only(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_deterministic_only	src/operators_validator.rs	/^    fn check_deterministic_only(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_threads_enabled	src/operators_validator.rs	/^    fn check_threads_enabled(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_reference_types_enabled	src/operators_validator.rs	/^    fn check_reference_types_enabled(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_simd_enabled	src/operators_validator.rs	/^    fn check_simd_enabled(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_bulk_memory_enabled	src/operators_validator.rs	/^    fn check_bulk_memory_enabled(&self) -> OperatorValidatorResult<()> {$/;"	f
+check_shared_memarg_wo_align	src/operators_validator.rs	/^    fn check_shared_memarg_wo_align<$/;"	f
+check_simd_lane_index	src/operators_validator.rs	/^    fn check_simd_lane_index(&self, index: SIMDLaneIndex, max: u8) -> OperatorValidatorResult<()> {$/;"	f
+check_block_type	src/operators_validator.rs	/^    fn check_block_type<F: WasmFuncType, T: WasmTableType, M: WasmMemoryType, G: WasmGlobalType>($/;"	f
+check_block_params	src/operators_validator.rs	/^    fn check_block_params<$/;"	f
+check_select	src/operators_validator.rs	/^    fn check_select(&self) -> OperatorValidatorResult<Option<Type>> {$/;"	f
+MAX_DATA_CHUNK_SIZE	src/parser.rs	/^const MAX_DATA_CHUNK_SIZE: usize = MAX_WASM_STRING_SIZE;$/;"	c
+LocalName	src/parser.rs	/^pub struct LocalName<'a> {$/;"	s
+NameEntry	src/parser.rs	/^pub enum NameEntry<'a> {$/;"	g
+RelocEntry	src/parser.rs	/^pub struct RelocEntry {$/;"	s
+InitExpressionContinuationSection	src/parser.rs	/^enum InitExpressionContinuationSection {$/;"	g
+ParserState	src/parser.rs	/^pub enum ParserState<'a> {$/;"	g
+ElemSectionEntryTable	src/parser.rs	/^pub enum ElemSectionEntryTable {$/;"	g
+ParserInput	src/parser.rs	/^pub enum ParserInput {$/;"	g
+WasmDecoder	src/parser.rs	/^pub trait WasmDecoder<'a> {$/;"	t
+read	src/parser.rs	/^    fn read(&mut self) -> &ParserState<'a>;$/;"	f
+push_input	src/parser.rs	/^    fn push_input(&mut self, input: ParserInput);$/;"	f
+read_with_input	src/parser.rs	/^    fn read_with_input(&mut self, input: ParserInput) -> &ParserState<'a>;$/;"	f
+create_binary_reader	src/parser.rs	/^    fn create_binary_reader<'b>(&mut self) -> BinaryReader<'b>$/;"	f
+last_state	src/parser.rs	/^    fn last_state(&self) -> &ParserState<'a>;$/;"	f
+ParserSectionReader	src/parser.rs	/^enum ParserSectionReader<'a> {$/;"	g
+section_reader	src/parser.rs	/^macro_rules! section_reader {$/;"	d
+start_section_reader	src/parser.rs	/^macro_rules! start_section_reader {$/;"	d
+Parser	src/parser.rs	/^pub struct Parser<'a> {$/;"	s
+Parser	src/parser.rs	/^impl<'a> Parser<'a> {$/;"	i
+new	src/parser.rs	/^    pub fn new(data: &[u8]) -> Parser {$/;"	f
+eof	src/parser.rs	/^    pub fn eof(&self) -> bool {$/;"	f
+current_position	src/parser.rs	/^    pub fn current_position(&self) -> usize {$/;"	f
+read_module	src/parser.rs	/^    fn read_module(&mut self) -> Result<()> {$/;"	f
+read_section_header	src/parser.rs	/^    fn read_section_header(&mut self) -> Result<()> {$/;"	f
+read_type_entry	src/parser.rs	/^    fn read_type_entry(&mut self) -> Result<()> {$/;"	f
+read_import_entry	src/parser.rs	/^    fn read_import_entry(&mut self) -> Result<()> {$/;"	f
+read_function_entry	src/parser.rs	/^    fn read_function_entry(&mut self) -> Result<()> {$/;"	f
+read_memory_entry	src/parser.rs	/^    fn read_memory_entry(&mut self) -> Result<()> {$/;"	f
+read_global_entry	src/parser.rs	/^    fn read_global_entry(&mut self) -> Result<()> {$/;"	f
+read_init_expression_body	src/parser.rs	/^    fn read_init_expression_body(&mut self, cont: InitExpressionContinuationSection) {$/;"	f
+read_init_expression_operator	src/parser.rs	/^    fn read_init_expression_operator(&mut self) -> Result<()> {$/;"	f
+read_export_entry	src/parser.rs	/^    fn read_export_entry(&mut self) -> Result<()> {$/;"	f
+read_element_entry	src/parser.rs	/^    fn read_element_entry(&mut self) -> Result<()> {$/;"	f
+read_element_entry_body	src/parser.rs	/^    fn read_element_entry_body(&mut self) -> Result<()> {$/;"	f
+read_function_body	src/parser.rs	/^    fn read_function_body(&mut self) -> Result<()> {$/;"	f
+read_function_body_locals	src/parser.rs	/^    fn read_function_body_locals(&mut self) -> Result<()> {$/;"	f
+read_code_operator	src/parser.rs	/^    fn read_code_operator(&mut self) -> Result<()> {$/;"	f
+read_table_entry	src/parser.rs	/^    fn read_table_entry(&mut self) -> Result<()> {$/;"	f
+read_data_entry	src/parser.rs	/^    fn read_data_entry(&mut self) -> Result<()> {$/;"	f
+read_data_entry_body	src/parser.rs	/^    fn read_data_entry_body(&mut self) -> Result<()> {$/;"	f
+read_naming	src/parser.rs	/^    fn read_naming<'b>($/;"	f
+read_name_entry	src/parser.rs	/^    fn read_name_entry(&mut self) -> Result<()> {$/;"	f
+read_source_mapping	src/parser.rs	/^    fn read_source_mapping(&mut self) -> Result<()> {$/;"	f
+read_reloc_header	src/parser.rs	/^    fn read_reloc_header(&mut self) -> Result<()> {$/;"	f
+read_reloc_entry	src/parser.rs	/^    fn read_reloc_entry(&mut self) -> Result<()> {$/;"	f
+read_linking_entry	src/parser.rs	/^    fn read_linking_entry(&mut self) -> Result<()> {$/;"	f
+read_section_body	src/parser.rs	/^    fn read_section_body(&mut self) -> Result<()> {$/;"	f
+create_custom_section_binary_reader	src/parser.rs	/^    fn create_custom_section_binary_reader(&mut self) {$/;"	f
+read_custom_section_body	src/parser.rs	/^    fn read_custom_section_body(&mut self) -> Result<()> {$/;"	f
+position_to_section_end	src/parser.rs	/^    fn position_to_section_end(&mut self) -> Result<()> {$/;"	f
+check_section_end	src/parser.rs	/^    fn check_section_end(&mut self) -> Result<()> {$/;"	f
+read_section_body_bytes	src/parser.rs	/^    fn read_section_body_bytes(&mut self) -> Result<()> {$/;"	f
+read_data_chunk	src/parser.rs	/^    fn read_data_chunk(&mut self) -> Result<()> {$/;"	f
+read_next_section	src/parser.rs	/^    fn read_next_section(&mut self) -> Result<()> {$/;"	f
+read_wrapped	src/parser.rs	/^    fn read_wrapped(&mut self) -> Result<()> {$/;"	f
+skip_section	src/parser.rs	/^    fn skip_section(&mut self) {$/;"	f
+skip_function_body	src/parser.rs	/^    fn skip_function_body(&mut self) {$/;"	f
+read_custom_section	src/parser.rs	/^    fn read_custom_section(&mut self) {$/;"	f
+read_raw_section_data	src/parser.rs	/^    fn read_raw_section_data(&mut self) {$/;"	f
+WasmDecoder for Parser	src/parser.rs	/^impl<'a> WasmDecoder<'a> for Parser<'a> {$/;"	i
+read	src/parser.rs	/^    fn read(&mut self) -> &ParserState<'a> {$/;"	f
+push_input	src/parser.rs	/^    fn push_input(&mut self, input: ParserInput) {$/;"	f
+create_binary_reader	src/parser.rs	/^    fn create_binary_reader<'b>(&mut self) -> BinaryReader<'b>$/;"	f
+read_with_input	src/parser.rs	/^    fn read_with_input(&mut self, input: ParserInput) -> &ParserState<'a> {$/;"	f
+last_state	src/parser.rs	/^    fn last_state(&self) -> &ParserState<'a> {$/;"	f
+BinaryReaderError	src/primitives.rs	/^pub struct BinaryReaderError {$/;"	s
+Result	src/primitives.rs	/^pub type Result<T> = result::Result<T, BinaryReaderError>;$/;"	T
+Error for BinaryReaderError	src/primitives.rs	/^impl Error for BinaryReaderError {}$/;"	i
+fmt::Display for BinaryReaderError	src/primitives.rs	/^impl fmt::Display for BinaryReaderError {$/;"	i
+fmt	src/primitives.rs	/^    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {$/;"	f
+BinaryReaderError	src/primitives.rs	/^impl BinaryReaderError {$/;"	i
+message	src/primitives.rs	/^    pub fn message(&self) -> &str {$/;"	f
+offset	src/primitives.rs	/^    pub fn offset(&self) -> usize {$/;"	f
+CustomSectionKind	src/primitives.rs	/^pub enum CustomSectionKind {$/;"	g
+SectionCode	src/primitives.rs	/^pub enum SectionCode<'a> {$/;"	g
+Type	src/primitives.rs	/^pub enum Type {$/;"	g
+Type	src/primitives.rs	/^impl Type {$/;"	i
+TypeOrFuncType	src/primitives.rs	/^pub enum TypeOrFuncType {$/;"	g
+ExternalKind	src/primitives.rs	/^pub enum ExternalKind {$/;"	g
+FuncType	src/primitives.rs	/^pub struct FuncType {$/;"	s
+ResizableLimits	src/primitives.rs	/^pub struct ResizableLimits {$/;"	s
+TableType	src/primitives.rs	/^pub struct TableType {$/;"	s
+MemoryType	src/primitives.rs	/^pub struct MemoryType {$/;"	s
+GlobalType	src/primitives.rs	/^pub struct GlobalType {$/;"	s
+ImportSectionEntryType	src/primitives.rs	/^pub enum ImportSectionEntryType {$/;"	g
+MemoryImmediate	src/primitives.rs	/^pub struct MemoryImmediate {$/;"	s
+Naming	src/primitives.rs	/^pub struct Naming<'a> {$/;"	s
+NameType	src/primitives.rs	/^pub enum NameType {$/;"	g
+LinkingType	src/primitives.rs	/^pub enum LinkingType {$/;"	g
+RelocType	src/primitives.rs	/^pub enum RelocType {$/;"	g
+BrTable	src/primitives.rs	/^pub struct BrTable<'a> {$/;"	s
+Ieee32	src/primitives.rs	/^pub struct Ieee32(pub(crate) u32);$/;"	s
+Ieee32	src/primitives.rs	/^impl Ieee32 {$/;"	i
+bits	src/primitives.rs	/^    pub fn bits(self) -> u32 {$/;"	f
+Ieee64	src/primitives.rs	/^pub struct Ieee64(pub(crate) u64);$/;"	s
+Ieee64	src/primitives.rs	/^impl Ieee64 {$/;"	i
+bits	src/primitives.rs	/^    pub fn bits(self) -> u64 {$/;"	f
+V128	src/primitives.rs	/^pub struct V128(pub(crate) [u8; 16]);$/;"	s
+V128	src/primitives.rs	/^impl V128 {$/;"	i
+bytes	src/primitives.rs	/^    pub fn bytes(&self) -> &[u8; 16] {$/;"	f
+SIMDLaneIndex	src/primitives.rs	/^pub type SIMDLaneIndex = u8;$/;"	T
+Operator	src/primitives.rs	/^pub enum Operator<'a> {$/;"	g
+WasmType	src/module_resources.rs	/^pub trait WasmType: PartialEq<crate::Type> + PartialEq + Eq {$/;"	t
+to_parser_type	src/module_resources.rs	/^    fn to_parser_type(&self) -> crate::Type;$/;"	f
+WasmFuncType	src/module_resources.rs	/^pub trait WasmFuncType {$/;"	t
+Type	src/module_resources.rs	/^    type Type: WasmType;$/;"	T
+len_inputs	src/module_resources.rs	/^    fn len_inputs(&self) -> usize;$/;"	f
+len_outputs	src/module_resources.rs	/^    fn len_outputs(&self) -> usize;$/;"	f
+input_at	src/module_resources.rs	/^    fn input_at(&self, at: u32) -> Option<&Self::Type>;$/;"	f
+output_at	src/module_resources.rs	/^    fn output_at(&self, at: u32) -> Option<&Self::Type>;$/;"	f
+WasmFuncTypeInputs	src/module_resources.rs	/^impl<'a, F, T> WasmFuncTypeInputs<'a, F, T>$/;"	i
+new	src/module_resources.rs	/^    fn new(func_type: &'a F) -> Self {$/;"	f
+Iterator for WasmFuncTypeInputs	src/module_resources.rs	/^impl<'a, F, T> Iterator for WasmFuncTypeInputs<'a, F, T>$/;"	i
+Item	src/module_resources.rs	/^    type Item = &'a T;$/;"	T
+next	src/module_resources.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/module_resources.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+DoubleEndedIterator for WasmFuncTypeInputs	src/module_resources.rs	/^impl<'a, F, T> DoubleEndedIterator for WasmFuncTypeInputs<'a, F, T>$/;"	i
+next_back	src/module_resources.rs	/^    fn next_back(&mut self) -> Option<Self::Item> {$/;"	f
+ExactSizeIterator for WasmFuncTypeInputs	src/module_resources.rs	/^impl<'a, F, T> ExactSizeIterator for WasmFuncTypeInputs<'a, F, T>$/;"	i
+len	src/module_resources.rs	/^    fn len(&self) -> usize {$/;"	f
+WasmFuncTypeOutputs	src/module_resources.rs	/^impl<'a, F, T> WasmFuncTypeOutputs<'a, F, T>$/;"	i
+new	src/module_resources.rs	/^    fn new(func_type: &'a F) -> Self {$/;"	f
+Iterator for WasmFuncTypeOutputs	src/module_resources.rs	/^impl<'a, F, T> Iterator for WasmFuncTypeOutputs<'a, F, T>$/;"	i
+Item	src/module_resources.rs	/^    type Item = &'a T;$/;"	T
+next	src/module_resources.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+size_hint	src/module_resources.rs	/^    fn size_hint(&self) -> (usize, Option<usize>) {$/;"	f
+DoubleEndedIterator for WasmFuncTypeOutputs	src/module_resources.rs	/^impl<'a, F, T> DoubleEndedIterator for WasmFuncTypeOutputs<'a, F, T>$/;"	i
+next_back	src/module_resources.rs	/^    fn next_back(&mut self) -> Option<Self::Item> {$/;"	f
+ExactSizeIterator for WasmFuncTypeOutputs	src/module_resources.rs	/^impl<'a, F, T> ExactSizeIterator for WasmFuncTypeOutputs<'a, F, T>$/;"	i
+len	src/module_resources.rs	/^    fn len(&self) -> usize {$/;"	f
+WasmTableType	src/module_resources.rs	/^pub trait WasmTableType {$/;"	t
+Type	src/module_resources.rs	/^    type Type: WasmType;$/;"	T
+element_type	src/module_resources.rs	/^    fn element_type(&self) -> &Self::Type;$/;"	f
+initial_limit	src/module_resources.rs	/^    fn initial_limit(&self) -> u32;$/;"	f
+maximum_limit	src/module_resources.rs	/^    fn maximum_limit(&self) -> Option<u32>;$/;"	f
+WasmMemoryType	src/module_resources.rs	/^pub trait WasmMemoryType {$/;"	t
+is_shared	src/module_resources.rs	/^    fn is_shared(&self) -> bool;$/;"	f
+initial_limit	src/module_resources.rs	/^    fn initial_limit(&self) -> u32;$/;"	f
+maximum_limit	src/module_resources.rs	/^    fn maximum_limit(&self) -> Option<u32>;$/;"	f
+WasmGlobalType	src/module_resources.rs	/^pub trait WasmGlobalType {$/;"	t
+Type	src/module_resources.rs	/^    type Type: WasmType;$/;"	T
+is_mutable	src/module_resources.rs	/^    fn is_mutable(&self) -> bool;$/;"	f
+content_type	src/module_resources.rs	/^    fn content_type(&self) -> &Self::Type;$/;"	f
+WasmModuleResources	src/module_resources.rs	/^pub trait WasmModuleResources {$/;"	t
+FuncType	src/module_resources.rs	/^    type FuncType: WasmFuncType;$/;"	T
+TableType	src/module_resources.rs	/^    type TableType: WasmTableType;$/;"	T
+MemoryType	src/module_resources.rs	/^    type MemoryType: WasmMemoryType;$/;"	T
+GlobalType	src/module_resources.rs	/^    type GlobalType: WasmGlobalType;$/;"	T
+type_at	src/module_resources.rs	/^    fn type_at(&self, at: u32) -> Option<&Self::FuncType>;$/;"	f
+table_at	src/module_resources.rs	/^    fn table_at(&self, at: u32) -> Option<&Self::TableType>;$/;"	f
+memory_at	src/module_resources.rs	/^    fn memory_at(&self, at: u32) -> Option<&Self::MemoryType>;$/;"	f
+global_at	src/module_resources.rs	/^    fn global_at(&self, at: u32) -> Option<&Self::GlobalType>;$/;"	f
+func_type_id_at	src/module_resources.rs	/^    fn func_type_id_at(&self, at: u32) -> Option<u32>;$/;"	f
+element_count	src/module_resources.rs	/^    fn element_count(&self) -> u32;$/;"	f
+data_count	src/module_resources.rs	/^    fn data_count(&self) -> u32;$/;"	f
+WasmType for crate	src/module_resources.rs	/^impl WasmType for crate::Type {$/;"	i
+to_parser_type	src/module_resources.rs	/^    fn to_parser_type(&self) -> crate::Type {$/;"	f
+WasmFuncType for crate	src/module_resources.rs	/^impl WasmFuncType for crate::FuncType {$/;"	i
+Type	src/module_resources.rs	/^    type Type = crate::Type;$/;"	T
+len_inputs	src/module_resources.rs	/^    fn len_inputs(&self) -> usize {$/;"	f
+len_outputs	src/module_resources.rs	/^    fn len_outputs(&self) -> usize {$/;"	f
+input_at	src/module_resources.rs	/^    fn input_at(&self, at: u32) -> Option<&Self::Type> {$/;"	f
+output_at	src/module_resources.rs	/^    fn output_at(&self, at: u32) -> Option<&Self::Type> {$/;"	f
+WasmGlobalType for crate	src/module_resources.rs	/^impl WasmGlobalType for crate::GlobalType {$/;"	i
+Type	src/module_resources.rs	/^    type Type = crate::Type;$/;"	T
+is_mutable	src/module_resources.rs	/^    fn is_mutable(&self) -> bool {$/;"	f
+content_type	src/module_resources.rs	/^    fn content_type(&self) -> &Self::Type {$/;"	f
+WasmTableType for crate	src/module_resources.rs	/^impl WasmTableType for crate::TableType {$/;"	i
+Type	src/module_resources.rs	/^    type Type = crate::Type;$/;"	T
+element_type	src/module_resources.rs	/^    fn element_type(&self) -> &Self::Type {$/;"	f
+initial_limit	src/module_resources.rs	/^    fn initial_limit(&self) -> u32 {$/;"	f
+maximum_limit	src/module_resources.rs	/^    fn maximum_limit(&self) -> Option<u32> {$/;"	f
+WasmMemoryType for crate	src/module_resources.rs	/^impl WasmMemoryType for crate::MemoryType {$/;"	i
+is_shared	src/module_resources.rs	/^    fn is_shared(&self) -> bool {$/;"	f
+initial_limit	src/module_resources.rs	/^    fn initial_limit(&self) -> u32 {$/;"	f
+maximum_limit	src/module_resources.rs	/^    fn maximum_limit(&self) -> Option<u32> {$/;"	f
+simple_tests	src/tests.rs	/^mod simple_tests {$/;"	m
+VALIDATOR_CONFIG	src/tests.rs	/^    const VALIDATOR_CONFIG: Option<ValidatingParserConfig> = Some(ValidatingParserConfig {$/;"	c
+read_file_data	src/tests.rs	/^    fn read_file_data(path: &PathBuf) -> Vec<u8> {$/;"	f
+scan_tests_files	src/tests.rs	/^    fn scan_tests_files(prefix: &str) -> Vec<PathBuf> {$/;"	f
+it_works	src/tests.rs	/^    fn it_works() {$/;"	f
+validator_not_fails	src/tests.rs	/^    fn validator_not_fails() {$/;"	f
+validator_fails	src/tests.rs	/^    fn validator_fails() {$/;"	f
+expect_state	src/tests.rs	/^    macro_rules! expect_state {$/;"	d
+default_read	src/tests.rs	/^    fn default_read() {$/;"	f
+default_read_with_input	src/tests.rs	/^    fn default_read_with_input() {$/;"	f
+skipping	src/tests.rs	/^    fn skipping() {$/;"	f
+run_deterministic_enabled_test	src/tests.rs	/^    fn run_deterministic_enabled_test(path: &PathBuf) {$/;"	f
+deterministic_enabled	src/tests.rs	/^    fn deterministic_enabled() {$/;"	f
+wast_tests	src/tests.rs	/^mod wast_tests {$/;"	m
+WAST_TESTS_PATH	src/tests.rs	/^    const WAST_TESTS_PATH: &str = "tests\/wast";$/;"	c
+SPEC_TESTS_PATH	src/tests.rs	/^    const SPEC_TESTS_PATH: &str = "testsuite";$/;"	c
+default_config	src/tests.rs	/^    fn default_config() -> ValidatingParserConfig {$/;"	f
+extract_config	src/tests.rs	/^    fn extract_config(wast: &str) -> ValidatingParserConfig {$/;"	f
+validate_module	src/tests.rs	/^    fn validate_module($/;"	f
+run_wabt_scripts	src/tests.rs	/^    fn run_wabt_scripts<F>($/;"	f
+run_proposal_tests	src/tests.rs	/^    fn run_proposal_tests<F>(name: &str, config: ValidatingParserConfig, skip_test: F)$/;"	f
+run_proposals_tests	src/tests.rs	/^    fn run_proposals_tests() {$/;"	f
+run_wast_tests	src/tests.rs	/^    fn run_wast_tests() {$/;"	f
+run_spec_tests	src/tests.rs	/^    fn run_spec_tests() {$/;"	f
+main	examples/dump.rs	/^fn main() {$/;"	f
+read_wasm	examples/dump.rs	/^fn read_wasm(file: &str) -> io::Result<Vec<u8>> {$/;"	f
+main	examples/simple.rs	/^fn main() {$/;"	f
+read_wasm	examples/simple.rs	/^fn read_wasm(file: &str) -> io::Result<Vec<u8>> {$/;"	f
+# Bytecode Alliance Organizational Code of Conduct (OCoC)	ORG_CODE_OF_CONDUCT.md	/^# Bytecode Alliance Organizational Code of Conduct (OCoC)$/;"	h
+## Preamble	ORG_CODE_OF_CONDUCT.md	/^## Preamble$/;"	h
+## Guidelines	ORG_CODE_OF_CONDUCT.md	/^## Guidelines$/;"	h
+## Enforcement	ORG_CODE_OF_CONDUCT.md	/^## Enforcement$/;"	h
+MAX_WASM_TYPES	src/limits.rs	/^pub const MAX_WASM_TYPES: usize = 10_000;$/;"	c
+MAX_WASM_FUNCTIONS	src/limits.rs	/^pub const MAX_WASM_FUNCTIONS: usize = 10_000;$/;"	c
+_MAX_WASM_IMPORTS	src/limits.rs	/^pub const _MAX_WASM_IMPORTS: usize = 1000;$/;"	c
+_MAX_WASM_EXPORTS	src/limits.rs	/^pub const _MAX_WASM_EXPORTS: usize = 1000;$/;"	c
+MAX_WASM_GLOBALS	src/limits.rs	/^pub const MAX_WASM_GLOBALS: usize = 4000; \/\/ max 32K$/;"	c
+_MAX_WASM_DATA_SEGMENTS	src/limits.rs	/^pub const _MAX_WASM_DATA_SEGMENTS: usize = 10_000;$/;"	c
+MAX_WASM_MEMORY_PAGES	src/limits.rs	/^pub const MAX_WASM_MEMORY_PAGES: usize = 1000; \/\/ max 64M memory$/;"	c
+MAX_WASM_STRING_SIZE	src/limits.rs	/^pub const MAX_WASM_STRING_SIZE: usize = 100_000;$/;"	c
+_MAX_WASM_MODULE_SIZE	src/limits.rs	/^pub const _MAX_WASM_MODULE_SIZE: usize = 1024 * 1024 * 32; \/\/ 32M$/;"	c
+MAX_WASM_FUNCTION_SIZE	src/limits.rs	/^pub const MAX_WASM_FUNCTION_SIZE: usize = 128 * 1024;$/;"	c
+MAX_WASM_FUNCTION_LOCALS	src/limits.rs	/^pub const MAX_WASM_FUNCTION_LOCALS: usize = 4000;$/;"	c
+MAX_WASM_FUNCTION_PARAMS	src/limits.rs	/^pub const MAX_WASM_FUNCTION_PARAMS: usize = 100;$/;"	c
+MAX_WASM_FUNCTION_RETURNS	src/limits.rs	/^pub const MAX_WASM_FUNCTION_RETURNS: usize = 100;$/;"	c
+_MAX_WASM_TABLE_SIZE	src/limits.rs	/^pub const _MAX_WASM_TABLE_SIZE: usize = 10_000;$/;"	c
+MAX_WASM_TABLE_ENTRIES	src/limits.rs	/^pub const MAX_WASM_TABLE_ENTRIES: usize = 10_000;$/;"	c
+MAX_WASM_TABLES	src/limits.rs	/^pub const MAX_WASM_TABLES: usize = 1;$/;"	c
+MAX_WASM_MEMORIES	src/limits.rs	/^pub const MAX_WASM_MEMORIES: usize = 1;$/;"	c
