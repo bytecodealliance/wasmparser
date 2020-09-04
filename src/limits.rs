@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-// The following limits are imposed by wasmparser on WebAssembly modules.
-// The limits are agreed upon with other engines for consistency.
+// The following limits are updated to fit the restrictions of a WASM smart
+// contract, which should be much lower than for the usual WASM use-case.
 pub const MAX_WASM_TYPES: usize = 10_000;
 pub const MAX_WASM_FUNCTIONS: usize = 10_000;
 pub const _MAX_WASM_IMPORTS: usize = 1000;
